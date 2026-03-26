@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomel — La Roulette Quotidienne</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: #2a2a35;
+    --primary: #EB5846;
+    --primary-dim: #c03c2c;
+    --primary-glow: rgba(235,88,70,0.2);
+    --text: #eeeef0;
+    --muted: #7a7a8c;
+    --green: #3ecf6e;
+    --red: #EB5846;
+    --yellow: #f0c040;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --surface2: #efefef;
+      --border: #e0e0e8;
+      --primary: #EB5846;
+      --primary-dim: #c03c2c;
+      --primary-glow: rgba(235,88,70,0.15);
+      --text: #111115;
+      --muted: #888899;
+      --green: #1fa854;
+      --red: #EB5846;
+      --yellow: #d4a520;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+  /* LOGIN */
+  #loginScreen { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #loginScreen.hidden { display: none; }
+  .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 0 60px var(--primary-glow); }
+  .login-box h1 { font-size: 2.6rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; text-align: center; }
+  .login-box h1 span { color: var(--text); }
+  .login-box > p { color: var(--muted); font-size: .9rem; text-align: center; }
+  .tabs-login { display: flex; gap: 8px; background: var(--surface2); border-radius: 10px; padding: 4px; }
+  .tabs-login button { flex: 1; padding: 8px; border: none; border-radius: 8px; background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .tabs-login button.active { background: var(--primary); color: #fff; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group label { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .form-group input, .form-group textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'Space Mono', monospace; font-size: .9rem; outline: none; transition: border .2s; width: 100%; }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+  .form-group textarea { resize: vertical; min-height: 80px; font-size: .75rem; }
+  .btn-primary { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 14px 24px; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all .2s; width: 100%; }
+  .btn-primary:hover { background: var(--primary-dim); transform: translateY(-1px); box-shadow: 0 6px 24px var(--primary-glow); }
+  .btn-primary:active { transform: translateY(0); }
+  .login-panel { display: flex; flex-direction: column; gap: 16px; }
+  .login-panel.hidden { display: none; }
+
+  /* APP */
+  #app { display: none; flex-direction: column; align-items: center; width: 100%; min-height: 100vh; }
+  #app.visible { display: flex; }
+  header { width: 100%; background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); box-shadow: var(--shadow); }
+  .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+  .logo span { color: var(--text); }
+  .wallet { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 8px 16px; }
+  .wallet .coin { font-size: 1.1rem; }
+  .wallet .amount { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--primary); }
+  .wallet .label { font-size: .75rem; color: var(--muted); }
+  .user-badge { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); }
+  .user-badge strong { color: var(--text); }
+  nav { width: 100%; display: flex; justify-content: center; padding: 20px 32px 0; gap: 4px; flex-wrap: wrap; }
+  .nav-btn { background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 10px 18px; font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .nav-btn:hover { color: var(--text); border-color: var(--border); }
+  .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .page { display: none; width: 100%; max-width: 700px; padding: 40px 24px 80px; }
+  .page.active { display: block; }
+
+  /* ROULETTE */
+  .roulette-container { display: flex; flex-direction: column; align-items: center; gap: 36px; }
+  .roulette-title { text-align: center; }
+  .roulette-title h2 { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+  .roulette-title p { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+  .wheel-wrap { position: relative; width: 280px; height: 280px; }
+  .wheel-ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--border); background: conic-gradient(#EB5846 0% 30%,#c03c2c 30% 50%,#962c1e 50% 65%,#6e1e12 65% 78%,#4a1008 78% 89%,#28080a 89% 100%); box-shadow: 0 0 40px var(--primary-glow); }
+  .wheel-center { position: absolute; inset: 30px; border-radius: 50%; background: var(--surface); border: 3px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; box-shadow: inset 0 0 30px rgba(0,0,0,0.15); }
+  .wheel-center .value { font-family: 'Space Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); min-height: 40px; display: flex; align-items: center; }
+  .wheel-center .sub { font-size: .75rem; color: var(--muted); }
+  .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 22px solid var(--primary); filter: drop-shadow(0 0 6px var(--primary)); z-index: 3; }
+  .spin-btn { background: var(--primary); color: #fff; border: none; border-radius: 50px; padding: 18px 56px; font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; cursor: pointer; letter-spacing: .02em; transition: all .2s; box-shadow: 0 8px 32px var(--primary-glow); }
+  .spin-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+  .spin-btn:active:not(:disabled) { transform: translateY(0); }
+  .spin-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .next-spin { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--muted); text-align: center; }
+  .next-spin strong { color: var(--primary); }
+  .prizes-toggle { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; color: var(--muted); font-family: 'Syne', sans-serif; font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .prizes-toggle:hover { border-color: var(--primary); color: var(--primary); }
+  .prizes-drawer { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: none; }
+  .prizes-drawer.open { display: block; }
+  .prizes-drawer h3 { font-size: .7rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; }
+  .prizes-list { display: flex; flex-direction: column; gap: 8px; }
+  .prize-row { display: flex; align-items: center; gap: 12px; }
+  .prize-row .pm { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary); font-size: .82rem; width: 72px; flex-shrink: 0; }
+  .prize-bar-wrap { flex: 1; background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
+  .prize-bar { height: 100%; border-radius: 4px; background: var(--primary); opacity: .65; }
+  .prize-pct { font-family: 'Space Mono', monospace; font-size: .72rem; color: var(--muted); width: 38px; text-align: right; flex-shrink: 0; }
+
+  /* BOUTIQUE */
+  .boutique-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-top: 60px; }
+  .boutique-soon { font-size: 4rem; font-weight: 800; color: var(--border); letter-spacing: -3px; text-align: center; line-height: 1; }
+  .boutique-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-size: .8rem; color: var(--muted); }
+
+  /* CLASSEMENT */
+  .leaderboard-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .lb-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .lb-header h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; }
+  .lb-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lb-tab { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; color: var(--muted); font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .lb-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .lb-note { font-size: .78rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; }
+  .lb-list { display: flex; flex-direction: column; gap: 10px; }
+  .lb-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; transition: border-color .2s; }
+  .lb-item.me { border-color: var(--primary); }
+  .lb-item.me .lb-name { color: var(--primary); }
+  .lb-rank { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1rem; width: 28px; text-align: center; color: var(--muted); flex-shrink: 0; }
+  .lb-rank.top1 { color: #FFD700; }
+  .lb-rank.top2 { color: #C0C0C0; }
+  .lb-rank.top3 { color: #CD7F32; }
+  .lb-medal { font-size: 1.2rem; width: 26px; text-align: center; flex-shrink: 0; }
+  .lb-name { font-weight: 700; font-size: .95rem; flex: 1; }
+  .lb-val { font-family: 'Space Mono', monospace; font-weight: 700; font-size: .88rem; color: var(--primary); flex-shrink: 0; }
+  .lb-you-badge { font-size: .65rem; font-weight: 700; background: var(--primary); color: #fff; border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
+  .lb-group-badge { font-size: .65rem; font-weight: 600; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
+
+  /* GROUP SECTION */
+  .group-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .group-section h3 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .group-select-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .group-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--muted); font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .group-chip:hover { border-color: var(--primary); color: var(--text); }
+  .group-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .group-chip.joined { background: var(--green); color: #fff; border-color: var(--green); cursor: default; }
+  .group-current { font-size: .85rem; color: var(--muted); padding: 8px 0; }
+  .group-current strong { color: var(--primary); }
+  .group-lb-title { font-size: 1.1rem; font-weight: 800; margin-top: 8px; }
+
+  /* PARIS (BETS) */
+  .bets-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .bet-create-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+  .bet-create-card h3 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .bets-list { display: flex; flex-direction: column; gap: 14px; }
+  .bet-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: border-color .2s; }
+  .bet-card.mine { border-color: var(--primary); }
+  .bet-card.closed { opacity: .7; }
+  .bet-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .bet-status { font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .bet-status.open { background: rgba(62,207,110,0.15); color: var(--green); }
+  .bet-status.closed { background: var(--surface2); color: var(--muted); }
+  .bet-desc { font-size: .95rem; line-height: 1.5; }
+  .bet-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
+  .bet-meta strong { color: var(--text); }
+  .bet-stake { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary); }
+  .bet-participants { display: flex; flex-direction: column; gap: 8px; }
+  .bet-participant { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border-radius: 8px; padding: 10px 14px; font-size: .85rem; }
+  .bet-participant .bp-name { font-weight: 600; }
+  .bet-participant .bp-badge { font-size: .7rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+  .bp-badge.winner { background: rgba(62,207,110,0.15); color: var(--green); }
+  .bp-badge.loser { background: var(--surface); color: var(--muted); }
+  .bet-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-bet { border: none; border-radius: 8px; padding: 10px 18px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .btn-bet:hover { transform: translateY(-1px); }
+  .btn-bet.join { background: var(--green); color: #fff; }
+  .btn-bet.close { background: var(--yellow); color: #000; }
+  .btn-bet.delete { background: transparent; border: 1px solid var(--red); color: var(--red); }
+  .btn-bet.delete:hover { background: var(--red); color: #fff; }
+  .bet-empty { color: var(--muted); font-size: .85rem; text-align: center; padding: 30px 0; }
+  .bet-winner-select { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .bet-winner-select label { font-size: .75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .bet-winner-select select { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Space Mono', monospace; font-size: .85rem; outline: none; }
+  .bet-winner-result { font-size: .85rem; padding: 10px 14px; background: rgba(62,207,110,0.1); border: 1px solid rgba(62,207,110,0.3); border-radius: 8px; color: var(--green); font-weight: 600; }
+
+  /* COMPTEUR */
+  .compteur-wrap { display: flex; flex-direction: column; gap: 28px; }
+  .section-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: 4px; }
+  .section-sub { font-size: .85rem; color: var(--muted); }
+  .transfer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+  .balance-display { background: var(--surface2); border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .balance-display .label { font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .balance-display .val { font-family: 'Space Mono', monospace; font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+  .input-group { display: flex; flex-direction: column; gap: 8px; }
+  .input-group label { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .input-row { display: flex; gap: 10px; }
+  .input-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'Space Mono', monospace; font-size: .9rem; outline: none; transition: border .2s; }
+  .input-row input:focus { border-color: var(--primary); }
+  .btn-transfer { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; font-family: 'Syne', sans-serif; font-size: .9rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .btn-transfer:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .history-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+  .history-card h3 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 16px; }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface2); border-radius: 8px; font-size: .85rem; }
+  .history-item .hi-type { color: var(--muted); }
+  .history-item .hi-desc { flex: 1; margin: 0 12px; }
+  .history-item .hi-amount { font-family: 'Space Mono', monospace; font-weight: 700; }
+  .history-item .hi-amount.positive { color: var(--green); }
+  .history-item .hi-amount.negative { color: var(--red); }
+  .history-empty { color: var(--muted); font-size: .85rem; text-align: center; padding: 20px 0; }
+
+  /* PARAMÈTRES */
+  .settings-wrap { display: flex; flex-direction: column; gap: 20px; }
+  .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+  .settings-card h3 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row .sr-info { display: flex; flex-direction: column; gap: 3px; }
+  .settings-row .sr-info strong { font-size: .95rem; }
+  .settings-row .sr-info span { font-size: .8rem; color: var(--muted); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-danger { background: transparent; border: 1px solid var(--red); border-radius: 8px; padding: 10px 18px; color: var(--red); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .export-area { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-family: 'Space Mono', monospace; font-size: .7rem; color: var(--muted); word-break: break-all; max-height: 120px; overflow-y: auto; display: none; }
+  .export-area.visible { display: block; }
+  .profile-info { display: flex; flex-direction: column; }
+  .pi-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .pi-row:last-child { border-bottom: none; }
+  .pi-row .pi-label { font-size: .8rem; color: var(--muted); }
+  .pi-row .pi-val { font-family: 'Space Mono', monospace; font-size: .85rem; }
+
+  /* ALERTS */
+  .alert { padding: 10px 16px; border-radius: 8px; font-size: .85rem; font-weight: 600; display: none; }
+  .alert.visible { display: block; }
+  .alert.error { background: rgba(235,88,70,0.1); color: var(--red); border: 1px solid rgba(235,88,70,0.3); }
+  .alert.success { background: rgba(62,207,110,0.1); color: var(--green); border: 1px solid rgba(62,207,110,0.3); }
+
+  /* TOAST */
+  .win-toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: #fff; padding: 16px 32px; border-radius: 50px; font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; box-shadow: 0 8px 40px var(--primary-glow); transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s; opacity: 0; z-index: 200; pointer-events: none; white-space: nowrap; }
+  .win-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .sparkle-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 150; }
+
+  /* LOADING */
+  .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+  .loading-overlay.hidden { display: none; }
+  .loader-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: lspin .8s linear infinite; }
+  @keyframes lspin { to { transform: rotate(360deg); } }
+  .loader-text { font-size: .9rem; color: var(--muted); }
+
+  @media (max-width: 600px) {
+    header { padding: 12px 16px; }
+    .user-badge { display: none; }
+    nav { padding: 12px 16px 0; gap: 2px; }
+    .nav-btn { padding: 8px 10px; font-size: .76rem; }
+    .page { padding: 24px 16px 60px; }
+    .login-box { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Connexion au serveur…</div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="hidden">
+  <div class="login-box">
+    <h1>Pomel<span>.</span></h1>
+    <p>La roulette quotidienne — gagne des Pomels chaque jour !</p>
+    <div class="tabs-login">
+      <button class="active" onclick="switchLoginTab('login')">Connexion</button>
+      <button onclick="switchLoginTab('create')">Créer un compte</button>
+    </div>
+    <div class="login-panel" id="panelLogin">
+      <div class="form-group">
+        <label>Ton code secret</label>
+        <input type="text" id="codeInput" placeholder="ex: ABC123" maxlength="20" />
+      </div>
+      <div id="loginAlert" class="alert error"></div>
+      <button class="btn-primary" onclick="handleLogin()">Entrer 🎰</button>
+    </div>
+    <div class="login-panel hidden" id="panelCreate">
+      <div class="form-group">
+        <label>Choisis un pseudo</label>
+        <input type="text" id="createNameInput" placeholder="ex: PomélKing" maxlength="20" />
+      </div>
+      <div class="form-group">
+        <label>Choisis un code secret (mot de passe)</label>
+        <input type="text" id="createCodeInput" placeholder="ex: ABC123" maxlength="20" />
+      </div>
+      <div id="createAlert" class="alert error"></div>
+      <button class="btn-primary" onclick="handleCreate()">Créer mon compte 🎉</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <canvas class="sparkle-canvas" id="sparkles"></canvas>
+  <header>
+    <div class="logo">Pomel<span>.</span></div>
+    <div class="wallet">
+      <span class="coin">🪙</span>
+      <div>
+        <div class="amount" id="headerBalance">0</div>
+        <div class="label">Pomels</div>
+      </div>
+    </div>
+    <div class="user-badge">Bonjour, <strong id="headerName">—</strong></div>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" onclick="goTo('roulette',this)">🎰 Roulette</button>
+    <button class="nav-btn" onclick="goTo('boutique',this)">🛒 Boutique</button>
+    <button class="nav-btn" onclick="goTo('paris',this)">🎲 Paris</button>
+    <button class="nav-btn" onclick="goTo('classement',this)">🏆 Classement</button>
+    <button class="nav-btn" onclick="goTo('compteur',this)">💸 Compteur</button>
+    <button class="nav-btn" onclick="goTo('settings',this)">⚙️ Paramètres</button>
+  </nav>
+
+  <!-- ROULETTE -->
+  <div class="page active" id="page-roulette">
+    <div class="roulette-container">
+      <div class="roulette-title">
+        <h2>Roulette Quotidienne</h2>
+        <p>Un tirage par jour à partir de 9h15 — bonne chance !</p>
+      </div>
+      <div class="wheel-wrap">
+        <div class="wheel-ring" id="wheelRing"></div>
+        <div class="wheel-pointer"></div>
+        <div class="wheel-center">
+          <div class="value" id="wheelValue">?</div>
+          <div class="sub">Pomels</div>
+        </div>
+      </div>
+      <button class="spin-btn" id="spinBtn" onclick="spin()">Tourner !</button>
+      <div class="next-spin" id="nextSpinInfo">Chargement…</div>
+      <button class="prizes-toggle" onclick="togglePrizes()">Voir les probabilités ▾</button>
+      <div class="prizes-drawer" id="prizesDrawer">
+        <h3>Répartition des gains</h3>
+        <div class="prizes-list" id="prizesList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOUTIQUE -->
+  <div class="page" id="page-boutique">
+    <div class="boutique-wrap">
+      <div class="boutique-soon">À venir !</div>
+      <div class="boutique-tag">La boutique arrive bientôt — reste connecté 👀</div>
+    </div>
+  </div>
+
+  <!-- PARIS -->
+  <div class="page" id="page-paris">
+    <div class="bets-wrap">
+      <div>
+        <div class="section-title">🎲 Paris</div>
+        <div class="section-sub">Propose un pari, mise des Pomels et défie tes amis !</div>
+      </div>
+      <div class="bet-create-card">
+        <h3>Créer un pari</h3>
+        <div class="form-group">
+          <label>Description du pari</label>
+          <input type="text" id="betDescInput" placeholder="ex: Qui mange le plus de pains au chocolat ?" maxlength="120" />
+        </div>
+        <div class="form-group">
+          <label>Mise (Pomels)</label>
+          <input type="number" id="betAmountInput" placeholder="ex: 200" min="1" />
+        </div>
+        <div id="betCreateAlert" class="alert"></div>
+        <button class="btn-primary" onclick="handleCreateBet()">Lancer le pari 🎲</button>
+      </div>
+      <div>
+        <h3 style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">Paris en cours</h3>
+        <div class="bets-list" id="betsList">
+          <div class="bet-empty">Aucun pari pour l'instant.</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">Paris terminés</h3>
+        <div class="bets-list" id="betsClosedList">
+          <div class="bet-empty">Aucun pari terminé.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLASSEMENT -->
+  <div class="page" id="page-classement">
+    <div class="leaderboard-wrap">
+      <div class="lb-header">
+        <h2>🏆 Classement</h2>
+        <div class="lb-tabs">
+          <button class="lb-tab active" onclick="switchLbTab('balance',this)">Solde</button>
+          <button class="lb-tab" onclick="switchLbTab('spins',this)">Tirages</button>
+          <button class="lb-tab" onclick="switchLbTab('earned',this)">Total gagné</button>
+        </div>
+      </div>
+      <div class="lb-note">💡 Classement en ligne — tous les joueurs sont connectés en temps réel.</div>
+      <div class="lb-list" id="lbList"></div>
+
+      <!-- GROUP SECTION -->
+      <div class="group-section">
+        <h3>Rejoindre un groupe</h3>
+        <div class="group-current" id="groupCurrent">Tu n'as rejoint aucun groupe.</div>
+        <div class="group-select-row" id="groupSelect"></div>
+      </div>
+
+      <!-- GROUP LEADERBOARD -->
+      <div style="margin-top:8px;">
+        <div class="group-lb-title">🏅 Classement des Groupes</div>
+        <div class="lb-list" id="groupLbList" style="margin-top:14px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPTEUR -->
+  <div class="page" id="page-compteur">
+    <div class="compteur-wrap">
+      <div>
+        <div class="section-title">Compteur de Pomels</div>
+        <div class="section-sub">Envoie des Pomels à un autre joueur en déduisant de ton solde.</div>
+      </div>
+      <div class="transfer-card">
+        <div class="balance-display">
+          <span class="label">Mon solde</span>
+          <span class="val" id="transferBalance">0 Pomels</span>
+        </div>
+        <div class="input-group">
+          <label>Bénéficiaire (pseudo)</label>
+          <div class="input-row">
+            <input type="text" id="recipientInput" placeholder="Pseudo du destinataire" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Montant à envoyer</label>
+          <div class="input-row">
+            <input type="number" id="amountInput" placeholder="ex: 200" min="1" />
+            <button class="btn-transfer" onclick="handleTransfer()">Envoyer 💸</button>
+          </div>
+        </div>
+        <div id="transferAlert" class="alert"></div>
+      </div>
+      <div class="history-card">
+        <h3>Historique des transactions</h3>
+        <div class="history-list" id="historyList">
+          <div class="history-empty">Aucune transaction pour l'instant.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARAMÈTRES -->
+  <div class="page" id="page-settings">
+    <div class="settings-wrap">
+      <div class="settings-card">
+        <h3>Mon profil</h3>
+        <div class="profile-info" id="profileInfo"></div>
+      </div>
+      <div class="settings-card">
+        <h3>Données du compte</h3>
+        <div class="settings-row">
+          <div class="sr-info"><strong>Exporter ma sauvegarde</strong><span>Génère un JSON à conserver précieusement.</span></div>
+          <button class="btn-outline" onclick="exportData()">Exporter 📤</button>
+        </div>
+        <div class="export-area" id="exportArea"></div>
+        <div class="settings-row">
+          <div class="sr-info"><strong>Copier la sauvegarde</strong><span>Copie le JSON dans ton presse-papier.</span></div>
+          <button class="btn-outline" id="copyBtn" onclick="copyExport()">Copier 📋</button>
+        </div>
+      </div>
+      <div class="settings-card">
+        <h3>Danger</h3>
+        <div class="settings-row">
+          <div class="sr-info"><strong>Se déconnecter</strong><span>Retour à l'écran de connexion.</span></div>
+          <button class="btn-danger" onclick="logout()">Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="win-toast" id="winToast"></div>
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+// ══════════════════════════════════════════════════
+// POMEL — MULTIPLAYER WITH FIREBASE REALTIME DATABASE
+// ══════════════════════════════════════════════════
+
+// ── FIREBASE CONFIG ─────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyAXxA7bGEUFBIariV3S5jZyLYhRtul2pNw",
+  authDomain: "pomel-51531.firebaseapp.com",
+  projectId: "pomel-51531",
+  storageBucket: "pomel-51531.firebasestorage.app",
+  messagingSenderId: "381241358742",
+  appId: "1:381241358742:web:2cb29f135ed347abc405b7",
+  databaseURL: "https://pomel-51531-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const GROUPS = ['Projet','Team Prod A','Team Prod B','Confo','SSI/Devs','Créa'];
+
+// ── STORAGE LAYER (FIREBASE) ────────────────────
+async function dbGet(path) {
+  try {
+    const snap = await db.ref(path).once('value');
+    return snap.exists() ? snap.val() : null;
+  } catch(e) { console.error('dbGet error', e); return null; }
+}
+
+async function dbSet(path, val) {
+  try {
+    await db.ref(path).set(val);
+  } catch(e) { console.error('dbSet error', e); }
+}
+
+async function dbDelete(path) {
+  try { await db.ref(path).remove(); } catch(e) { console.error('dbDelete error', e); }
+}
+
+async function dbGetAll(path) {
+  try {
+    const snap = await db.ref(path).once('value');
+    if (!snap.exists()) return [];
+    const data = snap.val();
+    return Object.values(data);
+  } catch(e) { console.error('dbGetAll error', e); return []; }
+}
+
+// ── ACCOUNT HELPERS ──────────────────────────────
+async function getAccount(code) { return dbGet('accounts/' + code); }
+async function saveAccount(acc) { await dbSet('accounts/' + acc.code, acc); }
+async function getAllAccounts() { return dbGetAll('accounts'); }
+
+// ── BET HELPERS ──────────────────────────────────
+async function getBet(id) { return dbGet('bets/' + id); }
+async function saveBet(bet) { await dbSet('bets/' + bet.id, bet); }
+async function deleteBet(id) { await dbDelete('bets/' + id); }
+async function getAllBets() { return dbGetAll('bets'); }
+
+// ── SESSION (local only) ────────────────────────
+function getSession() {
+  try { const r = localStorage.getItem('pomel_session'); return r ? JSON.parse(r) : null; } catch { return null; }
+}
+function setSession(code) {
+  localStorage.setItem('pomel_session', JSON.stringify({ code }));
+}
+function clearSession() {
+  localStorage.removeItem('pomel_session');
+}
+
+// ── STATE ────────────────────────────────────────
+let state = null;
+
+function newAccount(code, name) {
+  return { code, name, balance: 0, lastSpin: null, history: [], group: null, createdAt: new Date().toISOString() };
+}
+
+// ── INIT ─────────────────────────────────────────
+async function init() {
+  const session = getSession();
+  if (session && session.code) {
+    const acc = await getAccount(session.code);
+    if (acc) {
+      state = acc;
+      launchApp();
+      hideLoading();
+      return;
+    }
+  }
+  hideLoading();
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+
+// ── LOGIN ────────────────────────────────────────
+function switchLoginTab(tab) {
+  document.querySelectorAll('.tabs-login button').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'create'));
+  });
+  document.getElementById('panelLogin').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('panelCreate').classList.toggle('hidden', tab !== 'create');
+}
+
+function setAlert(id, msg, type) {
+  const el = document.getElementById(id); el.textContent = msg; el.className = `alert ${type} visible`;
+}
+
+async function handleLogin() {
+  const code = document.getElementById('codeInput').value.trim().toUpperCase();
+  if (!code) { setAlert('loginAlert', 'Entre ton code secret !', 'error'); return; }
+  const acc = await getAccount(code);
+  if (!acc) { setAlert('loginAlert', 'Code inconnu. Crée un compte d\'abord !', 'error'); return; }
+  state = acc;
+  setSession(code);
+  launchApp();
+}
+
+async function handleCreate() {
+  const name = document.getElementById('createNameInput').value.trim();
+  const code = document.getElementById('createCodeInput').value.trim().toUpperCase();
+  if (!name || name.length < 2) { setAlert('createAlert', 'Pseudo trop court (min 2 caractères).', 'error'); return; }
+  if (!code || code.length < 3) { setAlert('createAlert', 'Code trop court (min 3 caractères).', 'error'); return; }
+  const existing = await getAccount(code);
+  if (existing) { setAlert('createAlert', 'Ce code est déjà pris ! Choisis-en un autre.', 'error'); return; }
+  state = newAccount(code, name);
+  await saveAccount(state);
+  setSession(code);
+  launchApp();
+}
+
+// ── APP LAUNCH ───────────────────────────────────
+function launchApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  refreshUI();
+  checkSpinAvailability();
+  renderPrizes();
+  renderHistory();
+  renderProfile();
+}
+
+function refreshUI() {
+  document.getElementById('headerBalance').textContent = state.balance.toLocaleString('fr-FR');
+  document.getElementById('headerName').textContent = state.name;
+  document.getElementById('transferBalance').textContent = state.balance.toLocaleString('fr-FR') + ' Pomels';
+}
+
+function logout() {
+  state = null;
+  clearSession();
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('app').classList.remove('visible');
+  ['codeInput', 'createNameInput', 'createCodeInput'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('exportArea').classList.remove('visible');
+}
+
+// ── NAVIGATION ───────────────────────────────────
+function goTo(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'compteur') renderHistory();
+  if (id === 'settings') renderProfile();
+  if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
+  if (id === 'paris') renderBets();
+}
+
+// ── PRIZES ───────────────────────────────────────
+const PRIZES = [
+  { amount: 10, w: 1 }, { amount: 50, w: 3 }, { amount: 100, w: 6 },
+  { amount: 200, w: 10 }, { amount: 300, w: 10 }, { amount: 400, w: 8 },
+  { amount: 500, w: 52 }, { amount: 700, w: 8 }, { amount: 1000, w: 2 },
+];
+
+function rollPrize() {
+  const r = Math.random() * 100; let cum = 0;
+  for (const p of PRIZES) { cum += p.w; if (r < cum) return p.amount; }
+  return 500;
+}
+
+function renderPrizes() {
+  const list = document.getElementById('prizesList');
+  list.innerHTML = '';
+  PRIZES.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'prize-row';
+    row.innerHTML = `
+      <span class="pm">${p.amount.toLocaleString('fr-FR')} 🪙</span>
+      <div class="prize-bar-wrap"><div class="prize-bar" style="width:${p.w * 2}%"></div></div>
+      <span class="prize-pct">${p.w}%</span>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function togglePrizes() {
+  const d = document.getElementById('prizesDrawer');
+  const btn = document.querySelector('.prizes-toggle');
+  const open = d.classList.toggle('open');
+  btn.textContent = open ? 'Masquer les probabilités ▴' : 'Voir les probabilités ▾';
+}
+
+// ── SPIN AVAILABILITY ────────────────────────────
+function canSpin() {
+  const now = new Date();
+  if (now.getHours() < 9 || (now.getHours() === 9 && now.getMinutes() < 15)) return false;
+  if (!state.lastSpin) return true;
+  return new Date(state.lastSpin).toDateString() !== now.toDateString();
+}
+
+function nextSpinTime() {
+  const now = new Date();
+  if (now.getHours() < 9 || (now.getHours() === 9 && now.getMinutes() < 15)) {
+    const t = new Date(now); t.setHours(9, 15, 0, 0); return t;
+  }
+  const t = new Date(now); t.setDate(t.getDate() + 1); t.setHours(9, 15, 0, 0); return t;
+}
+
+function checkSpinAvailability() {
+  const btn = document.getElementById('spinBtn');
+  const info = document.getElementById('nextSpinInfo');
+  if (canSpin()) {
+    btn.disabled = false;
+    info.innerHTML = '✨ Un tirage disponible maintenant !';
+  } else {
+    btn.disabled = true;
+    const next = nextSpinTime();
+    info.innerHTML = `Prochain tirage : <strong>${next.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} à ${next.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</strong>`;
+    setTimeout(checkSpinAvailability, 30000);
+  }
+}
+
+// ── SPIN ─────────────────────────────────────────
+let spinning = false;
+
+function spin() {
+  if (!canSpin() || spinning) return;
+  spinning = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('wheelValue').textContent = '…';
+  const prize = rollPrize();
+  const ring = document.getElementById('wheelRing');
+  const totalDuration = 2600, start = performance.now();
+  let angle = 0;
+
+  function tick(now) {
+    const elapsed = now - start, progress = Math.min(elapsed / totalDuration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    angle = ease * (900 + Math.random() * 360);
+    ring.style.transform = `rotate(${angle}deg)`;
+    if (progress < 1) { requestAnimationFrame(tick); return; }
+    spinning = false;
+    state.balance += prize;
+    state.lastSpin = new Date().toISOString();
+    state.history.unshift({ type: 'roulette', desc: 'Roulette quotidienne', amount: prize, date: new Date().toISOString() });
+    saveAccount(state); refreshUI();
+    document.getElementById('wheelValue').textContent = prize.toLocaleString('fr-FR');
+    checkSpinAvailability();
+    showWinToast(prize);
+    launchSparkles();
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── TOAST ────────────────────────────────────────
+function showWinToast(amount) {
+  const el = document.getElementById('winToast');
+  let msg;
+  if (amount >= 1000) msg = `💎 JACKPOT ! +${amount.toLocaleString('fr-FR')} Pomels !`;
+  else if (amount >= 700) msg = `🔥 Incroyable ! +${amount.toLocaleString('fr-FR')} Pomels !`;
+  else if (amount >= 400) msg = `🎉 Belle prise ! +${amount.toLocaleString('fr-FR')} Pomels !`;
+  else msg = `+${amount.toLocaleString('fr-FR')} Pomels remportés ! 🪙`;
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ── SPARKLES ─────────────────────────────────────
+function launchSparkles() {
+  const canvas = document.getElementById('sparkles'), ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const particles = Array.from({ length: 60 }, () => ({
+    x: canvas.width / 2 + (Math.random() - .5) * 200, y: canvas.height / 2,
+    vx: (Math.random() - .5) * 9, vy: -(Math.random() * 11 + 3),
+    size: Math.random() * 5 + 2, alpha: 1,
+    color: ['#EB5846', '#fff', '#ffb3aa', '#3ecf6e'][Math.floor(Math.random() * 4)]
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); let alive = false;
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += .3; p.alpha -= .02;
+      if (p.alpha <= 0) return; alive = true;
+      ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    });
+    if (alive) requestAnimationFrame(draw); else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  requestAnimationFrame(draw);
+}
+
+// ── LEADERBOARD ──────────────────────────────────
+let currentLbMode = 'balance';
+
+function switchLbTab(mode, btn) {
+  document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentLbMode = mode;
+  renderLeaderboard(mode);
+}
+
+async function renderLeaderboard(mode) {
+  const all = await getAllAccounts();
+  const list = document.getElementById('lbList');
+  list.innerHTML = '';
+  if (!all.length) { list.innerHTML = '<div class="history-empty">Aucun compte trouvé.</div>'; return; }
+  const getValue = (acc) => {
+    if (mode === 'balance') return acc.balance;
+    if (mode === 'spins') return (acc.history || []).filter(h => h.type === 'roulette').length;
+    return (acc.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+  };
+  const sorted = [...all].sort((a, b) => getValue(b) - getValue(a));
+  sorted.forEach((acc, i) => {
+    const rank = i + 1, isMe = acc.code === state.code;
+    const medals = ['🥇', '🥈', '🥉'];
+    const medal = rank <= 3 ? medals[rank - 1] : '';
+    const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+    const val = getValue(acc);
+    let display;
+    if (mode === 'balance') display = val.toLocaleString('fr-FR') + ' 🪙';
+    else if (mode === 'spins') display = val + ' tirage' + (val > 1 ? 's' : '');
+    else display = val.toLocaleString('fr-FR') + ' 🪙';
+    const item = document.createElement('div');
+    item.className = 'lb-item' + (isMe ? ' me' : '');
+    const groupBadge = acc.group ? `<span class="lb-group-badge">${acc.group}</span>` : '';
+    item.innerHTML = `
+      <span class="lb-rank ${rankClass}">${rank}</span>
+      <span class="lb-medal">${medal}</span>
+      <span class="lb-name">${acc.name}</span>
+      ${groupBadge}
+      ${isMe ? '<span class="lb-you-badge">Moi</span>' : ''}
+      <span class="lb-val">${display}</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ── GROUPS ───────────────────────────────────────
+function renderGroupSelect() {
+  const container = document.getElementById('groupSelect');
+  const current = document.getElementById('groupCurrent');
+  container.innerHTML = '';
+  if (state.group) {
+    current.innerHTML = `Tu es dans le groupe <strong>${state.group}</strong>.`;
+  } else {
+    current.textContent = 'Tu n\'as rejoint aucun groupe.';
+  }
+  GROUPS.forEach(g => {
+    const chip = document.createElement('button');
+    chip.className = 'group-chip' + (state.group === g ? ' joined' : '');
+    chip.textContent = g;
+    if (state.group !== g) {
+      chip.onclick = () => joinGroup(g);
+    }
+    container.appendChild(chip);
+  });
+}
+
+async function joinGroup(group) {
+  state.group = group;
+  await saveAccount(state);
+  renderGroupSelect();
+  renderGroupLeaderboard();
+}
+
+async function renderGroupLeaderboard() {
+  const all = await getAllAccounts();
+  const list = document.getElementById('groupLbList');
+  list.innerHTML = '';
+  const groupTotals = {};
+  GROUPS.forEach(g => { groupTotals[g] = { name: g, total: 0, members: 0 }; });
+  all.forEach(acc => {
+    if (acc.group && groupTotals[acc.group]) {
+      groupTotals[acc.group].total += acc.balance;
+      groupTotals[acc.group].members++;
+    }
+  });
+  const sorted = Object.values(groupTotals).filter(g => g.members > 0).sort((a, b) => b.total - a.total);
+  if (!sorted.length) { list.innerHTML = '<div class="history-empty">Aucun groupe actif.</div>'; return; }
+  sorted.forEach((g, i) => {
+    const rank = i + 1;
+    const medals = ['🥇', '🥈', '🥉'];
+    const medal = rank <= 3 ? medals[rank - 1] : '';
+    const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+    const isMyGroup = state.group === g.name;
+    const item = document.createElement('div');
+    item.className = 'lb-item' + (isMyGroup ? ' me' : '');
+    item.innerHTML = `
+      <span class="lb-rank ${rankClass}">${rank}</span>
+      <span class="lb-medal">${medal}</span>
+      <span class="lb-name">${g.name}</span>
+      <span class="lb-group-badge">${g.members} membre${g.members > 1 ? 's' : ''}</span>
+      ${isMyGroup ? '<span class="lb-you-badge">Mon groupe</span>' : ''}
+      <span class="lb-val">${g.total.toLocaleString('fr-FR')} 🪙</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ── BETS (PARIS) ─────────────────────────────────
+function generateBetId() {
+  return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+async function handleCreateBet() {
+  const desc = document.getElementById('betDescInput').value.trim();
+  const amount = parseInt(document.getElementById('betAmountInput').value);
+  const alertEl = document.getElementById('betCreateAlert');
+  alertEl.className = 'alert';
+  if (!desc) { setAlert('betCreateAlert', 'Décris ton pari !', 'error'); return; }
+  if (!amount || amount <= 0) { setAlert('betCreateAlert', 'Entre une mise valide.', 'error'); return; }
+  if (amount > state.balance) { setAlert('betCreateAlert', `Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`, 'error'); return; }
+
+  const bet = {
+    id: generateBetId(),
+    creator: state.code,
+    creatorName: state.name,
+    desc,
+    stake: amount,
+    participants: [{ code: state.code, name: state.name }],
+    status: 'open',
+    winner: null,
+    createdAt: new Date().toISOString()
+  };
+  state.balance -= amount;
+  state.history.unshift({ type: 'bet', desc: `Pari créé : "${desc}"`, amount: -amount, date: new Date().toISOString() });
+  await saveAccount(state);
+  await saveBet(bet);
+  refreshUI();
+  document.getElementById('betDescInput').value = '';
+  document.getElementById('betAmountInput').value = '';
+  setAlert('betCreateAlert', '✅ Pari créé avec succès !', 'success');
+  setTimeout(() => { document.getElementById('betCreateAlert').className = 'alert'; }, 3000);
+  renderBets();
+}
+
+async function joinBet(betId) {
+  const bet = await getBet(betId);
+  if (!bet || bet.status !== 'open') return;
+  if (bet.participants.some(p => p.code === state.code)) return;
+  if (bet.stake > state.balance) { alert(`Solde insuffisant ! Il te faut ${bet.stake.toLocaleString('fr-FR')} Pomels.`); return; }
+
+  state.balance -= bet.stake;
+  state.history.unshift({ type: 'bet', desc: `Rejoint pari : "${bet.desc}"`, amount: -bet.stake, date: new Date().toISOString() });
+  await saveAccount(state);
+
+  bet.participants.push({ code: state.code, name: state.name });
+  await saveBet(bet);
+  refreshUI();
+  renderBets();
+}
+
+async function closeBet(betId, winnerCode) {
+  const bet = await getBet(betId);
+  if (!bet || bet.status !== 'open') return;
+  if (bet.creator !== state.code) return;
+  if (!winnerCode) { alert('Sélectionne un vainqueur !'); return; }
+
+  const totalPot = bet.stake * bet.participants.length;
+  bet.status = 'closed';
+  bet.winner = winnerCode;
+  await saveBet(bet);
+
+  const winnerAcc = await getAccount(winnerCode);
+  if (winnerAcc) {
+    winnerAcc.balance += totalPot;
+    winnerAcc.history.unshift({ type: 'bet', desc: `Pari gagné : "${bet.desc}"`, amount: totalPot, date: new Date().toISOString() });
+    await saveAccount(winnerAcc);
+    if (winnerCode === state.code) {
+      state = winnerAcc;
+      refreshUI();
+    }
+  }
+  renderBets();
+}
+
+async function renderBets() {
+  const all = await getAllBets();
+  const openList = document.getElementById('betsList');
+  const closedList = document.getElementById('betsClosedList');
+  openList.innerHTML = '';
+  closedList.innerHTML = '';
+
+  const openBets = all.filter(b => b.status === 'open').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const closedBets = all.filter(b => b.status === 'closed').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  if (!openBets.length) openList.innerHTML = '<div class="bet-empty">Aucun pari en cours.</div>';
+  if (!closedBets.length) closedList.innerHTML = '<div class="bet-empty">Aucun pari terminé.</div>';
+
+  openBets.forEach(bet => openList.appendChild(buildBetCard(bet)));
+  closedBets.slice(0, 20).forEach(bet => closedList.appendChild(buildBetCard(bet)));
+}
+
+function buildBetCard(bet) {
+  const card = document.createElement('div');
+  const isMine = bet.creator === state.code;
+  const iJoined = bet.participants.some(p => p.code === state.code);
+  card.className = 'bet-card' + (isMine ? ' mine' : '') + (bet.status === 'closed' ? ' closed' : '');
+
+  const date = new Date(bet.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const totalPot = bet.stake * bet.participants.length;
+
+  let participantsHTML = bet.participants.map(p => {
+    let badge = '';
+    if (bet.status === 'closed') {
+      badge = p.code === bet.winner
+        ? '<span class="bp-badge winner">🏆 Vainqueur</span>'
+        : '<span class="bp-badge loser">Perdu</span>';
+    }
+    return `<div class="bet-participant"><span class="bp-name">${p.name}${p.code === bet.creator ? ' (créateur)' : ''}</span>${badge}</div>`;
+  }).join('');
+
+  let actionsHTML = '';
+  if (bet.status === 'open') {
+    if (!iJoined) {
+      actionsHTML += `<button class="btn-bet join" onclick="joinBet('${bet.id}')">Rejoindre (${bet.stake.toLocaleString('fr-FR')} 🪙)</button>`;
+    }
+    if (isMine && bet.participants.length >= 2) {
+      const opts = bet.participants.map(p => `<option value="${p.code}">${p.name}</option>`).join('');
+      actionsHTML += `
+        <div class="bet-winner-select">
+          <label>Choisir le vainqueur</label>
+          <select id="winner-${bet.id}">${opts}</select>
+          <button class="btn-bet close" onclick="closeBet('${bet.id}', document.getElementById('winner-${bet.id}').value)">Clore le pari 🏆</button>
+        </div>`;
+    }
+    if (isMine && bet.participants.length < 2) {
+      actionsHTML += `<span style="font-size:.8rem;color:var(--muted);">En attente de participants…</span>`;
+    }
+  }
+
+  if (bet.status === 'closed') {
+    const winnerName = bet.participants.find(p => p.code === bet.winner)?.name || '?';
+    actionsHTML = `<div class="bet-winner-result">🏆 ${winnerName} a remporté ${totalPot.toLocaleString('fr-FR')} Pomels !</div>`;
+  }
+
+  card.innerHTML = `
+    <div class="bet-header">
+      <span class="bet-status ${bet.status}">${bet.status === 'open' ? '🟢 Ouvert' : '⬜ Terminé'}</span>
+      <span style="font-size:.75rem;color:var(--muted)">${date}</span>
+    </div>
+    <div class="bet-desc">${bet.desc}</div>
+    <div class="bet-meta">
+      <span>Créé par <strong>${bet.creatorName}</strong></span>
+      <span>Mise : <span class="bet-stake">${bet.stake.toLocaleString('fr-FR')} 🪙</span></span>
+      <span>Pot total : <span class="bet-stake">${totalPot.toLocaleString('fr-FR')} 🪙</span></span>
+    </div>
+    <div class="bet-participants">${participantsHTML}</div>
+    <div class="bet-actions">${actionsHTML}</div>
+  `;
+  return card;
+}
+
+// ── TRANSFER ─────────────────────────────────────
+async function handleTransfer() {
+  const recipientName = document.getElementById('recipientInput').value.trim();
+  const amount = parseInt(document.getElementById('amountInput').value);
+  const alertEl = document.getElementById('transferAlert');
+  alertEl.className = 'alert';
+  if (!recipientName) { alertEl.textContent = 'Entre le pseudo du destinataire.'; alertEl.className = 'alert error visible'; return; }
+  if (!amount || amount <= 0) { alertEl.textContent = 'Entre un montant valide.'; alertEl.className = 'alert error visible'; return; }
+  if (amount > state.balance) { alertEl.textContent = `Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`; alertEl.className = 'alert error visible'; return; }
+
+  const all = await getAllAccounts();
+  const recipient = all.find(a => a.name.toLowerCase() === recipientName.toLowerCase());
+  if (!recipient) { alertEl.textContent = `Joueur "${recipientName}" introuvable.`; alertEl.className = 'alert error visible'; return; }
+  if (recipient.code === state.code) { alertEl.textContent = 'Tu ne peux pas t\'envoyer des Pomels à toi-même !'; alertEl.className = 'alert error visible'; return; }
+
+  state.balance -= amount;
+  state.history.unshift({ type: 'transfer', desc: `Envoyé à ${recipient.name}`, amount: -amount, date: new Date().toISOString() });
+  await saveAccount(state);
+
+  recipient.balance += amount;
+  recipient.history.unshift({ type: 'transfer', desc: `Reçu de ${state.name}`, amount: amount, date: new Date().toISOString() });
+  await saveAccount(recipient);
+
+  refreshUI(); renderHistory();
+  alertEl.textContent = `✅ ${amount.toLocaleString('fr-FR')} Pomels envoyés à ${recipient.name} !`;
+  alertEl.className = 'alert success visible';
+  document.getElementById('recipientInput').value = '';
+  document.getElementById('amountInput').value = '';
+  setTimeout(() => alertEl.className = 'alert', 4000);
+}
+
+// ── HISTORY ──────────────────────────────────────
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  if (!state.history || !state.history.length) { list.innerHTML = '<div class="history-empty">Aucune transaction pour l\'instant.</div>'; return; }
+  state.history.slice(0, 30).forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    const isPos = h.amount > 0;
+    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : '💸';
+    const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    div.innerHTML = `
+      <span class="hi-type">${icon}</span>
+      <span class="hi-desc">${h.desc} <small style="color:var(--muted);font-size:.75em">${date}</small></span>
+      <span class="hi-amount ${isPos ? 'positive' : 'negative'}">${isPos ? '+' : ''}${h.amount.toLocaleString('fr-FR')} 🪙</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ── PROFILE ──────────────────────────────────────
+function renderProfile() {
+  const el = document.getElementById('profileInfo');
+  const spins = (state.history || []).filter(h => h.type === 'roulette').length;
+  const earned = (state.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+  const sent = (state.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
+  const joined = new Date(state.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  el.innerHTML = `
+    <div class="pi-row"><span class="pi-label">Pseudo</span><span class="pi-val">${state.name}</span></div>
+    <div class="pi-row"><span class="pi-label">Code</span><span class="pi-val">${state.code}</span></div>
+    <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${state.group || 'Aucun'}</span></div>
+    <div class="pi-row"><span class="pi-label">Solde</span><span class="pi-val" style="color:var(--primary)">${state.balance.toLocaleString('fr-FR')} Pomels</span></div>
+    <div class="pi-row"><span class="pi-label">Tirages effectués</span><span class="pi-val">${spins}</span></div>
+    <div class="pi-row"><span class="pi-label">Total gagné</span><span class="pi-val">${earned.toLocaleString('fr-FR')} Pomels</span></div>
+    <div class="pi-row"><span class="pi-label">Total envoyé</span><span class="pi-val">${sent.toLocaleString('fr-FR')} Pomels</span></div>
+    <div class="pi-row"><span class="pi-label">Compte créé le</span><span class="pi-val">${joined}</span></div>
+  `;
+}
+
+// ── EXPORT ───────────────────────────────────────
+function exportData() {
+  const area = document.getElementById('exportArea');
+  area.textContent = JSON.stringify(state, null, 2);
+  area.classList.add('visible');
+}
+
+function copyExport() {
+  const btn = document.getElementById('copyBtn');
+  navigator.clipboard.writeText(JSON.stringify(state)).then(() => {
+    const orig = btn.textContent; btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = orig, 2000);
+  }).catch(() => { exportData(); alert('Copie auto indisponible — voici le JSON, copie-le manuellement !'); });
+}
+
+// ── KEYBOARD ─────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) {
+    const loginVisible = !document.getElementById('panelLogin').classList.contains('hidden');
+    if (loginVisible) handleLogin(); else handleCreate();
+  }
+});
+
+// ── BOOT ─────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
