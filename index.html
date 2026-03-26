@@ -113,9 +113,23 @@
   .prize-pct { font-family: 'Space Mono', monospace; font-size: .72rem; color: var(--muted); width: 38px; text-align: right; flex-shrink: 0; }
 
   /* BOUTIQUE */
-  .boutique-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-top: 60px; }
-  .boutique-soon { font-size: 4rem; font-weight: 800; color: var(--border); letter-spacing: -3px; text-align: center; line-height: 1; }
-  .boutique-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-size: .8rem; color: var(--muted); }
+  .boutique-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .shop-section-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; }
+  .shop-section-sub { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+  .shop-grid { display: flex; flex-direction: column; gap: 14px; }
+  .shop-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; transition: border-color .2s; }
+  .shop-item:hover { border-color: var(--primary); }
+  .shop-item.owned { border-color: var(--green); opacity: .7; }
+  .shop-item-info { display: flex; flex-direction: column; gap: 4px; }
+  .shop-item-name { font-weight: 700; font-size: 1rem; }
+  .shop-item-price { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--primary); font-weight: 700; }
+  .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .btn-buy:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-buy:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-buy.owned-btn { background: var(--green); }
+
+  /* TITLE BADGES */
+  .title-badge { display: inline-block; font-size: .65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: rgba(235,88,70,0.15); color: var(--primary); border: 1px solid rgba(235,88,70,0.3); margin: 2px; }
 
   /* CLASSEMENT */
   .leaderboard-wrap { display: flex; flex-direction: column; gap: 24px; }
@@ -126,7 +140,7 @@
   .lb-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
   .lb-note { font-size: .78rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; }
   .lb-list { display: flex; flex-direction: column; gap: 10px; }
-  .lb-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; transition: border-color .2s; }
+  .lb-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; transition: border-color .2s; flex-wrap: wrap; }
   .lb-item.me { border-color: var(--primary); }
   .lb-item.me .lb-name { color: var(--primary); }
   .lb-rank { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1rem; width: 28px; text-align: center; color: var(--muted); flex-shrink: 0; }
@@ -134,7 +148,9 @@
   .lb-rank.top2 { color: #C0C0C0; }
   .lb-rank.top3 { color: #CD7F32; }
   .lb-medal { font-size: 1.2rem; width: 26px; text-align: center; flex-shrink: 0; }
-  .lb-name { font-weight: 700; font-size: .95rem; flex: 1; }
+  .lb-name { font-weight: 700; font-size: .95rem; cursor: pointer; transition: color .2s; }
+  .lb-name:hover { color: var(--primary); text-decoration: underline; }
+  .lb-info { display: flex; align-items: center; gap: 6px; flex: 1; flex-wrap: wrap; }
   .lb-val { font-family: 'Space Mono', monospace; font-weight: 700; font-size: .88rem; color: var(--primary); flex-shrink: 0; }
   .lb-you-badge { font-size: .65rem; font-weight: 700; background: var(--primary); color: #fff; border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
   .lb-group-badge { font-size: .65rem; font-weight: 600; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
@@ -155,6 +171,8 @@
   .bets-wrap { display: flex; flex-direction: column; gap: 24px; }
   .bet-create-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 20px; }
   .bet-create-card h3 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .bet-options-row { display: flex; gap: 10px; }
+  .bet-options-row .form-group { flex: 1; }
   .bets-list { display: flex; flex-direction: column; gap: 14px; }
   .bet-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: border-color .2s; }
   .bet-card.mine { border-color: var(--primary); }
@@ -167,24 +185,29 @@
   .bet-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
   .bet-meta strong { color: var(--text); }
   .bet-stake { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary); }
-  .bet-participants { display: flex; flex-direction: column; gap: 8px; }
-  .bet-participant { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border-radius: 8px; padding: 10px 14px; font-size: .85rem; }
-  .bet-participant .bp-name { font-weight: 600; }
-  .bet-participant .bp-badge { font-size: .7rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
-  .bp-badge.winner { background: rgba(62,207,110,0.15); color: var(--green); }
-  .bp-badge.loser { background: var(--surface); color: var(--muted); }
-  .bet-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bet-choices { display: flex; gap: 12px; flex-wrap: wrap; }
+  .bet-choice-block { flex: 1; min-width: 200px; background: var(--surface2); border: 2px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .bet-choice-block.winner-block { border-color: var(--green); }
+  .bet-choice-title { font-weight: 700; font-size: .9rem; text-align: center; }
+  .bet-choice-bettors { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); }
+  .bet-choice-bettor { display: flex; justify-content: space-between; }
+  .bet-choice-bettor .bname { font-weight: 600; color: var(--text); }
+  .bet-choice-bettor .bamount { font-family: 'Space Mono', monospace; color: var(--primary); font-weight: 700; }
+  .bet-choice-total { font-family: 'Space Mono', monospace; font-size: .78rem; font-weight: 700; color: var(--muted); text-align: center; padding-top: 6px; border-top: 1px solid var(--border); }
+  .bet-choice-input { display: flex; gap: 6px; }
+  .bet-choice-input input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'Space Mono', monospace; font-size: .82rem; outline: none; }
+  .bet-choice-input input:focus { border-color: var(--primary); }
   .btn-bet { border: none; border-radius: 8px; padding: 10px 18px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .2s; }
   .btn-bet:hover { transform: translateY(-1px); }
   .btn-bet.join { background: var(--green); color: #fff; }
   .btn-bet.close { background: var(--yellow); color: #000; }
+  .btn-bet.close1 { background: var(--green); color: #fff; }
+  .btn-bet.close2 { background: #5b8def; color: #fff; }
   .btn-bet.delete { background: transparent; border: 1px solid var(--red); color: var(--red); }
   .btn-bet.delete:hover { background: var(--red); color: #fff; }
   .bet-empty { color: var(--muted); font-size: .85rem; text-align: center; padding: 30px 0; }
-  .bet-winner-select { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-  .bet-winner-select label { font-size: .75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .bet-winner-select select { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Space Mono', monospace; font-size: .85rem; outline: none; }
   .bet-winner-result { font-size: .85rem; padding: 10px 14px; background: rgba(62,207,110,0.1); border: 1px solid rgba(62,207,110,0.3); border-radius: 8px; color: var(--green); font-weight: 600; }
+  .bet-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* COMPTEUR */
   .compteur-wrap { display: flex; flex-direction: column; gap: 28px; }
@@ -233,6 +256,32 @@
   .pi-row .pi-label { font-size: .8rem; color: var(--muted); }
   .pi-row .pi-val { font-family: 'Space Mono', monospace; font-size: .85rem; }
 
+  /* TITLE TOGGLES IN SETTINGS */
+  .title-toggle-list { display: flex; flex-direction: column; gap: 10px; }
+  .title-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface2); border-radius: 8px; }
+  .title-toggle-row .tt-name { font-weight: 600; font-size: .9rem; }
+  .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 24px; transition: background .2s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform .2s; }
+  .toggle-switch input:checked + .toggle-slider { background: var(--green); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* PROFILE MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn .2s; }
+  .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; width: 100%; max-width: 400px; margin: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 60px rgba(0,0,0,0.4); animation: slideUp .3s; }
+  .modal-box h2 { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; transition: color .2s; }
+  .modal-close:hover { color: var(--text); }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* CONFIRM DIALOG */
+  .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; display: flex; align-items: center; justify-content: center; animation: fadeIn .2s; }
+  .confirm-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 100%; max-width: 360px; margin: 20px; display: flex; flex-direction: column; gap: 16px; text-align: center; box-shadow: 0 0 60px rgba(0,0,0,0.4); animation: slideUp .3s; }
+  .confirm-box p { font-size: .95rem; color: var(--muted); line-height: 1.5; }
+  .confirm-buttons { display: flex; gap: 10px; justify-content: center; }
+
   /* ALERTS */
   .alert { padding: 10px 16px; border-radius: 8px; font-size: .85rem; font-weight: 600; display: none; }
   .alert.visible { display: block; }
@@ -258,6 +307,9 @@
     .nav-btn { padding: 8px 10px; font-size: .76rem; }
     .page { padding: 24px 16px 60px; }
     .login-box { padding: 32px 24px; }
+    .bet-options-row { flex-direction: column; }
+    .bet-choices { flex-direction: column; }
+    .bet-choice-block { min-width: 0; }
   }
 </style>
 </head>
@@ -280,8 +332,12 @@
     </div>
     <div class="login-panel" id="panelLogin">
       <div class="form-group">
-        <label>Ton code secret</label>
-        <input type="text" id="codeInput" placeholder="ex: ABC123" maxlength="20" />
+        <label>Nom d'utilisateur</label>
+        <input type="text" id="loginNameInput" placeholder="Ton pseudo" maxlength="20" />
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="loginCodeInput" placeholder="Ton mot de passe" maxlength="20" />
       </div>
       <div id="loginAlert" class="alert error"></div>
       <button class="btn-primary" onclick="handleLogin()">Entrer 🎰</button>
@@ -292,8 +348,8 @@
         <input type="text" id="createNameInput" placeholder="ex: PomélKing" maxlength="20" />
       </div>
       <div class="form-group">
-        <label>Choisis un code secret (mot de passe)</label>
-        <input type="text" id="createCodeInput" placeholder="ex: ABC123" maxlength="20" />
+        <label>Choisis un mot de passe</label>
+        <input type="password" id="createCodeInput" placeholder="Min. 3 caractères" maxlength="20" />
       </div>
       <div id="createAlert" class="alert error"></div>
       <button class="btn-primary" onclick="handleCreate()">Créer mon compte 🎉</button>
@@ -353,8 +409,12 @@
   <!-- BOUTIQUE -->
   <div class="page" id="page-boutique">
     <div class="boutique-wrap">
-      <div class="boutique-soon">À venir !</div>
-      <div class="boutique-tag">La boutique arrive bientôt — reste connecté 👀</div>
+      <div>
+        <div class="shop-section-title">🛒 Boutique</div>
+        <div class="shop-section-sub">Achète des titres pour personnaliser ton profil !</div>
+      </div>
+      <div id="shopAlert" class="alert"></div>
+      <div class="shop-grid" id="shopGrid"></div>
     </div>
   </div>
 
@@ -363,17 +423,23 @@
     <div class="bets-wrap">
       <div>
         <div class="section-title">🎲 Paris</div>
-        <div class="section-sub">Propose un pari, mise des Pomels et défie tes amis !</div>
+        <div class="section-sub">Propose un pari avec 2 choix, mise des Pomels et défie tes amis !</div>
       </div>
       <div class="bet-create-card">
         <h3>Créer un pari</h3>
         <div class="form-group">
-          <label>Description du pari</label>
-          <input type="text" id="betDescInput" placeholder="ex: Qui mange le plus de pains au chocolat ?" maxlength="120" />
+          <label>Question du pari</label>
+          <input type="text" id="betDescInput" placeholder="ex: On préfère la prod A ou la prod B ?" maxlength="120" />
         </div>
-        <div class="form-group">
-          <label>Mise (Pomels)</label>
-          <input type="number" id="betAmountInput" placeholder="ex: 200" min="1" />
+        <div class="bet-options-row">
+          <div class="form-group">
+            <label>Choix 1</label>
+            <input type="text" id="betOption1Input" placeholder="ex: Prod A" maxlength="50" />
+          </div>
+          <div class="form-group">
+            <label>Choix 2</label>
+            <input type="text" id="betOption2Input" placeholder="ex: Prod B" maxlength="50" />
+          </div>
         </div>
         <div id="betCreateAlert" class="alert"></div>
         <button class="btn-primary" onclick="handleCreateBet()">Lancer le pari 🎲</button>
@@ -381,7 +447,7 @@
       <div>
         <h3 style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">Paris en cours</h3>
         <div class="bets-list" id="betsList">
-          <div class="bet-empty">Aucun pari pour l'instant.</div>
+          <div class="bet-empty">Aucun pari en cours.</div>
         </div>
       </div>
       <div>
@@ -466,6 +532,12 @@
         <div class="profile-info" id="profileInfo"></div>
       </div>
       <div class="settings-card">
+        <h3>Mes titres</h3>
+        <div class="title-toggle-list" id="titlesSettings">
+          <div style="color:var(--muted);font-size:.85rem;">Tu n'as aucun titre. Rends-toi à la boutique !</div>
+        </div>
+      </div>
+      <div class="settings-card">
         <h3>Données du compte</h3>
         <div class="settings-row">
           <div class="sr-info"><strong>Exporter ma sauvegarde</strong><span>Génère un JSON à conserver précieusement.</span></div>
@@ -482,6 +554,10 @@
         <div class="settings-row">
           <div class="sr-info"><strong>Se déconnecter</strong><span>Retour à l'écran de connexion.</span></div>
           <button class="btn-danger" onclick="logout()">Déconnexion</button>
+        </div>
+        <div class="settings-row">
+          <div class="sr-info"><strong>Supprimer mon compte</strong><span>Cette action est irréversible !</span></div>
+          <button class="btn-danger" onclick="confirmDeleteAccount()">Supprimer ⚠️</button>
         </div>
       </div>
     </div>
@@ -515,6 +591,13 @@ const db = firebase.database();
 
 const GROUPS = ['Projet','Team Prod A','Team Prod B','Confo','SSI/Devs','Créa'];
 
+const SHOP_TITLES = [
+  { id: 'expert_pomdoc', name: 'Expert Pomdoc', price: 100000 },
+  { id: 'maitre_pokemon', name: 'Maître Pokemon', price: 10000 },
+  { id: 'fck_israel', name: 'F*ck Isr**l', price: 1000 },
+  { id: 'larry_malicieux', name: 'Larry le Malicieux', price: 1000 },
+];
+
 // ── STORAGE LAYER (FIREBASE) ────────────────────
 async function dbGet(path) {
   try {
@@ -546,6 +629,7 @@ async function dbGetAll(path) {
 async function getAccount(code) { return dbGet('accounts/' + code); }
 async function saveAccount(acc) { await dbSet('accounts/' + acc.code, acc); }
 async function getAllAccounts() { return dbGetAll('accounts'); }
+async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); }
 
 // ── BET HELPERS ──────────────────────────────────
 async function getBet(id) { return dbGet('bets/' + id); }
@@ -567,8 +651,16 @@ function clearSession() {
 // ── STATE ────────────────────────────────────────
 let state = null;
 
-function newAccount(code, name) {
-  return { code, name, balance: 0, lastSpin: null, history: [], group: null, createdAt: new Date().toISOString() };
+function newAccount(code, name, password) {
+  return { code, name, password, balance: 0, lastSpin: null, history: [], group: null, ownedTitles: [], activeTitles: [], createdAt: new Date().toISOString() };
+}
+
+// Migrate old accounts that don't have new fields
+function migrateAccount(acc) {
+  if (!acc.ownedTitles) acc.ownedTitles = [];
+  if (!acc.activeTitles) acc.activeTitles = [];
+  if (!acc.password) acc.password = acc.code; // fallback for old accounts
+  return acc;
 }
 
 // ── INIT ─────────────────────────────────────────
@@ -577,7 +669,7 @@ async function init() {
   if (session && session.code) {
     const acc = await getAccount(session.code);
     if (acc) {
-      state = acc;
+      state = migrateAccount(acc);
       launchApp();
       hideLoading();
       return;
@@ -605,23 +697,40 @@ function setAlert(id, msg, type) {
 }
 
 async function handleLogin() {
-  const code = document.getElementById('codeInput').value.trim().toUpperCase();
-  if (!code) { setAlert('loginAlert', 'Entre ton code secret !', 'error'); return; }
-  const acc = await getAccount(code);
-  if (!acc) { setAlert('loginAlert', 'Code inconnu. Crée un compte d\'abord !', 'error'); return; }
-  state = acc;
-  setSession(code);
+  const name = document.getElementById('loginNameInput').value.trim();
+  const password = document.getElementById('loginCodeInput').value.trim();
+  if (!name) { setAlert('loginAlert', 'Entre ton nom d\'utilisateur !', 'error'); return; }
+  if (!password) { setAlert('loginAlert', 'Entre ton mot de passe !', 'error'); return; }
+
+  // Find account by name
+  const all = await getAllAccounts();
+  const acc = all.find(a => a.name.toLowerCase() === name.toLowerCase());
+  if (!acc) { setAlert('loginAlert', 'Utilisateur introuvable. Crée un compte d\'abord !', 'error'); return; }
+
+  // Check password (support old accounts that used code as password)
+  const accPassword = acc.password || acc.code;
+  if (password !== accPassword) { setAlert('loginAlert', 'Mot de passe incorrect.', 'error'); return; }
+
+  state = migrateAccount(acc);
+  setSession(acc.code);
   launchApp();
 }
 
 async function handleCreate() {
   const name = document.getElementById('createNameInput').value.trim();
-  const code = document.getElementById('createCodeInput').value.trim().toUpperCase();
+  const password = document.getElementById('createCodeInput').value.trim();
   if (!name || name.length < 2) { setAlert('createAlert', 'Pseudo trop court (min 2 caractères).', 'error'); return; }
-  if (!code || code.length < 3) { setAlert('createAlert', 'Code trop court (min 3 caractères).', 'error'); return; }
-  const existing = await getAccount(code);
-  if (existing) { setAlert('createAlert', 'Ce code est déjà pris ! Choisis-en un autre.', 'error'); return; }
-  state = newAccount(code, name);
+  if (!password || password.length < 3) { setAlert('createAlert', 'Mot de passe trop court (min 3 caractères).', 'error'); return; }
+
+  // Check name uniqueness
+  const all = await getAllAccounts();
+  const nameTaken = all.find(a => a.name.toLowerCase() === name.toLowerCase());
+  if (nameTaken) { setAlert('createAlert', 'Ce pseudo est déjà pris ! Choisis-en un autre.', 'error'); return; }
+
+  // Generate internal code from name
+  const code = name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) + '_' + Date.now().toString(36);
+
+  state = newAccount(code, name, password);
   await saveAccount(state);
   setSession(code);
   launchApp();
@@ -649,8 +758,51 @@ function logout() {
   clearSession();
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('app').classList.remove('visible');
-  ['codeInput', 'createNameInput', 'createCodeInput'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['loginNameInput', 'loginCodeInput', 'createNameInput', 'createCodeInput'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('exportArea').classList.remove('visible');
+}
+
+// ── DELETE ACCOUNT ───────────────────────────────
+function confirmDeleteAccount() {
+  showConfirm(
+    '⚠️ Es-tu sûr de vouloir supprimer ton compte ? Cette action est irréversible. Tous tes Pomels, titres et historique seront perdus.',
+    async () => {
+      const code = state.code;
+      await deleteAccountFromDB(code);
+      state = null;
+      clearSession();
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('app').classList.remove('visible');
+      closeConfirm();
+    }
+  );
+}
+
+// ── CONFIRM DIALOG ──────────────────────────────
+let confirmCallback = null;
+function showConfirm(message, onConfirm) {
+  confirmCallback = onConfirm;
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'confirmOverlay';
+  overlay.innerHTML = `
+    <div class="confirm-box">
+      <p>${message}</p>
+      <div class="confirm-buttons">
+        <button class="btn-outline" onclick="closeConfirm()">Annuler</button>
+        <button class="btn-danger" onclick="executeConfirm()">Confirmer</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+function closeConfirm() {
+  const el = document.getElementById('confirmOverlay');
+  if (el) el.remove();
+  confirmCallback = null;
+}
+function executeConfirm() {
+  if (confirmCallback) confirmCallback();
 }
 
 // ── NAVIGATION ───────────────────────────────────
@@ -660,9 +812,10 @@ function goTo(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'compteur') renderHistory();
-  if (id === 'settings') renderProfile();
+  if (id === 'settings') { renderProfile(); renderTitlesSettings(); }
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
   if (id === 'paris') renderBets();
+  if (id === 'boutique') renderShop();
 }
 
 // ── PRIZES ───────────────────────────────────────
@@ -831,16 +984,54 @@ async function renderLeaderboard(mode) {
     const item = document.createElement('div');
     item.className = 'lb-item' + (isMe ? ' me' : '');
     const groupBadge = acc.group ? `<span class="lb-group-badge">${acc.group}</span>` : '';
+    // Active titles badges
+    const titlesHTML = (acc.activeTitles || []).map(tid => {
+      const t = SHOP_TITLES.find(st => st.id === tid);
+      return t ? `<span class="title-badge">${t.name}</span>` : '';
+    }).join('');
+    const safeCode = acc.code.replace(/'/g, "\\'");
     item.innerHTML = `
       <span class="lb-rank ${rankClass}">${rank}</span>
       <span class="lb-medal">${medal}</span>
-      <span class="lb-name">${acc.name}</span>
-      ${groupBadge}
-      ${isMe ? '<span class="lb-you-badge">Moi</span>' : ''}
+      <div class="lb-info">
+        <span class="lb-name" onclick="openProfileModal('${safeCode}')">${acc.name}</span>
+        ${titlesHTML}
+        ${groupBadge}
+        ${isMe ? '<span class="lb-you-badge">Moi</span>' : ''}
+      </div>
       <span class="lb-val">${display}</span>
     `;
     list.appendChild(item);
   });
+}
+
+// ── PROFILE MODAL ───────────────────────────────
+async function openProfileModal(code) {
+  const acc = await getAccount(code);
+  if (!acc) return;
+  const migrated = migrateAccount(acc);
+  const joined = new Date(migrated.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const titlesHTML = (migrated.activeTitles || []).map(tid => {
+    const t = SHOP_TITLES.find(st => st.id === tid);
+    return t ? `<span class="title-badge">${t.name}</span>` : '';
+  }).join('') || '<span style="color:var(--muted);font-size:.85rem;">Aucun titre</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'profileModal';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2>${migrated.name} <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button></h2>
+      <div class="profile-info">
+        <div class="pi-row"><span class="pi-label">Pomels</span><span class="pi-val" style="color:var(--primary)">${migrated.balance.toLocaleString('fr-FR')} 🪙</span></div>
+        <div class="pi-row"><span class="pi-label">Titres</span><span class="pi-val">${titlesHTML}</span></div>
+        <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${migrated.group || 'Aucun'}</span></div>
+        <div class="pi-row"><span class="pi-label">Membre depuis</span><span class="pi-val">${joined}</span></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
 }
 
 // ── GROUPS ───────────────────────────────────────
@@ -896,7 +1087,7 @@ async function renderGroupLeaderboard() {
     item.innerHTML = `
       <span class="lb-rank ${rankClass}">${rank}</span>
       <span class="lb-medal">${medal}</span>
-      <span class="lb-name">${g.name}</span>
+      <span class="lb-name" style="cursor:default">${g.name}</span>
       <span class="lb-group-badge">${g.members} membre${g.members > 1 ? 's' : ''}</span>
       ${isMyGroup ? '<span class="lb-you-badge">Mon groupe</span>' : ''}
       <span class="lb-val">${g.total.toLocaleString('fr-FR')} 🪙</span>
@@ -905,78 +1096,180 @@ async function renderGroupLeaderboard() {
   });
 }
 
-// ── BETS (PARIS) ─────────────────────────────────
+// ── BOUTIQUE / SHOP ─────────────────────────────
+function renderShop() {
+  const grid = document.getElementById('shopGrid');
+  grid.innerHTML = '';
+  SHOP_TITLES.forEach(title => {
+    const owned = (state.ownedTitles || []).includes(title.id);
+    const canAfford = state.balance >= title.price;
+    const item = document.createElement('div');
+    item.className = 'shop-item' + (owned ? ' owned' : '');
+    item.innerHTML = `
+      <div class="shop-item-info">
+        <div class="shop-item-name">${title.name}</div>
+        <div class="shop-item-price">${title.price.toLocaleString('fr-FR')} 🪙</div>
+      </div>
+      ${owned
+        ? '<button class="btn-buy owned-btn" disabled>✅ Possédé</button>'
+        : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Pas assez'}</button>`
+      }
+    `;
+    grid.appendChild(item);
+  });
+}
+
+async function buyTitle(titleId) {
+  const title = SHOP_TITLES.find(t => t.id === titleId);
+  if (!title) return;
+  if ((state.ownedTitles || []).includes(titleId)) return;
+  if (state.balance < title.price) return;
+
+  state.balance -= title.price;
+  if (!state.ownedTitles) state.ownedTitles = [];
+  state.ownedTitles.push(titleId);
+  state.history.unshift({ type: 'shop', desc: `Titre acheté : "${title.name}"`, amount: -title.price, date: new Date().toISOString() });
+  await saveAccount(state);
+  refreshUI();
+  renderShop();
+  setAlert('shopAlert', `✅ Titre "${title.name}" acheté !`, 'success');
+  setTimeout(() => { document.getElementById('shopAlert').className = 'alert'; }, 3000);
+}
+
+// ── TITLES SETTINGS ─────────────────────────────
+function renderTitlesSettings() {
+  const container = document.getElementById('titlesSettings');
+  const owned = state.ownedTitles || [];
+  if (!owned.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:.85rem;">Tu n\'as aucun titre. Rends-toi à la boutique !</div>';
+    return;
+  }
+  container.innerHTML = '';
+  owned.forEach(tid => {
+    const title = SHOP_TITLES.find(t => t.id === tid);
+    if (!title) return;
+    const isActive = (state.activeTitles || []).includes(tid);
+    const row = document.createElement('div');
+    row.className = 'title-toggle-row';
+    row.innerHTML = `
+      <span class="tt-name">${title.name}</span>
+      <label class="toggle-switch">
+        <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleTitle('${tid}', this.checked)" />
+        <span class="toggle-slider"></span>
+      </label>
+    `;
+    container.appendChild(row);
+  });
+}
+
+async function toggleTitle(titleId, active) {
+  if (!state.activeTitles) state.activeTitles = [];
+  if (active) {
+    if (!state.activeTitles.includes(titleId)) state.activeTitles.push(titleId);
+  } else {
+    state.activeTitles = state.activeTitles.filter(t => t !== titleId);
+  }
+  await saveAccount(state);
+}
+
+// ── BETS (PARIS) — REVAMPED ─────────────────────
 function generateBetId() {
   return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
 async function handleCreateBet() {
   const desc = document.getElementById('betDescInput').value.trim();
-  const amount = parseInt(document.getElementById('betAmountInput').value);
+  const option1 = document.getElementById('betOption1Input').value.trim();
+  const option2 = document.getElementById('betOption2Input').value.trim();
   const alertEl = document.getElementById('betCreateAlert');
   alertEl.className = 'alert';
-  if (!desc) { setAlert('betCreateAlert', 'Décris ton pari !', 'error'); return; }
-  if (!amount || amount <= 0) { setAlert('betCreateAlert', 'Entre une mise valide.', 'error'); return; }
-  if (amount > state.balance) { setAlert('betCreateAlert', `Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`, 'error'); return; }
+  if (!desc) { setAlert('betCreateAlert', 'Écris la question du pari !', 'error'); return; }
+  if (!option1 || !option2) { setAlert('betCreateAlert', 'Remplis les deux choix !', 'error'); return; }
 
   const bet = {
     id: generateBetId(),
     creator: state.code,
     creatorName: state.name,
     desc,
-    stake: amount,
-    participants: [{ code: state.code, name: state.name }],
+    option1,
+    option2,
+    bettors: [],
     status: 'open',
-    winner: null,
+    winnerOption: null,
     createdAt: new Date().toISOString()
   };
-  state.balance -= amount;
-  state.history.unshift({ type: 'bet', desc: `Pari créé : "${desc}"`, amount: -amount, date: new Date().toISOString() });
-  await saveAccount(state);
   await saveBet(bet);
-  refreshUI();
   document.getElementById('betDescInput').value = '';
-  document.getElementById('betAmountInput').value = '';
+  document.getElementById('betOption1Input').value = '';
+  document.getElementById('betOption2Input').value = '';
   setAlert('betCreateAlert', '✅ Pari créé avec succès !', 'success');
   setTimeout(() => { document.getElementById('betCreateAlert').className = 'alert'; }, 3000);
   renderBets();
 }
 
-async function joinBet(betId) {
+async function placeBet(betId, choice) {
   const bet = await getBet(betId);
   if (!bet || bet.status !== 'open') return;
-  if (bet.participants.some(p => p.code === state.code)) return;
-  if (bet.stake > state.balance) { alert(`Solde insuffisant ! Il te faut ${bet.stake.toLocaleString('fr-FR')} Pomels.`); return; }
+  const bettors = bet.bettors || [];
+  if (bettors.some(b => b.code === state.code)) { alert('Tu as déjà parié !'); return; }
 
-  state.balance -= bet.stake;
-  state.history.unshift({ type: 'bet', desc: `Rejoint pari : "${bet.desc}"`, amount: -bet.stake, date: new Date().toISOString() });
+  const inputEl = document.getElementById(`bet-amount-${betId}-${choice}`);
+  const amount = parseInt(inputEl ? inputEl.value : 0);
+  if (!amount || amount <= 0) { alert('Entre un montant valide !'); return; }
+  if (amount > state.balance) { alert(`Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`); return; }
+
+  state.balance -= amount;
+  state.history.unshift({ type: 'bet', desc: `Pari : "${bet.desc}" — ${choice === 1 ? bet.option1 : bet.option2}`, amount: -amount, date: new Date().toISOString() });
   await saveAccount(state);
 
-  bet.participants.push({ code: state.code, name: state.name });
+  bettors.push({ code: state.code, name: state.name, choice, amount });
+  bet.bettors = bettors;
   await saveBet(bet);
   refreshUI();
   renderBets();
 }
 
-async function closeBet(betId, winnerCode) {
+async function closeBet(betId, winnerOption) {
   const bet = await getBet(betId);
   if (!bet || bet.status !== 'open') return;
   if (bet.creator !== state.code) return;
-  if (!winnerCode) { alert('Sélectionne un vainqueur !'); return; }
 
-  const totalPot = bet.stake * bet.participants.length;
+  const bettors = bet.bettors || [];
+  const winners = bettors.filter(b => b.choice === winnerOption);
+  const losers = bettors.filter(b => b.choice !== winnerOption);
+
+  const loserPool = losers.reduce((s, b) => s + b.amount, 0);
+  const winnerPool = winners.reduce((s, b) => s + b.amount, 0);
+
   bet.status = 'closed';
-  bet.winner = winnerCode;
+  bet.winnerOption = winnerOption;
   await saveBet(bet);
 
-  const winnerAcc = await getAccount(winnerCode);
-  if (winnerAcc) {
-    winnerAcc.balance += totalPot;
-    winnerAcc.history.unshift({ type: 'bet', desc: `Pari gagné : "${bet.desc}"`, amount: totalPot, date: new Date().toISOString() });
-    await saveAccount(winnerAcc);
-    if (winnerCode === state.code) {
-      state = winnerAcc;
-      refreshUI();
+  if (winners.length > 0 && winnerPool > 0) {
+    // Each winner gets their bet back + proportional share of loser pool
+    for (const w of winners) {
+      const share = Math.floor((w.amount / winnerPool) * loserPool);
+      const totalWin = w.amount + share;
+      const acc = await getAccount(w.code);
+      if (acc) {
+        acc.balance += totalWin;
+        acc.history = acc.history || [];
+        acc.history.unshift({ type: 'bet', desc: `Pari gagné : "${bet.desc}"`, amount: totalWin, date: new Date().toISOString() });
+        await saveAccount(acc);
+        if (w.code === state.code) { state = migrateAccount(acc); refreshUI(); }
+      }
+    }
+  } else {
+    // No winners — refund losers
+    for (const l of losers) {
+      const acc = await getAccount(l.code);
+      if (acc) {
+        acc.balance += l.amount;
+        acc.history = acc.history || [];
+        acc.history.unshift({ type: 'bet', desc: `Pari remboursé : "${bet.desc}"`, amount: l.amount, date: new Date().toISOString() });
+        await saveAccount(acc);
+        if (l.code === state.code) { state = migrateAccount(acc); refreshUI(); }
+      }
     }
   }
   renderBets();
@@ -1002,45 +1295,55 @@ async function renderBets() {
 function buildBetCard(bet) {
   const card = document.createElement('div');
   const isMine = bet.creator === state.code;
-  const iJoined = bet.participants.some(p => p.code === state.code);
+  const bettors = bet.bettors || [];
+  const iJoined = bettors.some(b => b.code === state.code);
   card.className = 'bet-card' + (isMine ? ' mine' : '') + (bet.status === 'closed' ? ' closed' : '');
 
   const date = new Date(bet.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  const totalPot = bet.stake * bet.participants.length;
 
-  let participantsHTML = bet.participants.map(p => {
-    let badge = '';
-    if (bet.status === 'closed') {
-      badge = p.code === bet.winner
-        ? '<span class="bp-badge winner">🏆 Vainqueur</span>'
-        : '<span class="bp-badge loser">Perdu</span>';
-    }
-    return `<div class="bet-participant"><span class="bp-name">${p.name}${p.code === bet.creator ? ' (créateur)' : ''}</span>${badge}</div>`;
-  }).join('');
+  const bettors1 = bettors.filter(b => b.choice === 1);
+  const bettors2 = bettors.filter(b => b.choice === 2);
+  const total1 = bettors1.reduce((s, b) => s + b.amount, 0);
+  const total2 = bettors2.reduce((s, b) => s + b.amount, 0);
+  const totalPot = total1 + total2;
 
-  let actionsHTML = '';
-  if (bet.status === 'open') {
-    if (!iJoined) {
-      actionsHTML += `<button class="btn-bet join" onclick="joinBet('${bet.id}')">Rejoindre (${bet.stake.toLocaleString('fr-FR')} 🪙)</button>`;
-    }
-    if (isMine && bet.participants.length >= 2) {
-      const opts = bet.participants.map(p => `<option value="${p.code}">${p.name}</option>`).join('');
-      actionsHTML += `
-        <div class="bet-winner-select">
-          <label>Choisir le vainqueur</label>
-          <select id="winner-${bet.id}">${opts}</select>
-          <button class="btn-bet close" onclick="closeBet('${bet.id}', document.getElementById('winner-${bet.id}').value)">Clore le pari 🏆</button>
-        </div>`;
-    }
-    if (isMine && bet.participants.length < 2) {
-      actionsHTML += `<span style="font-size:.8rem;color:var(--muted);">En attente de participants…</span>`;
-    }
+  const renderBettorList = (list) => {
+    if (!list.length) return '<div style="color:var(--muted);font-size:.8rem;text-align:center;">Aucun parieur</div>';
+    return list.map(b => `<div class="bet-choice-bettor"><span class="bname">${b.name}</span><span class="bamount">${b.amount.toLocaleString('fr-FR')} 🪙</span></div>`).join('');
+  };
+
+  let choice1Actions = '';
+  let choice2Actions = '';
+  if (bet.status === 'open' && !iJoined) {
+    choice1Actions = `
+      <div class="bet-choice-input">
+        <input type="number" id="bet-amount-${bet.id}-1" placeholder="Mise" min="1" />
+        <button class="btn-bet join" onclick="placeBet('${bet.id}', 1)">Parier</button>
+      </div>`;
+    choice2Actions = `
+      <div class="bet-choice-input">
+        <input type="number" id="bet-amount-${bet.id}-2" placeholder="Mise" min="1" />
+        <button class="btn-bet join" onclick="placeBet('${bet.id}', 2)">Parier</button>
+      </div>`;
   }
 
+  let closeActions = '';
+  if (bet.status === 'open' && isMine && bettors.length >= 1) {
+    closeActions = `
+      <div class="bet-actions" style="margin-top:8px;">
+        <button class="btn-bet close1" onclick="closeBet('${bet.id}', 1)">✅ "${bet.option1}" gagne</button>
+        <button class="btn-bet close2" onclick="closeBet('${bet.id}', 2)">✅ "${bet.option2}" gagne</button>
+      </div>`;
+  }
+
+  let resultHTML = '';
   if (bet.status === 'closed') {
-    const winnerName = bet.participants.find(p => p.code === bet.winner)?.name || '?';
-    actionsHTML = `<div class="bet-winner-result">🏆 ${winnerName} a remporté ${totalPot.toLocaleString('fr-FR')} Pomels !</div>`;
+    const winLabel = bet.winnerOption === 1 ? bet.option1 : bet.option2;
+    resultHTML = `<div class="bet-winner-result">🏆 "${winLabel}" a gagné ! Pot total : ${totalPot.toLocaleString('fr-FR')} Pomels</div>`;
   }
+
+  const win1 = bet.status === 'closed' && bet.winnerOption === 1 ? ' winner-block' : '';
+  const win2 = bet.status === 'closed' && bet.winnerOption === 2 ? ' winner-block' : '';
 
   card.innerHTML = `
     <div class="bet-header">
@@ -1050,11 +1353,24 @@ function buildBetCard(bet) {
     <div class="bet-desc">${bet.desc}</div>
     <div class="bet-meta">
       <span>Créé par <strong>${bet.creatorName}</strong></span>
-      <span>Mise : <span class="bet-stake">${bet.stake.toLocaleString('fr-FR')} 🪙</span></span>
       <span>Pot total : <span class="bet-stake">${totalPot.toLocaleString('fr-FR')} 🪙</span></span>
     </div>
-    <div class="bet-participants">${participantsHTML}</div>
-    <div class="bet-actions">${actionsHTML}</div>
+    <div class="bet-choices">
+      <div class="bet-choice-block${win1}">
+        <div class="bet-choice-title">${bet.option1}</div>
+        <div class="bet-choice-bettors">${renderBettorList(bettors1)}</div>
+        <div class="bet-choice-total">${total1.toLocaleString('fr-FR')} 🪙</div>
+        ${choice1Actions}
+      </div>
+      <div class="bet-choice-block${win2}">
+        <div class="bet-choice-title">${bet.option2}</div>
+        <div class="bet-choice-bettors">${renderBettorList(bettors2)}</div>
+        <div class="bet-choice-total">${total2.toLocaleString('fr-FR')} 🪙</div>
+        ${choice2Actions}
+      </div>
+    </div>
+    ${closeActions}
+    ${resultHTML}
   `;
   return card;
 }
@@ -1099,7 +1415,7 @@ function renderHistory() {
     const div = document.createElement('div');
     div.className = 'history-item';
     const isPos = h.amount > 0;
-    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : '💸';
+    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : '💸';
     const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     div.innerHTML = `
       <span class="hi-type">${icon}</span>
@@ -1117,14 +1433,18 @@ function renderProfile() {
   const earned = (state.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
   const sent = (state.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
   const joined = new Date(state.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const titlesHTML = (state.activeTitles || []).map(tid => {
+    const t = SHOP_TITLES.find(st => st.id === tid);
+    return t ? `<span class="title-badge">${t.name}</span>` : '';
+  }).join('') || '<span style="color:var(--muted)">Aucun</span>';
   el.innerHTML = `
     <div class="pi-row"><span class="pi-label">Pseudo</span><span class="pi-val">${state.name}</span></div>
-    <div class="pi-row"><span class="pi-label">Code</span><span class="pi-val">${state.code}</span></div>
+    <div class="pi-row"><span class="pi-label">Titres actifs</span><span class="pi-val">${titlesHTML}</span></div>
     <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${state.group || 'Aucun'}</span></div>
     <div class="pi-row"><span class="pi-label">Solde</span><span class="pi-val" style="color:var(--primary)">${state.balance.toLocaleString('fr-FR')} Pomels</span></div>
     <div class="pi-row"><span class="pi-label">Tirages effectués</span><span class="pi-val">${spins}</span></div>
     <div class="pi-row"><span class="pi-label">Total gagné</span><span class="pi-val">${earned.toLocaleString('fr-FR')} Pomels</span></div>
-    <div class="pi-row"><span class="pi-label">Total envoyé</span><span class="pi-val">${sent.toLocaleString('fr-FR')} Pomels</span></div>
+    <div class="pi-row"><span class="pi-label">Total dépensé</span><span class="pi-val">${sent.toLocaleString('fr-FR')} Pomels</span></div>
     <div class="pi-row"><span class="pi-label">Compte créé le</span><span class="pi-val">${joined}</span></div>
   `;
 }
