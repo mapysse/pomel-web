@@ -1423,7 +1423,7 @@ async function handleCreate() {
 function launchApp() {
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.add('visible');
-  // Start on home page
+  checkBalanceIntegrity(state);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   refreshUI();
@@ -1432,12 +1432,14 @@ function launchApp() {
   renderHistory();
   renderProfile();
   renderHome();
+  takeStateSnapshot();
 }
 
 function refreshUI() {
   document.getElementById('headerBalance').textContent = state.balance.toLocaleString('fr-FR');
   document.getElementById('headerName').textContent = state.name;
   document.getElementById('transferBalance').textContent = state.balance.toLocaleString('fr-FR') + ' Pomels';
+  takeStateSnapshot();
 }
 
 function logout() {
@@ -3620,6 +3622,67 @@ document.addEventListener('keydown', e => {
     if (loginVisible) handleLogin(); else handleCreate();
   }
 });
+
+// ── SÉCURITÉ / ANTI-TAMPER ───────────────────────
+const MAX_BALANCE = 10_000_000;
+const MAX_SINGLE_GAIN = 50_000;
+
+// Validation avant chaque sauvegarde compte
+const _originalSaveAccount = saveAccount;
+async function saveAccount(acc) {
+  if (!acc || typeof acc !== 'object') return;
+  // Plafond de solde
+  if (typeof acc.balance === 'number') {
+    acc.balance = Math.max(0, Math.min(MAX_BALANCE, Math.floor(acc.balance)));
+  }
+  // Pas de gain unitaire aberrant dans l'historique
+  if (Array.isArray(acc.history)) {
+    acc.history = acc.history.filter(h =>
+      h && typeof h.amount === 'number' && Math.abs(h.amount) <= MAX_SINGLE_GAIN
+    );
+  }
+  // Les ownedTitles ne peuvent contenir que des strings
+  if (acc.ownedTitles) {
+    acc.ownedTitles = acc.ownedTitles.filter(t => typeof t === 'string' && t.length < 80);
+  }
+  await dbSet('accounts/' + acc.code, acc);
+}
+
+// Vérification d'intégrité au chargement : recalcule le solde depuis l'historique
+// et signale toute anomalie (sans bloquer — on ne peut pas forcer, mais on peut détecter)
+function checkBalanceIntegrity(acc) {
+  if (!acc || !Array.isArray(acc.history)) return;
+  const computed = acc.history.reduce((sum, h) => sum + (h.amount || 0), 0);
+  const declared = acc.balance;
+  const diff = Math.abs(computed - declared);
+  // Si la différence est > 2000 Pomels, c'est suspect — on recale sur le calculé
+  if (diff > 2000) {
+    console.warn(`[Pomel] Anomalie solde détectée : déclaré ${declared}, calculé ${computed}. Recalage.`);
+    acc.balance = Math.max(0, computed);
+  }
+}
+
+// Surveillance de l'objet state (détecte les modifications directes via console)
+let _stateSnapshot = null;
+function takeStateSnapshot() {
+  if (state) _stateSnapshot = JSON.stringify({ balance: state.balance, ownedTitles: state.ownedTitles });
+}
+function verifyStateIntegrity() {
+  if (!state || !_stateSnapshot) return;
+  const current = JSON.stringify({ balance: state.balance, ownedTitles: state.ownedTitles });
+  if (current !== _stateSnapshot) {
+    console.warn('[Pomel] Modification non autorisée de state détectée. Rechargement depuis Firebase.');
+    getAccount(state.code).then(acc => {
+      if (acc) { state = migrateAccount(acc); refreshUI(); }
+    });
+  }
+  takeStateSnapshot();
+}
+// Vérifie toutes les 8 secondes
+setInterval(verifyStateIntegrity, 8000);
+
+// Désactiver les outils de dev en prod (optionnel — commenté par défaut)
+// (function(){const a=new Image;Object.defineProperty(a,'id',{get:function(){window.location.reload();}});console.log('%c',a);})();
 
 // ── BOOT ─────────────────────────────────────────
 init();
