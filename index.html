@@ -322,6 +322,32 @@
   @keyframes lspin { to { transform: rotate(360deg); } }
   .loader-text { font-size: .9rem; color: var(--muted); }
 
+  /* SNAKE */
+  .snake-wrap { display: flex; flex-direction: column; gap: 20px; }
+  .snake-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .snake-score-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; text-align: center; min-width: 110px; flex-shrink: 0; }
+  .snake-score-label { font-size: .65rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .snake-score-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+  .snake-canvas-wrap { position: relative; width: 400px; max-width: 100%; margin: 0 auto; border-radius: 14px; overflow: hidden; border: 2px solid var(--border); box-shadow: 0 0 30px var(--primary-glow); background: #0a0a0c; }
+  .snake-canvas-wrap canvas { display: block; width: 100%; height: auto; }
+  .snake-overlay { position: absolute; inset: 0; background: rgba(13,13,15,0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(4px); }
+  .snake-overlay.hidden { display: none; }
+  .snake-overlay-title { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+  .snake-overlay-sub { font-size: .88rem; color: var(--muted); text-align: center; padding: 0 24px; line-height: 1.5; }
+  .snake-controls-hint { display: flex; justify-content: center; gap: 24px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
+  .snake-lb-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+  .snake-lb-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; }
+  .snake-lb-list { display: flex; flex-direction: column; gap: 8px; }
+  .snake-lb-item { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: 8px; padding: 10px 14px; }
+  .snake-lb-item.me { border: 1px solid var(--primary); background: rgba(235,88,70,0.05); }
+  .snake-lb-rank { font-family: 'Space Mono', monospace; font-weight: 700; width: 24px; color: var(--muted); flex-shrink: 0; }
+  .snake-lb-rank.top1 { color: #FFD700; }
+  .snake-lb-rank.top2 { color: #C0C0C0; }
+  .snake-lb-rank.top3 { color: #CD7F32; }
+  .snake-lb-name { flex: 1; font-weight: 700; font-size: .9rem; }
+  .snake-lb-score { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--primary); font-weight: 700; }
+  .snake-lb-pomels { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--green); }
+
   /* PROVERBE DU JOUR */
   .proverbe-wrap { display: flex; flex-direction: column; gap: 24px; }
   .proverbe-today-card { background: var(--surface); border: 2px solid var(--primary); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 30px var(--primary-glow); }
@@ -469,6 +495,7 @@
       <div class="nav-dropdown-menu">
         <button class="nav-dropdown-item" onclick="goToFromDropdown('roulette','gagne',this)">🎰 Roulette</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('paris','gagne',this)">🎲 Paris</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('snake','gagne',this)">🐍 Serpent</button>
       </div>
     </div>
 
@@ -562,6 +589,45 @@
         <h3 style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">Paris terminés</h3>
         <div class="bets-list" id="betsClosedList">
           <div class="bet-empty">Aucun pari terminé.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERPENT / SNAKE -->
+  <div class="page" id="page-snake">
+    <div class="snake-wrap">
+      <div class="snake-header">
+        <div>
+          <div class="section-title">🐍 Serpent</div>
+          <div class="section-sub">Mange des fruits pour gagner des Pomels — 5 🪙 par fruit !</div>
+        </div>
+        <div class="snake-score-box">
+          <div class="snake-score-label">Score</div>
+          <div class="snake-score-val" id="snakeScore">0</div>
+          <div class="snake-score-label" style="margin-top:4px;">Gains</div>
+          <div class="snake-score-val" id="snakeEarned" style="color:var(--green);">+0 🪙</div>
+        </div>
+      </div>
+
+      <div class="snake-canvas-wrap">
+        <canvas id="snakeCanvas" width="400" height="400"></canvas>
+        <div class="snake-overlay" id="snakeOverlay">
+          <div class="snake-overlay-title" id="snakeOverlayTitle">🐍 Serpent</div>
+          <div class="snake-overlay-sub" id="snakeOverlaySub">Utilise les flèches ou ZQSD pour jouer</div>
+          <button class="btn-primary" id="snakeStartBtn" onclick="startSnake()" style="margin-top:16px;width:auto;padding:12px 36px;">Jouer !</button>
+        </div>
+      </div>
+
+      <div class="snake-controls-hint">
+        <span>⬆⬇⬅➡ ou Z Q S D pour diriger</span>
+        <span>Espace pour pause</span>
+      </div>
+
+      <div class="snake-lb-card">
+        <div class="snake-lb-title">🏆 Meilleurs scores</div>
+        <div class="snake-lb-list" id="snakeLbList">
+          <div class="history-empty">Aucun score enregistré.</div>
         </div>
       </div>
     </div>
@@ -1140,6 +1206,12 @@ function goToFromUser(id) {
 }
 
 function _onPageLoad(id) {
+  // Stop snake if navigating away
+  if (id !== 'snake' && snakeLoop) {
+    clearTimeout(snakeLoop);
+    snakeLoop = null;
+    snakeState = null;
+  }
   if (id === 'compteur') renderHistory();
   if (id === 'settings') { renderProfile(); renderTitlesSettings(); }
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
@@ -1147,6 +1219,7 @@ function _onPageLoad(id) {
   if (id === 'boutique') renderShop();
   if (id === 'proverbe') renderProverbe();
   if (id === 'live') renderLive();
+  if (id === 'snake') renderSnakePage();
 }
 
 // ── PRIZES ───────────────────────────────────────
@@ -1847,6 +1920,314 @@ function buildBetCard(bet) {
   return card;
 }
 
+// ── SNAKE GAME ───────────────────────────────────
+const SNAKE_CELL = 20;       // px per cell
+const SNAKE_COLS = 20;       // 400/20
+const SNAKE_ROWS = 20;
+const SNAKE_POMEL_PER_FRUIT = 5;
+const SNAKE_MAX_LB = 10;
+
+let snakeState = null;       // null = not running
+let snakeLoop = null;
+let snakePaused = false;
+let snakePomelsEarned = 0;
+let snakeLastDir = null;     // buffer next direction
+
+const SNAKE_COLORS = {
+  bg:      '#0a0a0c',
+  grid:    '#111116',
+  head:    '#EB5846',
+  body:    '#c03c2c',
+  fruit:   '#3ecf6e',
+  fruitGlow: 'rgba(62,207,110,0.5)',
+  text:    '#eeeef0',
+};
+
+function snakeCanvas()  { return document.getElementById('snakeCanvas'); }
+function snakeCtx()     { return snakeCanvas().getContext('2d'); }
+function snakeOverlay() { return document.getElementById('snakeOverlay'); }
+
+function initSnakeState() {
+  return {
+    snake: [
+      { x: 10, y: 10 },
+      { x: 9,  y: 10 },
+      { x: 8,  y: 10 },
+    ],
+    dir:   { x: 1, y: 0 },
+    nextDir: { x: 1, y: 0 },
+    fruit: randomFruit([{ x:10,y:10},{x:9,y:10},{x:8,y:10}]),
+    score: 0,
+    speed: 150,   // ms per tick
+  };
+}
+
+function randomFruit(snake) {
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random() * SNAKE_COLS), y: Math.floor(Math.random() * SNAKE_ROWS) };
+  } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+  return pos;
+}
+
+function startSnake() {
+  snakeState = initSnakeState();
+  snakePomelsEarned = 0;
+  snakePaused = false;
+  snakeLastDir = null;
+  snakeOverlay().classList.add('hidden');
+  updateSnakeScoreUI();
+  scheduleSnakeTick();
+  renderSnake();
+}
+
+function scheduleSnakeTick() {
+  if (snakeLoop) clearTimeout(snakeLoop);
+  snakeLoop = setTimeout(snakeTick, snakeState.speed);
+}
+
+function snakeTick() {
+  if (!snakeState || snakePaused) return;
+
+  // Apply buffered direction
+  snakeState.dir = snakeState.nextDir;
+
+  const head = snakeState.snake[0];
+  const newHead = {
+    x: (head.x + snakeState.dir.x + SNAKE_COLS) % SNAKE_COLS,
+    y: (head.y + snakeState.dir.y + SNAKE_ROWS) % SNAKE_ROWS,
+  };
+
+  // Collision with self
+  if (snakeState.snake.some(s => s.x === newHead.x && s.y === newHead.y)) {
+    gameOverSnake();
+    return;
+  }
+
+  snakeState.snake.unshift(newHead);
+
+  // Fruit eaten
+  if (newHead.x === snakeState.fruit.x && newHead.y === snakeState.fruit.y) {
+    snakeState.score++;
+    snakePomelsEarned += SNAKE_POMEL_PER_FRUIT;
+    snakeState.fruit = randomFruit(snakeState.snake);
+    // Speed up slightly every 5 fruits (min 60ms)
+    if (snakeState.score % 5 === 0 && snakeState.speed > 65) {
+      snakeState.speed = Math.max(65, snakeState.speed - 12);
+    }
+    updateSnakeScoreUI();
+  } else {
+    snakeState.snake.pop(); // No growth if no fruit eaten
+  }
+
+  renderSnake();
+  scheduleSnakeTick();
+}
+
+function updateSnakeScoreUI() {
+  document.getElementById('snakeScore').textContent = snakeState ? snakeState.score : 0;
+  document.getElementById('snakeEarned').textContent = '+' + snakePomelsEarned.toLocaleString('fr-FR') + ' 🪙';
+}
+
+function renderSnake() {
+  const ctx = snakeCtx();
+  const C = SNAKE_CELL;
+
+  // Background
+  ctx.fillStyle = SNAKE_COLORS.bg;
+  ctx.fillRect(0, 0, SNAKE_COLS * C, SNAKE_ROWS * C);
+
+  // Grid
+  ctx.strokeStyle = SNAKE_COLORS.grid;
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= SNAKE_COLS; x++) {
+    ctx.beginPath(); ctx.moveTo(x * C, 0); ctx.lineTo(x * C, SNAKE_ROWS * C); ctx.stroke();
+  }
+  for (let y = 0; y <= SNAKE_ROWS; y++) {
+    ctx.beginPath(); ctx.moveTo(0, y * C); ctx.lineTo(SNAKE_COLS * C, y * C); ctx.stroke();
+  }
+
+  if (!snakeState) return;
+
+  // Fruit with glow
+  const f = snakeState.fruit;
+  ctx.save();
+  ctx.shadowColor = SNAKE_COLORS.fruitGlow;
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = SNAKE_COLORS.fruit;
+  ctx.beginPath();
+  ctx.arc(f.x * C + C/2, f.y * C + C/2, C/2 - 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Snake body (tail → head)
+  snakeState.snake.forEach((seg, i) => {
+    const isHead = i === 0;
+    ctx.save();
+    ctx.fillStyle = isHead ? SNAKE_COLORS.head : SNAKE_COLORS.body;
+    if (isHead) { ctx.shadowColor = 'rgba(235,88,70,0.6)'; ctx.shadowBlur = 10; }
+    const r = isHead ? 6 : 4;
+    roundRect(ctx, seg.x * C + 1, seg.y * C + 1, C - 2, C - 2, r);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Score on canvas
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.font = `bold 11px 'Space Mono', monospace`;
+  ctx.fillText(`Score: ${snakeState.score}`, 8, 16);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+async function gameOverSnake() {
+  if (snakeLoop) clearTimeout(snakeLoop);
+  const finalScore = snakeState.score;
+  const finalPomels = snakePomelsEarned;
+
+  // Award Pomels
+  if (finalPomels > 0) {
+    state.balance += finalPomels;
+    state.history.unshift({ type: 'snake', desc: `🐍 Serpent — score ${finalScore}`, amount: finalPomels, date: new Date().toISOString() });
+    await saveAccount(state);
+    refreshUI();
+  }
+
+  // Save leaderboard entry
+  await saveSnakeScore(finalScore);
+
+  // Show overlay
+  const overlay = snakeOverlay();
+  overlay.classList.remove('hidden');
+  document.getElementById('snakeOverlayTitle').textContent = '💀 Game Over !';
+  document.getElementById('snakeOverlaySub').innerHTML =
+    `Score : <strong>${finalScore}</strong> fruit${finalScore > 1 ? 's' : ''}<br>` +
+    `Tu gagnes <strong style="color:var(--green)">+${finalPomels.toLocaleString('fr-FR')} 🪙</strong>`;
+  document.getElementById('snakeStartBtn').textContent = '🔄 Rejouer';
+
+  snakeState = null;
+  updateSnakeScoreUI();
+  renderSnakeLb();
+}
+
+// ── SNAKE LEADERBOARD (Firebase) ─────────────────
+async function saveSnakeScore(score) {
+  if (score === 0) return;
+  const path = 'snake_lb/' + state.code;
+  const existing = await dbGet(path);
+  if (!existing || score > existing.score) {
+    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
+  }
+}
+
+async function renderSnakeLb() {
+  const list = document.getElementById('snakeLbList');
+  list.innerHTML = '<div class="history-empty">Chargement…</div>';
+  const snap = await dbGet('snake_lb');
+  if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score enregistré.</div>'; return; }
+  const entries = Object.values(snap).sort((a, b) => b.score - a.score).slice(0, SNAKE_MAX_LB);
+  list.innerHTML = '';
+  const medals = ['🥇','🥈','🥉'];
+  entries.forEach((e, i) => {
+    const rank = i + 1;
+    const isMe = e.code === state.code;
+    const rankClass = rank <= 3 ? `top${rank}` : '';
+    const medal = rank <= 3 ? medals[i] : '';
+    const div = document.createElement('div');
+    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    div.innerHTML = `
+      <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
+      <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-score">${e.score} 🍎</span>
+      <span class="snake-lb-pomels">+${(e.score * SNAKE_POMEL_PER_FRUIT).toLocaleString('fr-FR')} 🪙</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ── SNAKE CONTROLS ───────────────────────────────
+document.addEventListener('keydown', e => {
+  if (!snakeState) return;
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    snakePaused = !snakePaused;
+    if (!snakePaused) scheduleSnakeTick();
+    return;
+  }
+
+  const dirs = {
+    ArrowUp:    { x: 0, y: -1 }, KeyZ: { x: 0, y: -1 },
+    ArrowDown:  { x: 0, y:  1 }, KeyS: { x: 0, y:  1 },
+    ArrowLeft:  { x:-1, y:  0 }, KeyQ: { x:-1, y:  0 },
+    ArrowRight: { x: 1, y:  0 }, KeyD: { x: 1, y:  0 },
+  };
+  const newDir = dirs[e.code];
+  if (!newDir) return;
+  e.preventDefault();
+
+  const cur = snakeState.dir;
+  // Prevent 180° reversal
+  if (newDir.x === -cur.x && newDir.y === -cur.y) return;
+  snakeState.nextDir = newDir;
+});
+
+// Touch controls for mobile
+let touchStart = null;
+document.addEventListener('touchstart', e => {
+  if (!snakeState) return;
+  touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!snakeState || !touchStart) return;
+  const dx = e.changedTouches[0].clientX - touchStart.x;
+  const dy = e.changedTouches[0].clientY - touchStart.y;
+  const cur = snakeState.dir;
+  let newDir;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    newDir = dx > 0 ? { x:1,y:0 } : { x:-1,y:0 };
+  } else {
+    newDir = dy > 0 ? { x:0,y:1 } : { x:0,y:-1 };
+  }
+  if (newDir.x === -cur.x && newDir.y === -cur.y) return;
+  snakeState.nextDir = newDir;
+  touchStart = null;
+}, { passive: true });
+
+function renderSnakePage() {
+  // Draw idle canvas
+  const ctx = snakeCtx();
+  ctx.fillStyle = SNAKE_COLORS.bg;
+  ctx.fillRect(0, 0, SNAKE_COLS * SNAKE_CELL, SNAKE_ROWS * SNAKE_CELL);
+  ctx.strokeStyle = SNAKE_COLORS.grid;
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= SNAKE_COLS; x++) {
+    ctx.beginPath(); ctx.moveTo(x*SNAKE_CELL,0); ctx.lineTo(x*SNAKE_CELL,SNAKE_ROWS*SNAKE_CELL); ctx.stroke();
+  }
+  for (let y = 0; y <= SNAKE_ROWS; y++) {
+    ctx.beginPath(); ctx.moveTo(0,y*SNAKE_CELL); ctx.lineTo(SNAKE_COLS*SNAKE_CELL,y*SNAKE_CELL); ctx.stroke();
+  }
+  document.getElementById('snakeOverlayTitle').textContent = '🐍 Serpent';
+  document.getElementById('snakeOverlaySub').textContent = 'Mange des fruits pour gagner des Pomels !';
+  document.getElementById('snakeStartBtn').textContent = 'Jouer !';
+  snakeOverlay().classList.remove('hidden');
+  document.getElementById('snakeScore').textContent = '0';
+  document.getElementById('snakeEarned').textContent = '+0 🪙';
+  renderSnakeLb();
+}
+
 // ── PROVERBE DU JOUR ────────────────────────────
 function getTodayKey() {
   const d = new Date();
@@ -2105,7 +2486,7 @@ function renderHistory() {
     const div = document.createElement('div');
     div.className = 'history-item';
     const isPos = h.amount > 0;
-    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : '💸';
+    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : '💸';
     const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     div.innerHTML = `
       <span class="hi-type">${icon}</span>
