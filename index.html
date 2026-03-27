@@ -2788,6 +2788,8 @@ let clickerData = {
   seeds: 0,
   autoStock: 0,
   upgrades: { autoClicker: false, autoSpeed: false, stockExt: false, secondFruit: false },
+  lastSaved: null,
+  loaded: false,
 };
 let clickerAutoInterval = null;
 let clickerActive = false;
@@ -2817,17 +2819,34 @@ async function loadClickerData() {
       seeds: saved.seeds || 0,
       autoStock: saved.autoStock || 0,
       upgrades: Object.assign({ autoClicker: false, autoSpeed: false, stockExt: false, secondFruit: false }, saved.upgrades || {}),
+      lastSaved: saved.lastSaved || null,
+      loaded: true,
     };
-    // Recalibrate autoStock to current max
+
+    // Calcul du stock accumulé hors-ligne
+    if (clickerData.upgrades.autoClicker && clickerData.lastSaved) {
+      const elapsed = (Date.now() - new Date(clickerData.lastSaved).getTime()) / 1000;
+      const intervalSec = clickerIntervalMs() / 1000;
+      const ticks = Math.floor(elapsed / intervalSec);
+      const generated = ticks * clickerAutoRate();
+      const max = clickerMaxStock();
+      clickerData.autoStock = Math.min(max, clickerData.autoStock + generated);
+    }
     clickerData.autoStock = Math.min(clickerData.autoStock, clickerMaxStock());
+  } else {
+    // Première utilisation — marquer comme chargé pour autoriser les sauvegardes
+    clickerData.loaded = true;
+    clickerData.lastSaved = new Date().toISOString();
   }
 }
 
 async function saveClickerData() {
+  if (!clickerData.loaded) return; // données pas encore chargées depuis Firebase
   await dbSet('clicker/' + state.code, {
     seeds: Math.floor(clickerData.seeds),
     autoStock: Math.floor(clickerData.autoStock),
     upgrades: clickerData.upgrades,
+    lastSaved: new Date().toISOString(),
   });
 }
 
@@ -2839,20 +2858,32 @@ async function renderClickerPage() {
 }
 
 function stopClickerPage() {
+  if (!clickerActive) return; // ne rien faire si le clicker n'était pas ouvert
   clickerActive = false;
   if (clickerAutoInterval) { clearInterval(clickerAutoInterval); clickerAutoInterval = null; }
+  // Sauvegarde finale avec timestamp pour le calcul offline
+  if (clickerData.upgrades && clickerData.upgrades.autoClicker) saveClickerData();
 }
 
 function startAutoClicker() {
   if (clickerAutoInterval) clearInterval(clickerAutoInterval);
   if (!clickerData.upgrades.autoClicker) return;
+
+  // Sauvegarde dans Firebase toutes les 15 secondes seulement (pas à chaque tick)
+  let ticksSinceLastSave = 0;
+  const saveEveryNTicks = Math.ceil(15000 / clickerIntervalMs());
+
   clickerAutoInterval = setInterval(() => {
     if (!clickerActive) { clearInterval(clickerAutoInterval); return; }
     const max = clickerMaxStock();
     if (clickerData.autoStock < max) {
       clickerData.autoStock = Math.min(max, clickerData.autoStock + clickerAutoRate());
       updateClickerUI();
-      saveClickerData();
+      ticksSinceLastSave++;
+      if (ticksSinceLastSave >= saveEveryNTicks) {
+        saveClickerData();
+        ticksSinceLastSave = 0;
+      }
     }
   }, clickerIntervalMs());
 }
@@ -4126,6 +4157,21 @@ document.addEventListener('keydown', e => {
 });
 
 // ── BOOT ─────────────────────────────────────────
+// Sauvegarder le clicker quand on quitte la page
+window.addEventListener('beforeunload', () => {
+  if (clickerData.upgrades && clickerData.upgrades.autoClicker) {
+    // Synchrone impossible avec Firebase, on utilise sendBeacon si dispo
+    const payload = JSON.stringify({
+      seeds: Math.floor(clickerData.seeds),
+      autoStock: Math.floor(clickerData.autoStock),
+      upgrades: clickerData.upgrades,
+      lastSaved: new Date().toISOString(),
+    });
+    // Fallback : juste déclencher la sauvegarde async
+    saveClickerData();
+  }
+});
+
 init();
 </script>
 <footer class="site-footer">Ce site est à but humoristique, toute dérive ne sera pas tolérée. Nous ne vous réclamerons jamais aucune information personnelle ou download/upload de quelconques données.</footer>
