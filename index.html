@@ -300,6 +300,63 @@
   @keyframes lspin { to { transform: rotate(360deg); } }
   .loader-text { font-size: .9rem; color: var(--muted); }
 
+  /* PROVERBE DU JOUR */
+  .proverbe-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .proverbe-today-card { background: var(--surface); border: 2px solid var(--primary); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 30px var(--primary-glow); }
+  .proverbe-today-label { font-size: .7rem; font-weight: 700; color: var(--primary); letter-spacing: .12em; text-transform: uppercase; }
+  .proverbe-today-author { font-size: .85rem; color: var(--muted); }
+  .proverbe-today-author strong { color: var(--text); }
+  .proverbe-input-zone { display: flex; flex-direction: column; gap: 12px; }
+  .proverbe-submitted { background: rgba(62,207,110,0.1); border: 1px solid rgba(62,207,110,0.3); border-radius: 10px; padding: 14px 18px; color: var(--green); font-size: .9rem; font-weight: 600; }
+  .proverbe-history-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .proverbe-history-list { display: flex; flex-direction: column; gap: 10px; }
+  .proverbe-history-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; opacity: .6; }
+  .proverbe-history-item .phi-date { font-size: .72rem; color: var(--muted); margin-bottom: 6px; }
+  .proverbe-history-item .phi-text { font-size: .9rem; font-style: italic; color: var(--muted); line-height: 1.5; }
+  .proverbe-history-item .phi-author { font-size: .78rem; color: var(--muted); margin-top: 6px; }
+  .proverbe-waiting { color: var(--muted); font-size: .9rem; font-style: italic; padding: 8px 0; }
+
+  /* POMEL'LIVE */
+  .live-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .live-header-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .live-header-card h3 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .live-post-input { display: flex; flex-direction: column; gap: 10px; }
+  .live-char-count { font-size: .75rem; color: var(--muted); text-align: right; }
+  .live-locked { font-size: .85rem; color: var(--muted); padding: 8px 0; }
+  .live-posts-list { display: flex; flex-direction: column; gap: 12px; }
+  .live-post-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; transition: border-color .2s; }
+  .live-post-card:hover { border-color: var(--border); }
+  .live-post-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .live-post-author { font-weight: 700; font-size: .9rem; display: flex; align-items: center; gap: 6px; }
+  .live-post-time { font-size: .75rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .live-post-text { font-size: .95rem; line-height: 1.5; }
+  .live-post-actions { display: flex; gap: 10px; align-items: center; }
+  .live-react-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 5px; color: var(--muted); }
+  .live-react-btn:hover { border-color: var(--primary); color: var(--text); }
+  .live-react-btn.liked { background: rgba(62,207,110,0.15); border-color: var(--green); color: var(--green); }
+  .live-react-btn.disliked { background: rgba(235,88,70,0.15); border-color: var(--red); color: var(--red); }
+  .live-dislike-warn { font-size: .72rem; color: var(--red); margin-left: auto; }
+  .live-empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 40px 0; }
+  .live-date-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-size: .78rem; color: var(--muted); text-align: center; font-family: 'Space Mono', monospace; }
+
+  /* INFORMATIONS */
+  .info-wrap { display: flex; flex-direction: column; gap: 20px; }
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+  .info-card h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
+  .info-card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  .info-card p { font-size: .9rem; color: var(--muted); line-height: 1.7; }
+  .info-card ul { display: flex; flex-direction: column; gap: 8px; padding-left: 4px; }
+  .info-card ul li { font-size: .88rem; color: var(--muted); line-height: 1.6; padding-left: 16px; position: relative; }
+  .info-card ul li::before { content: '→'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+  .info-divider { height: 1px; background: var(--border); }
+
+  /* RAINBOW EFFECT */
+  @keyframes rainbow { 0%{color:#EB5846} 16%{color:#f0c040} 33%{color:#3ecf6e} 50%{color:#5b8def} 66%{color:#b05bef} 83%{color:#ef5bb0} 100%{color:#EB5846} }
+  .rainbow-text { animation: rainbow 2s linear infinite; font-weight: 700; }
+
+  /* BADGES */
+  .user-badge-emoji { font-size: 1rem; }
+
   @media (max-width: 600px) {
     header { padding: 12px 16px; }
     .user-badge { display: none; }
@@ -378,6 +435,9 @@
     <button class="nav-btn" onclick="goTo('paris',this)">🎲 Paris</button>
     <button class="nav-btn" onclick="goTo('classement',this)">🏆 Classement</button>
     <button class="nav-btn" onclick="goTo('compteur',this)">💸 Compteur</button>
+    <button class="nav-btn" onclick="goTo('proverbe',this)">📜 Proverbe</button>
+    <button class="nav-btn" onclick="goTo('live',this)">📡 Live</button>
+    <button class="nav-btn" onclick="goTo('infos',this)">ℹ️ Infos</button>
     <button class="nav-btn" onclick="goTo('settings',this)">⚙️ Paramètres</button>
   </nav>
 
@@ -538,6 +598,18 @@
         </div>
       </div>
       <div class="settings-card">
+        <h3>Couleur du pseudo</h3>
+        <div class="title-toggle-list" id="colorSettings">
+          <div style="color:var(--muted);font-size:.85rem;">Tu n'as aucun effet. Rends-toi à la boutique !</div>
+        </div>
+      </div>
+      <div class="settings-card">
+        <h3>Badge</h3>
+        <div class="title-toggle-list" id="badgeSettings">
+          <div style="color:var(--muted);font-size:.85rem;">Tu n'as aucun badge. Rends-toi à la boutique !</div>
+        </div>
+      </div>
+      <div class="settings-card">
         <h3>Données du compte</h3>
         <div class="settings-row">
           <div class="sr-info"><strong>Exporter ma sauvegarde</strong><span>Génère un JSON à conserver précieusement.</span></div>
@@ -562,6 +634,132 @@
       </div>
     </div>
   </div>
+</div>
+
+  <!-- PROVERBE DU JOUR -->
+  <div class="page" id="page-proverbe">
+    <div class="proverbe-wrap">
+      <div>
+        <div class="section-title">📜 Proverbe du Jour</div>
+        <div class="section-sub">Chaque jour, une personne est tirée au sort pour partager une phrase inspirante.</div>
+      </div>
+      <div class="proverbe-today-card" id="provTodayCard">
+        <div class="proverbe-today-label">✨ Aujourd'hui</div>
+        <div class="proverbe-waiting" id="provTodayContent">Chargement…</div>
+      </div>
+      <div id="provInputZone" style="display:none;">
+        <div class="bet-create-card">
+          <h3>C'est ton tour !</h3>
+          <div class="form-group">
+            <label>Ta phrase / ton proverbe</label>
+            <textarea id="provInput" placeholder="Une phrase motivante, un proverbe, une citation…" maxlength="200" rows="3"></textarea>
+          </div>
+          <div id="provAlert" class="alert"></div>
+          <button class="btn-primary" onclick="submitProverbe()">Publier 📜</button>
+        </div>
+      </div>
+      <div>
+        <div class="proverbe-history-title" style="margin-bottom:14px;">Proverbes précédents</div>
+        <div class="proverbe-history-list" id="provHistoryList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POMEL'LIVE -->
+  <div class="page" id="page-live">
+    <div class="live-wrap">
+      <div>
+        <div class="section-title">📡 Pomel'Live</div>
+        <div class="section-sub">Posts du jour — chaque jour à partir de 9h15. Remis à zéro chaque matin.</div>
+      </div>
+      <div class="live-header-card">
+        <h3>Nouveau post</h3>
+        <div id="livePostZone">
+          <div class="live-locked" id="liveLocked">Les posts sont disponibles à partir de 9h15 !</div>
+          <div id="liveInputZone" style="display:none;" class="live-post-input">
+            <div class="form-group">
+              <textarea id="liveInput" placeholder="Ton message du jour… (150 car. max)" maxlength="150" rows="2" oninput="updateLiveCount()"></textarea>
+              <div class="live-char-count" id="liveCharCount">0 / 150</div>
+            </div>
+            <div id="livePostAlert" class="alert"></div>
+            <button class="btn-primary" onclick="submitLivePost()">Poster 📡</button>
+          </div>
+          <div class="proverbe-submitted" id="liveAlreadyPosted" style="display:none;">✅ Tu as déjà posté aujourd'hui !</div>
+        </div>
+      </div>
+      <div class="live-date-badge" id="liveDateBadge"></div>
+      <div class="live-posts-list" id="livePostsList">
+        <div class="live-empty">Aucun post aujourd'hui. Sois le premier !</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMATIONS -->
+  <div class="page" id="page-infos">
+    <div class="info-wrap">
+      <div class="info-card">
+        <h2>🎰 Bienvenue sur Pomel.</h2>
+        <p>Pomel est un site communautaire où tu peux gagner des Pomels (notre monnaie virtuelle), les dépenser en boutique, parier avec tes amis, et bien plus encore !</p>
+      </div>
+      <div class="info-card">
+        <h3>🎰 La Roulette Quotidienne</h3>
+        <p>Chaque jour à partir de <strong>9h15</strong>, tu peux faire tourner la roulette et gagner des Pomels. Un seul tirage par jour, alors ne l'oublie pas !</p>
+        <ul>
+          <li>Les gains vont de 10 à 1 000 Pomels selon la chance</li>
+          <li>Le tirage se réinitialise chaque jour à minuit</li>
+          <li>Plus t'es chanceux, plus tu montes dans le classement</li>
+        </ul>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-card">
+        <h3>🎲 Les Paris</h3>
+        <p>Crée ou rejoins un pari entre amis sur n'importe quel sujet. Mise des Pomels sur l'option de ton choix !</p>
+        <ul>
+          <li>Les gagnants récupèrent leur mise + une part équitable des mises perdantes</li>
+          <li>Les paris non clôturés sont supprimés automatiquement après <strong>3 jours</strong></li>
+          <li>Les paris terminés disparaissent après <strong>24h</strong></li>
+          <li>Le créateur du pari peut le supprimer à tout moment</li>
+        </ul>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-card">
+        <h3>🛒 La Boutique</h3>
+        <p>Dépense tes Pomels pour acheter des titres, des badges et des effets visuels pour ton profil !</p>
+        <ul>
+          <li><strong>Titres</strong> : s'affichent à côté de ton nom dans le classement</li>
+          <li><strong>Badges (émojis)</strong> : Expert 🎖️, Pomélien 🌟, Censure 🚫</li>
+          <li><strong>Effets</strong> : Arc-en-ciel sur ton pseudo !</li>
+          <li>Active tes achats dans <strong>Paramètres</strong></li>
+        </ul>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-card">
+        <h3>📜 Proverbe du Jour</h3>
+        <p>Chaque jour, un membre est tiré au sort pour partager un proverbe ou une phrase motivante. Les 10 derniers proverbes sont conservés.</p>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-card">
+        <h3>📡 Pomel'Live</h3>
+        <p>À partir de <strong>9h15</strong>, chaque membre peut poster un message court (150 caractères max). Les posts sont remis à zéro chaque jour.</p>
+        <ul>
+          <li>Un seul post par personne par jour</li>
+          <li>Tu peux liker 👍 ou disliker 👎 les posts</li>
+          <li>Un post avec 5 dislikes est supprimé automatiquement</li>
+        </ul>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-card">
+        <h3>🏆 Le Classement</h3>
+        <p>Compare-toi aux autres joueurs par solde, nombre de tirages ou total gagné. Rejoins un groupe pour participer au classement des groupes !</p>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-card">
+        <h3>💸 Le Compteur</h3>
+        <p>Envoie des Pomels à d'autres joueurs directement. L'historique de tes transactions est conservé ici.</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="win-toast" id="winToast"></div>
@@ -592,10 +790,15 @@ const db = firebase.database();
 const GROUPS = ['Projet','Team Prod A','Team Prod B','Confo','SSI/Devs','Créa'];
 
 const SHOP_TITLES = [
-  { id: 'expert_pomdoc', name: 'Expert Pomdoc', price: 100000 },
-  { id: 'maitre_pokemon', name: 'Maître Pokemon', price: 10000 },
-  { id: 'fck_israel', name: 'F*ck Isr**l', price: 1000 },
-  { id: 'larry_malicieux', name: 'Larry le Malicieux', price: 1000 },
+  { id: 'expert_pomdoc', name: 'Expert Pomdoc', price: 100000, type: 'title' },
+  { id: 'maitre_pokemon', name: 'Maître Pokemon', price: 10000, type: 'title' },
+  { id: 'fck_israel', name: 'F*ck Isr**l', price: 1000, type: 'title' },
+  { id: 'larry_malicieux', name: 'Larry le Malicieux', price: 1000, type: 'title' },
+  { id: 'criminel_wc', name: 'Criminel des WC', price: 10000, type: 'title' },
+  { id: 'rainbow', name: 'Effet Arc-en-ciel', price: 50000, type: 'color', desc: 'Pseudo arc-en-ciel animé !' },
+  { id: 'badge_expert', name: 'Badge Expert 🎖️', price: 1000, type: 'badge', emoji: '🎖️' },
+  { id: 'badge_pomelien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟' },
+  { id: 'badge_censure', name: 'Badge Censure 🚫', price: 10000, type: 'badge', emoji: '🚫' },
 ];
 
 // ── STORAGE LAYER (FIREBASE) ────────────────────
@@ -659,6 +862,8 @@ function newAccount(code, name, password) {
 function migrateAccount(acc) {
   if (!acc.ownedTitles) acc.ownedTitles = [];
   if (!acc.activeTitles) acc.activeTitles = [];
+  if (!acc.activeColor) acc.activeColor = null;
+  if (!acc.activeBadge) acc.activeBadge = null;
   if (!acc.password) acc.password = acc.code; // fallback for old accounts
   return acc;
 }
@@ -816,6 +1021,8 @@ function goTo(id, btn) {
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
   if (id === 'paris') renderBets();
   if (id === 'boutique') renderShop();
+  if (id === 'proverbe') renderProverbe();
+  if (id === 'live') renderLive();
 }
 
 // ── PRIZES ───────────────────────────────────────
@@ -989,12 +1196,16 @@ async function renderLeaderboard(mode) {
       const t = SHOP_TITLES.find(st => st.id === tid);
       return t ? `<span class="title-badge">${t.name}</span>` : '';
     }).join('');
+    // Rainbow effect
+    const nameClass = acc.activeColor === 'rainbow' ? 'lb-name rainbow-text' : 'lb-name';
+    // Badge emoji
+    const badgeEmoji = acc.activeBadge ? (SHOP_TITLES.find(t => t.id === acc.activeBadge) || {}).emoji || '' : '';
     const safeCode = acc.code.replace(/'/g, "\\'");
     item.innerHTML = `
       <span class="lb-rank ${rankClass}">${rank}</span>
       <span class="lb-medal">${medal}</span>
       <div class="lb-info">
-        <span class="lb-name" onclick="openProfileModal('${safeCode}')">${acc.name}</span>
+        <span class="${nameClass}" onclick="openProfileModal('${safeCode}')">${acc.name}${badgeEmoji ? ' ' + badgeEmoji : ''}</span>
         ${titlesHTML}
         ${groupBadge}
         ${isMe ? '<span class="lb-you-badge">Moi</span>' : ''}
@@ -1015,6 +1226,8 @@ async function openProfileModal(code) {
     const t = SHOP_TITLES.find(st => st.id === tid);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
   }).join('') || '<span style="color:var(--muted);font-size:.85rem;">Aucun titre</span>';
+  const nameClass = migrated.activeColor === 'rainbow' ? 'rainbow-text' : '';
+  const badgeEmoji = migrated.activeBadge ? (SHOP_TITLES.find(t => t.id === migrated.activeBadge) || {}).emoji || '' : '';
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -1022,7 +1235,7 @@ async function openProfileModal(code) {
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   overlay.innerHTML = `
     <div class="modal-box">
-      <h2>${migrated.name} <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button></h2>
+      <h2><span class="${nameClass}">${migrated.name}${badgeEmoji ? ' ' + badgeEmoji : ''}</span> <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button></h2>
       <div class="profile-info">
         <div class="pi-row"><span class="pi-label">Pomels</span><span class="pi-val" style="color:var(--primary)">${migrated.balance.toLocaleString('fr-FR')} 🪙</span></div>
         <div class="pi-row"><span class="pi-label">Titres</span><span class="pi-val">${titlesHTML}</span></div>
@@ -1100,22 +1313,39 @@ async function renderGroupLeaderboard() {
 function renderShop() {
   const grid = document.getElementById('shopGrid');
   grid.innerHTML = '';
-  SHOP_TITLES.forEach(title => {
-    const owned = (state.ownedTitles || []).includes(title.id);
-    const canAfford = state.balance >= title.price;
-    const item = document.createElement('div');
-    item.className = 'shop-item' + (owned ? ' owned' : '');
-    item.innerHTML = `
-      <div class="shop-item-info">
-        <div class="shop-item-name">${title.name}</div>
-        <div class="shop-item-price">${title.price.toLocaleString('fr-FR')} 🪙</div>
-      </div>
-      ${owned
-        ? '<button class="btn-buy owned-btn" disabled>✅ Possédé</button>'
-        : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Pas assez'}</button>`
-      }
-    `;
-    grid.appendChild(item);
+
+  const sections = [
+    { label: '🏷️ Titres', types: ['title'] },
+    { label: '🎨 Couleur du pseudo', types: ['color'] },
+    { label: '🏅 Badges', types: ['badge'] },
+  ];
+
+  sections.forEach(sec => {
+    const items = SHOP_TITLES.filter(t => sec.types.includes(t.type));
+    if (!items.length) return;
+    const secTitle = document.createElement('div');
+    secTitle.style.cssText = 'font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:12px 0 4px;';
+    secTitle.textContent = sec.label;
+    grid.appendChild(secTitle);
+    items.forEach(title => {
+      const owned = (state.ownedTitles || []).includes(title.id);
+      const canAfford = state.balance >= title.price;
+      const item = document.createElement('div');
+      item.className = 'shop-item' + (owned ? ' owned' : '');
+      const descHtml = title.desc ? `<div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${title.desc}</div>` : '';
+      item.innerHTML = `
+        <div class="shop-item-info">
+          <div class="shop-item-name">${title.name}</div>
+          ${descHtml}
+          <div class="shop-item-price">${title.price.toLocaleString('fr-FR')} 🪙</div>
+        </div>
+        ${owned
+          ? '<button class="btn-buy owned-btn" disabled>✅ Possédé</button>'
+          : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Pas assez'}</button>`
+        }
+      `;
+      grid.appendChild(item);
+    });
   });
 }
 
@@ -1138,28 +1368,79 @@ async function buyTitle(titleId) {
 
 // ── TITLES SETTINGS ─────────────────────────────
 function renderTitlesSettings() {
-  const container = document.getElementById('titlesSettings');
   const owned = state.ownedTitles || [];
-  if (!owned.length) {
+
+  // TITLES
+  const container = document.getElementById('titlesSettings');
+  const ownedTitles = owned.filter(tid => { const t = SHOP_TITLES.find(x => x.id === tid); return t && t.type === 'title'; });
+  if (!ownedTitles.length) {
     container.innerHTML = '<div style="color:var(--muted);font-size:.85rem;">Tu n\'as aucun titre. Rends-toi à la boutique !</div>';
-    return;
+  } else {
+    container.innerHTML = '';
+    ownedTitles.forEach(tid => {
+      const title = SHOP_TITLES.find(t => t.id === tid);
+      if (!title) return;
+      const isActive = (state.activeTitles || []).includes(tid);
+      const row = document.createElement('div');
+      row.className = 'title-toggle-row';
+      row.innerHTML = `
+        <span class="tt-name">${title.name}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleTitle('${tid}', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      `;
+      container.appendChild(row);
+    });
   }
-  container.innerHTML = '';
-  owned.forEach(tid => {
-    const title = SHOP_TITLES.find(t => t.id === tid);
-    if (!title) return;
-    const isActive = (state.activeTitles || []).includes(tid);
-    const row = document.createElement('div');
-    row.className = 'title-toggle-row';
-    row.innerHTML = `
-      <span class="tt-name">${title.name}</span>
-      <label class="toggle-switch">
-        <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleTitle('${tid}', this.checked)" />
-        <span class="toggle-slider"></span>
-      </label>
-    `;
-    container.appendChild(row);
-  });
+
+  // COLORS
+  const colorContainer = document.getElementById('colorSettings');
+  const ownedColors = owned.filter(tid => { const t = SHOP_TITLES.find(x => x.id === tid); return t && t.type === 'color'; });
+  if (!ownedColors.length) {
+    colorContainer.innerHTML = '<div style="color:var(--muted);font-size:.85rem;">Tu n\'as aucun effet. Rends-toi à la boutique !</div>';
+  } else {
+    colorContainer.innerHTML = '';
+    ownedColors.forEach(tid => {
+      const title = SHOP_TITLES.find(t => t.id === tid);
+      if (!title) return;
+      const isActive = state.activeColor === tid;
+      const row = document.createElement('div');
+      row.className = 'title-toggle-row';
+      row.innerHTML = `
+        <span class="tt-name">${title.name}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleColor('${tid}', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      `;
+      colorContainer.appendChild(row);
+    });
+  }
+
+  // BADGES
+  const badgeContainer = document.getElementById('badgeSettings');
+  const ownedBadges = owned.filter(tid => { const t = SHOP_TITLES.find(x => x.id === tid); return t && t.type === 'badge'; });
+  if (!ownedBadges.length) {
+    badgeContainer.innerHTML = '<div style="color:var(--muted);font-size:.85rem;">Tu n\'as aucun badge. Rends-toi à la boutique !</div>';
+  } else {
+    badgeContainer.innerHTML = '';
+    ownedBadges.forEach(tid => {
+      const title = SHOP_TITLES.find(t => t.id === tid);
+      if (!title) return;
+      const isActive = state.activeBadge === tid;
+      const row = document.createElement('div');
+      row.className = 'title-toggle-row';
+      row.innerHTML = `
+        <span class="tt-name">${title.name}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleBadge('${tid}', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      `;
+      badgeContainer.appendChild(row);
+    });
+  }
 }
 
 async function toggleTitle(titleId, active) {
@@ -1169,6 +1450,16 @@ async function toggleTitle(titleId, active) {
   } else {
     state.activeTitles = state.activeTitles.filter(t => t !== titleId);
   }
+  await saveAccount(state);
+}
+
+async function toggleColor(colorId, active) {
+  state.activeColor = active ? colorId : null;
+  await saveAccount(state);
+}
+
+async function toggleBadge(badgeId, active) {
+  state.activeBadge = active ? badgeId : null;
   await saveAccount(state);
 }
 
@@ -1239,17 +1530,17 @@ async function closeBet(betId, winnerOption) {
   const losers = bettors.filter(b => b.choice !== winnerOption);
 
   const loserPool = losers.reduce((s, b) => s + b.amount, 0);
-  const winnerPool = winners.reduce((s, b) => s + b.amount, 0);
 
   bet.status = 'closed';
   bet.winnerOption = winnerOption;
+  bet.closedAt = new Date().toISOString();
   await saveBet(bet);
 
-  if (winners.length > 0 && winnerPool > 0) {
-    // Each winner gets their bet back + proportional share of loser pool
+  if (winners.length > 0) {
+    // Each winner gets their bet back + equal share of loser pool (arrondi au-dessus)
+    const sharePerWinner = Math.ceil(loserPool / winners.length);
     for (const w of winners) {
-      const share = Math.floor((w.amount / winnerPool) * loserPool);
-      const totalWin = w.amount + share;
+      const totalWin = w.amount + sharePerWinner;
       const acc = await getAccount(w.code);
       if (acc) {
         acc.balance += totalWin;
@@ -1275,7 +1566,58 @@ async function closeBet(betId, winnerOption) {
   renderBets();
 }
 
+async function deleteBetByCreator(betId) {
+  const bet = await getBet(betId);
+  if (!bet || bet.creator !== state.code) return;
+  showConfirm('Supprimer ce pari ? Les mises des parieurs seront remboursées.', async () => {
+    // Refund all bettors
+    const bettors = bet.bettors || [];
+    for (const b of bettors) {
+      const acc = await getAccount(b.code);
+      if (acc) {
+        acc.balance += b.amount;
+        acc.history = acc.history || [];
+        acc.history.unshift({ type: 'bet', desc: `Pari annulé remboursé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
+        await saveAccount(acc);
+        if (b.code === state.code) { state = migrateAccount(acc); refreshUI(); }
+      }
+    }
+    await deleteBet(betId);
+    closeConfirm();
+    renderBets();
+  });
+}
+
+async function cleanupBets() {
+  const all = await getAllBets();
+  const now = Date.now();
+  for (const bet of all) {
+    const age = now - new Date(bet.createdAt).getTime();
+    if (bet.status === 'open' && age > 3 * 24 * 3600 * 1000) {
+      // Refund bettors of expired open bets
+      const bettors = bet.bettors || [];
+      for (const b of bettors) {
+        const acc = await getAccount(b.code);
+        if (acc) {
+          acc.balance += b.amount;
+          acc.history = acc.history || [];
+          acc.history.unshift({ type: 'bet', desc: `Pari expiré remboursé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
+          await saveAccount(acc);
+          if (b.code === state.code) { state = migrateAccount(acc); refreshUI(); }
+        }
+      }
+      await deleteBet(bet.id);
+    } else if (bet.status === 'closed') {
+      const closedAge = bet.closedAt ? now - new Date(bet.closedAt).getTime() : age;
+      if (closedAge > 24 * 3600 * 1000) {
+        await deleteBet(bet.id);
+      }
+    }
+  }
+}
+
 async function renderBets() {
+  await cleanupBets();
   const all = await getAllBets();
   const openList = document.getElementById('betsList');
   const closedList = document.getElementById('betsClosedList');
@@ -1289,7 +1631,7 @@ async function renderBets() {
   if (!closedBets.length) closedList.innerHTML = '<div class="bet-empty">Aucun pari terminé.</div>';
 
   openBets.forEach(bet => openList.appendChild(buildBetCard(bet)));
-  closedBets.slice(0, 20).forEach(bet => closedList.appendChild(buildBetCard(bet)));
+  closedBets.forEach(bet => closedList.appendChild(buildBetCard(bet)));
 }
 
 function buildBetCard(bet) {
@@ -1328,18 +1670,24 @@ function buildBetCard(bet) {
   }
 
   let closeActions = '';
-  if (bet.status === 'open' && isMine && bettors.length >= 1) {
+  if (bet.status === 'open' && isMine) {
+    const closeWinBtns = bettors.length >= 1 ? `
+      <button class="btn-bet close1" onclick="closeBet('${bet.id}', 1)">✅ "${bet.option1}" gagne</button>
+      <button class="btn-bet close2" onclick="closeBet('${bet.id}', 2)">✅ "${bet.option2}" gagne</button>` : '';
     closeActions = `
       <div class="bet-actions" style="margin-top:8px;">
-        <button class="btn-bet close1" onclick="closeBet('${bet.id}', 1)">✅ "${bet.option1}" gagne</button>
-        <button class="btn-bet close2" onclick="closeBet('${bet.id}', 2)">✅ "${bet.option2}" gagne</button>
+        ${closeWinBtns}
+        <button class="btn-bet delete" onclick="deleteBetByCreator('${bet.id}')">🗑️ Supprimer</button>
       </div>`;
   }
 
   let resultHTML = '';
   if (bet.status === 'closed') {
     const winLabel = bet.winnerOption === 1 ? bet.option1 : bet.option2;
-    resultHTML = `<div class="bet-winner-result">🏆 "${winLabel}" a gagné ! Pot total : ${totalPot.toLocaleString('fr-FR')} Pomels</div>`;
+    const losersPool = (bet.winnerOption === 1 ? total2 : total1);
+    const winnersCount = (bet.winnerOption === 1 ? bettors1 : bettors2).length;
+    const sharePerWinner = winnersCount > 0 ? Math.ceil(losersPool / winnersCount) : 0;
+    resultHTML = `<div class="bet-winner-result">🏆 "${winLabel}" a gagné ! Chaque gagnant reçoit sa mise + ${sharePerWinner.toLocaleString('fr-FR')} 🪙 bonus</div>`;
   }
 
   const win1 = bet.status === 'closed' && bet.winnerOption === 1 ? ' winner-block' : '';
@@ -1373,6 +1721,224 @@ function buildBetCard(bet) {
     ${resultHTML}
   `;
   return card;
+}
+
+// ── PROVERBE DU JOUR ────────────────────────────
+function getTodayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+async function getProverbeData() { return dbGet('proverbe'); }
+async function saveProverbeData(data) { await dbSet('proverbe', data); }
+
+async function renderProverbe() {
+  const data = await getProverbeData() || { history: [], today: null };
+  const today = getTodayKey();
+  const todayCard = document.getElementById('provTodayContent');
+  const inputZone = document.getElementById('provInputZone');
+
+  // Get all accounts to determine today's chosen person
+  const all = await getAllAccounts();
+  if (!all.length) return;
+
+  // Determine today's assigned user (deterministic from date seed)
+  const dateHash = today.split('-').reduce((s, n) => s + parseInt(n), 0);
+  const chosenAcc = all[dateHash % all.length];
+  const isMyTurn = chosenAcc && chosenAcc.code === state.code;
+
+  if (data.today && data.today.date === today) {
+    // Proverbe already submitted today
+    todayCard.innerHTML = `
+      <div style="font-size:1.1rem;font-style:italic;line-height:1.6;">"${data.today.text}"</div>
+      <div class="proverbe-today-author">— <strong>${data.today.authorName}</strong></div>
+    `;
+    inputZone.style.display = 'none';
+  } else if (isMyTurn) {
+    // It's my turn to write
+    todayCard.innerHTML = `<div class="proverbe-waiting">C'est ton tour aujourd'hui, <strong>${state.name}</strong> ! Partage une phrase inspirante ✨</div>`;
+    inputZone.style.display = 'block';
+  } else {
+    // Waiting for the chosen person
+    const waitName = chosenAcc ? chosenAcc.name : '?';
+    todayCard.innerHTML = `<div class="proverbe-waiting">En attente du proverbe de <strong>${waitName}</strong> pour aujourd'hui…</div>`;
+    inputZone.style.display = 'none';
+  }
+
+  // History (last 10, most recent first)
+  const histEl = document.getElementById('provHistoryList');
+  histEl.innerHTML = '';
+  const history = (data.history || []).filter(h => h.date !== today).slice(0, 10);
+  if (!history.length) {
+    histEl.innerHTML = '<div class="proverbe-waiting">Aucun proverbe précédent.</div>';
+  } else {
+    history.forEach(h => {
+      const div = document.createElement('div');
+      div.className = 'proverbe-history-item';
+      div.innerHTML = `
+        <div class="phi-date">${new Date(h.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        <div class="phi-text">"${h.text}"</div>
+        <div class="phi-author">— ${h.authorName}</div>
+      `;
+      histEl.appendChild(div);
+    });
+  }
+}
+
+async function submitProverbe() {
+  const text = document.getElementById('provInput').value.trim();
+  if (!text) { setAlert('provAlert', 'Écris quelque chose !', 'error'); return; }
+  const today = getTodayKey();
+  const data = await getProverbeData() || { history: [], today: null };
+  if (data.today && data.today.date === today) { setAlert('provAlert', 'Proverbe déjà soumis aujourd\'hui !', 'error'); return; }
+
+  const entry = { date: today, text, authorCode: state.code, authorName: state.name };
+  // Prepend to history
+  const history = [entry, ...(data.history || [])].slice(0, 10);
+  await saveProverbeData({ today: entry, history });
+  document.getElementById('provInput').value = '';
+  renderProverbe();
+}
+
+// ── POMEL'LIVE ───────────────────────────────────
+function canPostLive() {
+  const now = new Date();
+  return now.getHours() > 9 || (now.getHours() === 9 && now.getMinutes() >= 15);
+}
+
+async function getLivePosts() { return dbGet('live_posts'); }
+async function saveLivePosts(posts) { await dbSet('live_posts', posts); }
+
+async function renderLive() {
+  const today = getTodayKey();
+  document.getElementById('liveDateBadge').textContent = '📅 ' + new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  const canPost = canPostLive();
+  document.getElementById('liveLocked').style.display = canPost ? 'none' : 'block';
+
+  const rawPosts = await getLivePosts() || {};
+  // Filter only today's posts
+  const posts = Object.values(rawPosts).filter(p => p.date === today);
+
+  const alreadyPosted = posts.some(p => p.authorCode === state.code);
+
+  if (canPost) {
+    if (alreadyPosted) {
+      document.getElementById('liveInputZone').style.display = 'none';
+      document.getElementById('liveAlreadyPosted').style.display = 'block';
+    } else {
+      document.getElementById('liveInputZone').style.display = 'block';
+      document.getElementById('liveAlreadyPosted').style.display = 'none';
+    }
+  } else {
+    document.getElementById('liveInputZone').style.display = 'none';
+    document.getElementById('liveAlreadyPosted').style.display = 'none';
+  }
+
+  const list = document.getElementById('livePostsList');
+  list.innerHTML = '';
+
+  if (!posts.length) {
+    list.innerHTML = '<div class="live-empty">Aucun post aujourd\'hui. Sois le premier !</div>';
+    return;
+  }
+
+  // Sort by time desc
+  posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  posts.forEach(post => {
+    const card = document.createElement('div');
+    card.className = 'live-post-card';
+    const time = new Date(post.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const myLike = (post.likes || []).includes(state.code);
+    const myDislike = (post.dislikes || []).includes(state.code);
+    const dislikes = (post.dislikes || []).length;
+    const likes = (post.likes || []).length;
+    // Badge/rainbow for author
+    card.innerHTML = `
+      <div class="live-post-header">
+        <span class="live-post-author">${post.authorName}</span>
+        <span class="live-post-time">${time}</span>
+      </div>
+      <div class="live-post-text">${post.text}</div>
+      <div class="live-post-actions">
+        <button class="live-react-btn ${myLike ? 'liked' : ''}" onclick="reactLive('${post.id}', 'like')">👍 ${likes}</button>
+        <button class="live-react-btn ${myDislike ? 'disliked' : ''}" onclick="reactLive('${post.id}', 'dislike')">👎 ${dislikes}</button>
+        ${dislikes >= 4 ? `<span class="live-dislike-warn">⚠️ ${5 - dislikes} dislike(s) avant suppression</span>` : ''}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function updateLiveCount() {
+  const val = document.getElementById('liveInput').value.length;
+  document.getElementById('liveCharCount').textContent = `${val} / 150`;
+}
+
+async function submitLivePost() {
+  const text = document.getElementById('liveInput').value.trim();
+  if (!text) { setAlert('livePostAlert', 'Écris quelque chose !', 'error'); return; }
+  const today = getTodayKey();
+  const rawPosts = await getLivePosts() || {};
+
+  // Cleanup old days
+  const cleaned = {};
+  Object.values(rawPosts).forEach(p => { if (p.date === today) cleaned[p.id] = p; });
+
+  // Check already posted
+  if (Object.values(cleaned).some(p => p.authorCode === state.code)) {
+    setAlert('livePostAlert', 'Tu as déjà posté aujourd\'hui !', 'error'); return;
+  }
+
+  const id = 'lp' + Date.now().toString(36);
+  cleaned[id] = {
+    id, date: today, text,
+    authorCode: state.code, authorName: state.name,
+    createdAt: new Date().toISOString(),
+    likes: [], dislikes: []
+  };
+  await saveLivePosts(cleaned);
+  document.getElementById('liveInput').value = '';
+  document.getElementById('liveCharCount').textContent = '0 / 150';
+  renderLive();
+}
+
+async function reactLive(postId, type) {
+  const today = getTodayKey();
+  const rawPosts = await getLivePosts() || {};
+  const post = rawPosts[postId];
+  if (!post || post.date !== today) return;
+
+  if (!post.likes) post.likes = [];
+  if (!post.dislikes) post.dislikes = [];
+
+  if (type === 'like') {
+    if (post.likes.includes(state.code)) {
+      post.likes = post.likes.filter(c => c !== state.code);
+    } else {
+      post.likes.push(state.code);
+      post.dislikes = post.dislikes.filter(c => c !== state.code);
+    }
+  } else {
+    if (post.dislikes.includes(state.code)) {
+      post.dislikes = post.dislikes.filter(c => c !== state.code);
+    } else {
+      post.dislikes.push(state.code);
+      post.likes = post.likes.filter(c => c !== state.code);
+      // Auto-delete at 5 dislikes
+      if (post.dislikes.length >= 5) {
+        delete rawPosts[postId];
+        await saveLivePosts(rawPosts);
+        renderLive();
+        return;
+      }
+    }
+  }
+
+  rawPosts[postId] = post;
+  await saveLivePosts(rawPosts);
+  renderLive();
 }
 
 // ── TRANSFER ─────────────────────────────────────
@@ -1437,9 +2003,14 @@ function renderProfile() {
     const t = SHOP_TITLES.find(st => st.id === tid);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
   }).join('') || '<span style="color:var(--muted)">Aucun</span>';
+  const nameClass = state.activeColor === 'rainbow' ? 'rainbow-text' : '';
+  const badgeEmoji = state.activeBadge ? (SHOP_TITLES.find(t => t.id === state.activeBadge) || {}).emoji || '' : '';
+  const colorLabel = state.activeColor ? (SHOP_TITLES.find(t => t.id === state.activeColor) || {}).name || 'Aucun' : 'Aucun';
   el.innerHTML = `
-    <div class="pi-row"><span class="pi-label">Pseudo</span><span class="pi-val">${state.name}</span></div>
+    <div class="pi-row"><span class="pi-label">Pseudo</span><span class="pi-val"><span class="${nameClass}">${state.name}${badgeEmoji ? ' ' + badgeEmoji : ''}</span></span></div>
     <div class="pi-row"><span class="pi-label">Titres actifs</span><span class="pi-val">${titlesHTML}</span></div>
+    <div class="pi-row"><span class="pi-label">Couleur pseudo</span><span class="pi-val">${colorLabel}</span></div>
+    <div class="pi-row"><span class="pi-label">Badge actif</span><span class="pi-val">${badgeEmoji || 'Aucun'}</span></div>
     <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${state.group || 'Aucun'}</span></div>
     <div class="pi-row"><span class="pi-label">Solde</span><span class="pi-val" style="color:var(--primary)">${state.balance.toLocaleString('fr-FR')} Pomels</span></div>
     <div class="pi-row"><span class="pi-label">Tirages effectués</span><span class="pi-val">${spins}</span></div>
