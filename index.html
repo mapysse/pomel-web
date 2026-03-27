@@ -74,12 +74,34 @@
   .wallet .coin { font-size: 1.1rem; }
   .wallet .amount { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--primary); }
   .wallet .label { font-size: .75rem; color: var(--muted); }
-  .user-badge { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); }
+  .user-badge { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); position: relative; cursor: pointer; padding: 6px 10px; border-radius: 10px; transition: background .15s; user-select: none; }
+  .user-badge:hover { background: var(--surface2); }
   .user-badge strong { color: var(--text); }
-  nav { width: 100%; display: flex; justify-content: center; padding: 20px 32px 0; gap: 4px; flex-wrap: wrap; }
+  .user-badge-arrow { font-size: .65rem; color: var(--muted); transition: transform .2s; }
+  .user-badge.open .user-badge-arrow { transform: rotate(180deg); }
+  .user-menu { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 6px; flex-direction: column; gap: 2px; min-width: 190px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 200; }
+  .user-badge.open .user-menu { display: flex; }
+  .user-menu::before { content: ''; position: absolute; top: -6px; right: 18px; width: 10px; height: 10px; background: var(--surface); border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
+  .user-menu-item { background: transparent; border: none; border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; text-align: left; transition: background .15s; width: 100%; }
+  .user-menu-item:hover { background: var(--surface2); }
+  .user-menu-item.danger { color: var(--red); }
+  .user-menu-item.danger:hover { background: rgba(235,88,70,0.1); }
+
+  nav { width: 100%; display: flex; justify-content: center; padding: 20px 32px 0; gap: 4px; flex-wrap: wrap; align-items: center; }
   .nav-btn { background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 10px 18px; font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
   .nav-btn:hover { color: var(--text); border-color: var(--border); }
   .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* DROPDOWNS */
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { white-space: nowrap; }
+  .nav-dropdown-trigger.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 6px; flex-direction: column; gap: 2px; min-width: 180px; box-shadow: var(--shadow); z-index: 100; }
+  .nav-dropdown-menu.open { display: flex; }
+  .nav-dropdown-menu::before { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(45deg); width: 12px; height: 12px; background: var(--surface); border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
+  .nav-dropdown-item { background: transparent; border: none; border-radius: 8px; padding: 10px 16px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .87rem; font-weight: 600; cursor: pointer; text-align: left; transition: background .15s; white-space: nowrap; }
+  .nav-dropdown-item:hover { background: var(--surface2); color: var(--primary); }
+  .nav-dropdown-item.active { background: rgba(235,88,70,0.1); color: var(--primary); }
   .page { display: none; width: 100%; max-width: 700px; padding: 40px 24px 80px; }
   .page.active { display: block; }
 
@@ -359,14 +381,16 @@
 
   @media (max-width: 600px) {
     header { padding: 12px 16px; }
-    .user-badge { display: none; }
-    nav { padding: 12px 16px 0; gap: 2px; }
-    .nav-btn { padding: 8px 10px; font-size: .76rem; }
+    nav { padding: 12px 16px 0; gap: 4px; }
+    .nav-btn { padding: 8px 10px; font-size: .78rem; }
+    .nav-dropdown-menu { left: 0; transform: none; }
+    .nav-dropdown-menu::before { left: 24px; transform: rotate(45deg); }
     .page { padding: 24px 16px 60px; }
     .login-box { padding: 32px 24px; }
     .bet-options-row { flex-direction: column; }
     .bet-choices { flex-direction: column; }
     .bet-choice-block { min-width: 0; }
+    .user-menu { right: -8px; }
   }
 </style>
 </head>
@@ -426,19 +450,43 @@
         <div class="label">Pomels</div>
       </div>
     </div>
-    <div class="user-badge">Bonjour, <strong id="headerName">—</strong></div>
+    <div class="user-badge" id="userBadge" onclick="toggleUserMenu(event)">
+      Bonjour, <strong id="headerName">—</strong>
+      <span class="user-badge-arrow">▾</span>
+      <div class="user-menu" onclick="event.stopPropagation()">
+        <button class="user-menu-item" onclick="goToFromUser('infos')">ℹ️ Informations</button>
+        <button class="user-menu-item" onclick="goToFromUser('settings')">⚙️ Paramètres</button>
+        <hr style="border:none;border-top:1px solid var(--border);margin:4px 0;">
+        <button class="user-menu-item danger" onclick="logout()">🚪 Déconnexion</button>
+      </div>
+    </div>
   </header>
 
   <nav>
-    <button class="nav-btn active" onclick="goTo('roulette',this)">🎰 Roulette</button>
-    <button class="nav-btn" onclick="goTo('boutique',this)">🛒 Boutique</button>
-    <button class="nav-btn" onclick="goTo('paris',this)">🎲 Paris</button>
-    <button class="nav-btn" onclick="goTo('classement',this)">🏆 Classement</button>
-    <button class="nav-btn" onclick="goTo('compteur',this)">💸 Compteur</button>
-    <button class="nav-btn" onclick="goTo('proverbe',this)">📜 Proverbe</button>
-    <button class="nav-btn" onclick="goTo('live',this)">📡 Live</button>
-    <button class="nav-btn" onclick="goTo('infos',this)">ℹ️ Infos</button>
-    <button class="nav-btn" onclick="goTo('settings',this)">⚙️ Paramètres</button>
+    <!-- Dropdown : Gagne des Pomels -->
+    <div class="nav-dropdown" id="dropdown-gagne">
+      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('gagne')">🎰 Gagne des Pomels ! ▾</button>
+      <div class="nav-dropdown-menu">
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('roulette','gagne',this)">🎰 Roulette</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('paris','gagne',this)">🎲 Paris</button>
+      </div>
+    </div>
+
+    <!-- Boutique standalone -->
+    <button class="nav-btn" id="navbtn-boutique" onclick="goTo('boutique',this)">🛒 Boutique</button>
+
+    <!-- Classement standalone -->
+    <button class="nav-btn" id="navbtn-classement" onclick="goTo('classement',this)">🏆 Classement</button>
+
+    <!-- Dropdown : Social -->
+    <div class="nav-dropdown" id="dropdown-social">
+      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('social')">💬 Social ▾</button>
+      <div class="nav-dropdown-menu">
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('compteur','social',this)">💸 Compteur</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('live','social',this)">📡 Live</button>
+      </div>
+    </div>
   </nav>
 
   <!-- ROULETTE -->
@@ -944,6 +992,11 @@ async function handleCreate() {
 function launchApp() {
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.add('visible');
+  // Set roulette as active page with its dropdown trigger highlighted
+  const trigger = document.querySelector('#dropdown-gagne .nav-dropdown-trigger');
+  if (trigger) trigger.classList.add('active');
+  const rouletteItem = document.querySelector('#dropdown-gagne .nav-dropdown-item');
+  if (rouletteItem) rouletteItem.classList.add('active');
   refreshUI();
   checkSpinAvailability();
   renderPrizes();
@@ -1010,11 +1063,83 @@ function executeConfirm() {
 }
 
 // ── NAVIGATION ───────────────────────────────────
+// Pages that belong to a dropdown group
+const DROPDOWN_MAP = {
+  roulette: 'gagne', paris: 'gagne',
+  compteur: 'social', proverbe: 'social', live: 'social'
+};
+// Standalone nav button ids
+const STANDALONE_PAGES = ['boutique', 'classement'];
+
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  const badge = document.getElementById('userBadge');
+  badge.classList.toggle('open');
+  // Close nav dropdowns when user menu opens
+  if (badge.classList.contains('open')) closeAllDropdowns();
+}
+
+function closeUserMenu() {
+  document.getElementById('userBadge')?.classList.remove('open');
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
+}
+
+function toggleDropdown(name) {
+  const menu = document.querySelector(`#dropdown-${name} .nav-dropdown-menu`);
+  const isOpen = menu.classList.contains('open');
+  closeAllDropdowns();
+  closeUserMenu();
+  if (!isOpen) menu.classList.add('open');
+}
+
+// Close all menus when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.nav-dropdown')) closeAllDropdowns();
+  if (!e.target.closest('#userBadge')) closeUserMenu();
+});
+
+function clearAllNavActive() {
+  // Clear standalone buttons
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  // Clear dropdown items
+  document.querySelectorAll('.nav-dropdown-item').forEach(b => b.classList.remove('active'));
+  // Clear dropdown triggers
+  document.querySelectorAll('.nav-dropdown-trigger').forEach(b => b.classList.remove('active'));
+}
+
 function goTo(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  btn.classList.add('active');
+  clearAllNavActive();
+  if (btn) btn.classList.add('active');
+  closeAllDropdowns();
+  _onPageLoad(id);
+}
+
+function goToFromDropdown(id, dropdownName, itemBtn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  clearAllNavActive();
+  // Highlight the trigger button
+  const trigger = document.querySelector(`#dropdown-${dropdownName} .nav-dropdown-trigger`);
+  if (trigger) trigger.classList.add('active');
+  if (itemBtn) itemBtn.classList.add('active');
+  closeAllDropdowns();
+  _onPageLoad(id);
+}
+
+function goToFromUser(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  clearAllNavActive();
+  closeUserMenu();
+  _onPageLoad(id);
+}
+
+function _onPageLoad(id) {
   if (id === 'compteur') renderHistory();
   if (id === 'settings') { renderProfile(); renderTitlesSettings(); }
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
