@@ -43,6 +43,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
 
+  .site-footer { width: 100%; text-align: center; padding: 18px 24px; font-size: .7rem; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.6; opacity: .6; }
+
   /* LOGIN */
   #loginScreen { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
   #loginScreen.hidden { display: none; }
@@ -343,6 +345,8 @@
   .home-proverbe-text { font-size: 1.05rem; font-style: italic; line-height: 1.6; color: var(--text); }
   .home-proverbe-author { font-size: .82rem; color: var(--muted); }
   .home-proverbe-waiting { font-size: .9rem; color: var(--muted); font-style: italic; }
+  .home-live-label { font-size: .7rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-top: 4px; }
+  .home-live-label:first-child { margin-top: 0; }
   .home-live-zone { display: flex; flex-direction: column; gap: 8px; }
   .home-live-post { background: var(--surface2); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
   .home-live-post-meta { display: flex; align-items: center; justify-content: space-between; font-size: .78rem; color: var(--muted); }
@@ -369,6 +373,52 @@
   .home-roulette-cta.disabled { background: var(--surface2); color: var(--muted); cursor: default; }
 
   @media (max-width: 600px) { .home-grid { grid-template-columns: 1fr; } .home-card-full { grid-column: 1; } }
+
+  /* QUÊTES */
+  .quetes-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .quete-select { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .9rem; outline: none; transition: border .2s; width: 100%; cursor: pointer; }
+  .quete-select:focus { border-color: var(--primary); }
+  .quete-section-label { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; }
+  .quetes-list { display: flex; flex-direction: column; gap: 12px; }
+  .quete-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: border-color .2s; }
+  .quete-card.mine { border-color: var(--primary); }
+  .quete-card.incoming { border-color: #5b8def; box-shadow: 0 0 16px rgba(91,141,239,0.15); }
+  .quete-card.done { opacity: .65; }
+  .quete-card.refused { opacity: .5; }
+  .quete-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .quete-status { font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .quete-status.pending  { background: rgba(91,141,239,0.15); color: #5b8def; }
+  .quete-status.accepted { background: rgba(240,192,64,0.15); color: var(--yellow); }
+  .quete-status.done     { background: rgba(62,207,110,0.15); color: var(--green); }
+  .quete-status.refused  { background: var(--surface2); color: var(--muted); }
+  .quete-desc { font-size: .95rem; line-height: 1.5; }
+  .quete-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
+  .quete-meta strong { color: var(--text); }
+  .quete-reward { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--green); font-size: .95rem; }
+  .quete-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-quete { border: none; border-radius: 8px; padding: 9px 18px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .btn-quete:hover { transform: translateY(-1px); }
+  .btn-quete.accept  { background: var(--green); color: #fff; }
+  .btn-quete.refuse  { background: transparent; border: 1px solid var(--red); color: var(--red); }
+  .btn-quete.refuse:hover { background: var(--red); color: #fff; }
+  .btn-quete.validate { background: var(--green); color: #fff; }
+  .btn-quete.cancel  { background: transparent; border: 1px solid var(--muted); color: var(--muted); }
+  .btn-quete.cancel:hover { border-color: var(--red); color: var(--red); }
+
+  /* HOTEL DES VENTES */
+  .hotel-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .hotel-list { display: flex; flex-direction: column; gap: 12px; }
+  .hotel-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; transition: border-color .2s; }
+  .hotel-item:hover { border-color: rgba(235,88,70,0.3); }
+  .hotel-item.mine { border-color: var(--primary); }
+  .hotel-item.owned { border-color: var(--green); opacity: .75; }
+  .hotel-item-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .hotel-item-name { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+  .hotel-item-creator { font-size: .78rem; color: var(--muted); }
+  .hotel-item-expires { font-size: .72rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .hotel-item-price { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
+  .hotel-badge-mine { font-size: .62rem; font-weight: 700; background: rgba(235,88,70,0.15); color: var(--primary); border: 1px solid rgba(235,88,70,0.3); border-radius: 4px; padding: 2px 6px; }
+  .hotel-badge-owned { font-size: .62rem; font-weight: 700; background: rgba(62,207,110,0.15); color: var(--green); border: 1px solid rgba(62,207,110,0.3); border-radius: 4px; padding: 2px 6px; }
 
   /* SNAKE */
   .snake-wrap { display: flex; flex-direction: column; gap: 20px; }
@@ -547,8 +597,14 @@
       </div>
     </div>
 
-    <!-- Boutique standalone -->
-    <button class="nav-btn" id="navbtn-boutique" onclick="goTo('boutique',this)">🛒 Boutique</button>
+    <!-- Dropdown : Commerce -->
+    <div class="nav-dropdown" id="dropdown-commerce">
+      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('commerce')">🛒 Commerce ▾</button>
+      <div class="nav-dropdown-menu">
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('boutique','commerce',this)">🛒 Boutique</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('hotel','commerce',this)">🏨 Hôtel des Ventes</button>
+      </div>
+    </div>
 
     <!-- Classement standalone -->
     <button class="nav-btn" id="navbtn-classement" onclick="goTo('classement',this)">🏆 Classement</button>
@@ -560,6 +616,7 @@
         <button class="nav-dropdown-item" onclick="goToFromDropdown('compteur','social',this)">💸 Compteur</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('live','social',this)">📡 Live</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('quetes','social',this)">⚔️ Quêtes</button>
       </div>
     </div>
   </nav>
@@ -571,6 +628,12 @@
       <div class="home-sub">Voici ce qui se passe sur Pomel. aujourd'hui</div>
 
       <div class="home-grid">
+
+        <!-- Quêtes à traiter -->
+        <div class="home-card home-card-full" id="homeQuetesCard" style="display:none; border-color:#5b8def; box-shadow:0 0 20px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
+          <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes en attente</div>
+          <div id="homeQuetes" class="home-bets-zone"></div>
+        </div>
 
         <!-- Statut roulette -->
         <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="goToFromDropdown('roulette','gagne', document.querySelector('#dropdown-gagne .nav-dropdown-item'))" style="cursor:pointer;">
@@ -598,7 +661,7 @@
 
         <!-- Post le plus liké -->
         <div class="home-card home-card-full">
-          <div class="home-card-title">📡 Post Live du Jour</div>
+          <div class="home-card-title">📡 Pomel'Live du Jour</div>
           <div id="homeLivePost" class="home-live-zone"></div>
         </div>
 
@@ -646,6 +709,39 @@
       </div>
       <div id="shopAlert" class="alert"></div>
       <div class="shop-grid" id="shopGrid"></div>
+    </div>
+  </div>
+
+  <!-- HOTEL DES VENTES -->
+  <div class="page" id="page-hotel">
+    <div class="hotel-wrap">
+      <div>
+        <div class="section-title">🏨 Hôtel des Ventes</div>
+        <div class="section-sub">Crée et vends tes propres titres — disponibles 24h. Les Pomels reviennent au créateur !</div>
+      </div>
+
+      <!-- Créer un titre -->
+      <div class="bet-create-card" id="hotelCreateZone">
+        <h3>Mettre en vente un titre</h3>
+        <div class="form-group">
+          <label>Nom du titre</label>
+          <input type="text" id="hotelTitleInput" placeholder="ex: Roi du Café" maxlength="40" />
+        </div>
+        <div class="form-group">
+          <label>Prix (Pomels)</label>
+          <input type="number" id="hotelPriceInput" placeholder="ex: 500" min="1" max="999999" />
+        </div>
+        <div id="hotelCreateAlert" class="alert"></div>
+        <button class="btn-primary" onclick="handleCreateHotelListing()">Mettre en vente 🏷️</button>
+      </div>
+
+      <!-- Listings actifs -->
+      <div>
+        <h3 style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">Titres disponibles</h3>
+        <div id="hotelList" class="hotel-list">
+          <div class="bet-empty">Chargement…</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -740,15 +836,16 @@
           <button class="lb-tab" onclick="switchLbTab('earned',this)">Total gagné</button>
         </div>
       </div>
-      <div class="lb-note">💡 Classement en ligne — tous les joueurs sont connectés en temps réel.</div>
-      <div class="lb-list" id="lbList"></div>
 
       <!-- GROUP SECTION -->
       <div class="group-section">
-        <h3>Rejoindre un groupe</h3>
+        <h3>Mon groupe</h3>
         <div class="group-current" id="groupCurrent">Tu n'as rejoint aucun groupe.</div>
         <div class="group-select-row" id="groupSelect"></div>
       </div>
+
+      <div class="lb-note">💡 Classement en ligne — tous les joueurs sont connectés en temps réel.</div>
+      <div class="lb-list" id="lbList"></div>
 
       <!-- GROUP LEADERBOARD -->
       <div style="margin-top:8px;">
@@ -845,6 +942,65 @@
     </div>
   </div>
 
+  <!-- QUÊTES -->
+  <div class="page" id="page-quetes">
+    <div class="quetes-wrap">
+      <div>
+        <div class="section-title">⚔️ Quêtes</div>
+        <div class="section-sub">Assigne une mission à quelqu'un et offre-lui des Pomels en récompense !</div>
+      </div>
+
+      <!-- Créer une quête -->
+      <div class="bet-create-card">
+        <h3>Créer une quête</h3>
+        <div class="form-group">
+          <label>Personne choisie</label>
+          <select id="queteTargetSelect" class="quete-select">
+            <option value="">Chargement des joueurs…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description de la mission</label>
+          <textarea id="queteDescInput" placeholder="ex: Apporter un café à tout le monde demain matin ☕" maxlength="200" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Récompense (Pomels offerts)</label>
+          <input type="number" id="queteRewardInput" placeholder="ex: 300" min="1" max="99999" />
+        </div>
+        <div id="queteCreateAlert" class="alert"></div>
+        <button class="btn-primary" onclick="handleCreateQuete()">Lancer la quête ⚔️</button>
+      </div>
+
+      <!-- Mes quêtes à accepter/refuser -->
+      <div id="quetesIncomingSection" style="display:none;">
+        <h3 class="quete-section-label">📬 Quêtes reçues</h3>
+        <div class="quetes-list" id="quetesIncomingList"></div>
+      </div>
+
+      <!-- Quêtes que j'ai créées -->
+      <div id="quetesMySection" style="display:none;">
+        <h3 class="quete-section-label">🧭 Mes quêtes créées</h3>
+        <div class="quetes-list" id="quetesMyList"></div>
+      </div>
+
+      <!-- Toutes les quêtes actives -->
+      <div>
+        <h3 class="quete-section-label">⚔️ Quêtes en cours</h3>
+        <div class="quetes-list" id="quetesActiveList">
+          <div class="bet-empty">Aucune quête en cours.</div>
+        </div>
+      </div>
+
+      <!-- Quêtes terminées récentes -->
+      <div>
+        <h3 class="quete-section-label">✅ Quêtes terminées</h3>
+        <div class="quetes-list" id="quetesDoneList">
+          <div class="bet-empty">Aucune quête terminée.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PROVERBE DU JOUR -->
   <div class="page" id="page-proverbe">
     <div class="proverbe-wrap">
@@ -906,66 +1062,160 @@
   <!-- INFORMATIONS -->
   <div class="page" id="page-infos">
     <div class="info-wrap">
+
       <div class="info-card">
         <h2>🎰 Bienvenue sur Pomel.</h2>
-        <p>Pomel est un site communautaire où tu peux gagner des Pomels (notre monnaie virtuelle), les dépenser en boutique, parier avec tes amis, et bien plus encore !</p>
+        <p>Pomel est un site communautaire où tu peux gagner des Pomels (notre monnaie virtuelle), les dépenser en boutique, parier avec tes amis, accomplir des quêtes et bien plus encore !</p>
       </div>
+
+      <div class="info-card">
+        <h3>🏠 Page d'accueil</h3>
+        <p>Clique sur le logo <strong>Pomel.</strong> en haut à gauche pour revenir à l'accueil. Tu y trouveras en un coup d'œil :</p>
+        <ul>
+          <li>Le statut de ta roulette du jour (disponible ou non)</li>
+          <li>Tes quêtes en attente ou en cours</li>
+          <li>Le top 3 des joueurs et du Serpent</li>
+          <li>Le proverbe du jour, le post Live le plus liké et le plus récent</li>
+          <li>Les paris en cours</li>
+        </ul>
+      </div>
+
+      <div class="info-divider"></div>
+
       <div class="info-card">
         <h3>🎰 La Roulette Quotidienne</h3>
-        <p>Chaque jour à partir de <strong>9h15</strong>, tu peux faire tourner la roulette et gagner des Pomels. Un seul tirage par jour, alors ne l'oublie pas !</p>
+        <p>Chaque jour à partir de <strong>9h15</strong>, tu peux faire tourner la roulette et gagner des Pomels. Un seul tirage par jour !</p>
         <ul>
-          <li>Les gains vont de 10 à 1 000 Pomels selon la chance</li>
+          <li>Les gains vont de <strong>10 à 1 000 Pomels</strong> selon la chance</li>
           <li>Le tirage se réinitialise chaque jour à minuit</li>
           <li>Plus t'es chanceux, plus tu montes dans le classement</li>
         </ul>
       </div>
+
       <div class="info-divider"></div>
+
       <div class="info-card">
         <h3>🎲 Les Paris</h3>
         <p>Crée ou rejoins un pari entre amis sur n'importe quel sujet. Mise des Pomels sur l'option de ton choix !</p>
         <ul>
-          <li>Les gagnants récupèrent leur mise + une part équitable des mises perdantes</li>
+          <li>Les gagnants récupèrent leur mise + une part <strong>équitable</strong> des mises perdantes (arrondie au supérieur)</li>
+          <li>Le créateur du pari peut le supprimer à tout moment (les mises sont remboursées)</li>
           <li>Les paris non clôturés sont supprimés automatiquement après <strong>3 jours</strong></li>
           <li>Les paris terminés disparaissent après <strong>24h</strong></li>
-          <li>Le créateur du pari peut le supprimer à tout moment</li>
         </ul>
       </div>
+
       <div class="info-divider"></div>
+
+      <div class="info-card">
+        <h3>🐍 Le Serpent</h3>
+        <p>Un jeu Snake classique intégré directement dans Pomel. Mange des fruits pour gagner des Pomels réels !</p>
+        <ul>
+          <li><strong>+5 Pomels</strong> par fruit mangé, crédités à la fin de la partie</li>
+          <li>Le serpent grandit à chaque fruit et la vitesse augmente tous les 5 fruits</li>
+          <li>Contrôles : flèches ⬆⬇⬅➡, ZQSD ou swipe sur mobile</li>
+          <li>Espace pour mettre en pause</li>
+          <li>Un <strong>leaderboard</strong> conserve ton meilleur score</li>
+        </ul>
+      </div>
+
+      <div class="info-divider"></div>
+
       <div class="info-card">
         <h3>🛒 La Boutique</h3>
-        <p>Dépense tes Pomels pour acheter des titres, des badges et des effets visuels pour ton profil !</p>
+        <p>Dépense tes Pomels pour acheter des titres, des badges et des effets visuels. Active-les ensuite dans <strong>Paramètres</strong>.</p>
         <ul>
-          <li><strong>Titres</strong> : s'affichent à côté de ton nom dans le classement</li>
-          <li><strong>Badges (émojis)</strong> : Expert 🎖️, Pomélien 🌟, Censure 🚫</li>
-          <li><strong>Effets</strong> : Arc-en-ciel sur ton pseudo !</li>
-          <li>Active tes achats dans <strong>Paramètres</strong></li>
+          <li><strong>Titres</strong> — s'affichent à côté de ton nom dans le classement</li>
+          <li><strong>Couleur du pseudo</strong> — effet Arc-en-ciel animé pour 50 000 🪙</li>
+          <li><strong>Badges</strong> — émojis affichés à côté de ton nom : Expert 🎖️ (1 000), Pomélien 🌟 (5 000), Censure 🚫 (10 000)</li>
+          <li>Titre spécial : <em>Criminel des WC</em> pour 10 000 🪙</li>
         </ul>
       </div>
+
       <div class="info-divider"></div>
+
       <div class="info-card">
-        <h3>📜 Proverbe du Jour</h3>
-        <p>Chaque jour, un membre est tiré au sort pour partager un proverbe ou une phrase motivante. Les 10 derniers proverbes sont conservés.</p>
-      </div>
-      <div class="info-divider"></div>
-      <div class="info-card">
-        <h3>📡 Pomel'Live</h3>
-        <p>À partir de <strong>9h15</strong>, chaque membre peut poster un message court (150 caractères max). Les posts sont remis à zéro chaque jour.</p>
+        <h3>🏨 Hôtel des Ventes</h3>
+        <p>Crée et vends tes propres titres personnalisés à la communauté !</p>
         <ul>
-          <li>Un seul post par personne par jour</li>
-          <li>Tu peux liker 👍 ou disliker 👎 les posts</li>
-          <li>Un post avec 5 dislikes est supprimé automatiquement</li>
+          <li>Chaque joueur peut mettre <strong>1 titre en vente par jour</strong>, au prix qu'il choisit</li>
+          <li>Les titres expirent automatiquement après <strong>24h</strong></li>
+          <li>Quand quelqu'un achète ton titre, les Pomels te sont directement versés</li>
+          <li>Les titres achetés restent dans ton inventaire <strong>sans limite de temps</strong></li>
+          <li>Active-les dans Paramètres → section Titres</li>
         </ul>
       </div>
+
       <div class="info-divider"></div>
+
+      <div class="info-card">
+        <h3>⚔️ Les Quêtes</h3>
+        <p>Assigne une mission à un autre joueur et offre-lui des Pomels en récompense — les Pomels sont offerts par le système, pas prélevés sur toi !</p>
+        <ul>
+          <li>Choisis un joueur, décris sa mission et fixe la récompense</li>
+          <li>Le joueur peut <strong>accepter ou refuser</strong> la quête</li>
+          <li>Une fois la mission accomplie, le créateur <strong>valide</strong> la quête et les Pomels sont versés automatiquement</li>
+          <li>Les quêtes non terminées sont supprimées après <strong>3 jours</strong></li>
+          <li>Tes quêtes en attente s'affichent directement sur la <strong>page d'accueil</strong></li>
+        </ul>
+      </div>
+
+      <div class="info-divider"></div>
+
       <div class="info-card">
         <h3>🏆 Le Classement</h3>
-        <p>Compare-toi aux autres joueurs par solde, nombre de tirages ou total gagné. Rejoins un groupe pour participer au classement des groupes !</p>
+        <p>Compare-toi aux autres joueurs sur 3 critères : solde, nombre de tirages, ou total gagné.</p>
+        <ul>
+          <li>Rejoins un <strong>groupe</strong> pour participer au classement des groupes</li>
+          <li>Clique sur un pseudo pour voir le profil d'un joueur</li>
+          <li>Les titres, badges et effets achetés s'affichent dans le classement</li>
+        </ul>
       </div>
+
       <div class="info-divider"></div>
+
       <div class="info-card">
         <h3>💸 Le Compteur</h3>
-        <p>Envoie des Pomels à d'autres joueurs directement. L'historique de tes transactions est conservé ici.</p>
+        <p>Envoie des Pomels à n'importe quel joueur directement, en saisissant son pseudo et le montant. L'historique complet de tes transactions est conservé ici.</p>
       </div>
+
+      <div class="info-divider"></div>
+
+      <div class="info-card">
+        <h3>📜 Proverbe du Jour</h3>
+        <p>Chaque jour, un membre est tiré au sort pour partager un proverbe ou une phrase motivante.</p>
+        <ul>
+          <li>Si c'est ton tour, un champ s'affiche pour écrire ta phrase</li>
+          <li>Les <strong>10 derniers proverbes</strong> sont conservés en grisé</li>
+        </ul>
+      </div>
+
+      <div class="info-divider"></div>
+
+      <div class="info-card">
+        <h3>📡 Pomel'Live</h3>
+        <p>À partir de <strong>9h15</strong>, chaque membre peut poster un message court du jour.</p>
+        <ul>
+          <li><strong>150 caractères max</strong>, un seul post par personne par jour</li>
+          <li>Tu peux liker 👍 ou disliker 👎 les posts</li>
+          <li>Un post avec <strong>5 dislikes</strong> est supprimé automatiquement</li>
+          <li>Les posts sont remis à zéro chaque matin</li>
+        </ul>
+      </div>
+
+      <div class="info-divider"></div>
+
+      <div class="info-card">
+        <h3>⚙️ Paramètres & Profil</h3>
+        <p>Accessible via ton pseudo en haut à droite. Tu peux y :</p>
+        <ul>
+          <li>Activer / désactiver tes titres, ta couleur de pseudo et ton badge</li>
+          <li>Consulter tes statistiques détaillées</li>
+          <li>Exporter ou copier ta sauvegarde</li>
+          <li>Supprimer ton compte</li>
+        </ul>
+      </div>
+
     </div>
   </div>
 
@@ -1049,6 +1299,18 @@ async function saveBet(bet) { await dbSet('bets/' + bet.id, bet); }
 async function deleteBet(id) { await dbDelete('bets/' + id); }
 async function getAllBets() { return dbGetAll('bets'); }
 
+// ── HOTEL HELPERS ─────────────────────────────────
+async function getHotelListing(id) { return dbGet('hotel/' + id); }
+async function saveHotelListing(item) { await dbSet('hotel/' + item.id, item); }
+async function deleteHotelListing(id) { await dbDelete('hotel/' + id); }
+async function getAllHotelListings() { return dbGetAll('hotel'); }
+
+// ── QUÊTE HELPERS ─────────────────────────────────
+async function getQuete(id) { return dbGet('quetes/' + id); }
+async function saveQuete(q) { await dbSet('quetes/' + q.id, q); }
+async function deleteQuete(id) { await dbDelete('quetes/' + id); }
+async function getAllQuetes() { return dbGetAll('quetes'); }
+
 // ── SESSION (local only) ────────────────────────
 function getSession() {
   try { const r = localStorage.getItem('pomel_session'); return r ? JSON.parse(r) : null; } catch { return null; }
@@ -1073,7 +1335,8 @@ function migrateAccount(acc) {
   if (!acc.activeTitles) acc.activeTitles = [];
   if (!acc.activeColor) acc.activeColor = null;
   if (!acc.activeBadge) acc.activeBadge = null;
-  if (!acc.password) acc.password = acc.code; // fallback for old accounts
+  if (!acc.customTitles) acc.customTitles = {};
+  if (!acc.password) acc.password = acc.code;
   return acc;
 }
 
@@ -1312,8 +1575,10 @@ function _onPageLoad(id) {
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
   if (id === 'paris') renderBets();
   if (id === 'boutique') renderShop();
+  if (id === 'hotel') renderHotel();
   if (id === 'proverbe') renderProverbe();
   if (id === 'live') renderLive();
+  if (id === 'quetes') renderQuetes();
   if (id === 'snake') renderSnakePage();
 }
 
@@ -1485,13 +1750,13 @@ async function renderLeaderboard(mode) {
     const groupBadge = acc.group ? `<span class="lb-group-badge">${acc.group}</span>` : '';
     // Active titles badges
     const titlesHTML = (acc.activeTitles || []).map(tid => {
-      const t = SHOP_TITLES.find(st => st.id === tid);
+      const t = resolveAnyTitleDef(tid, acc);
       return t ? `<span class="title-badge">${t.name}</span>` : '';
     }).join('');
     // Rainbow effect
     const nameClass = acc.activeColor === 'rainbow' ? 'lb-name rainbow-text' : 'lb-name';
     // Badge emoji
-    const badgeEmoji = acc.activeBadge ? (SHOP_TITLES.find(t => t.id === acc.activeBadge) || {}).emoji || '' : '';
+    const badgeEmoji = acc.activeBadge ? (resolveAnyTitleDef(acc.activeBadge, acc) || {}).emoji || '' : '';
     const safeCode = acc.code.replace(/'/g, "\\'");
     item.innerHTML = `
       <span class="lb-rank ${rankClass}">${rank}</span>
@@ -1515,11 +1780,11 @@ async function openProfileModal(code) {
   const migrated = migrateAccount(acc);
   const joined = new Date(migrated.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const titlesHTML = (migrated.activeTitles || []).map(tid => {
-    const t = SHOP_TITLES.find(st => st.id === tid);
+    const t = resolveAnyTitleDef(tid, migrated);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
   }).join('') || '<span style="color:var(--muted);font-size:.85rem;">Aucun titre</span>';
   const nameClass = migrated.activeColor === 'rainbow' ? 'rainbow-text' : '';
-  const badgeEmoji = migrated.activeBadge ? (SHOP_TITLES.find(t => t.id === migrated.activeBadge) || {}).emoji || '' : '';
+  const badgeEmoji = migrated.activeBadge ? (resolveAnyTitleDef(migrated.activeBadge, migrated) || {}).emoji || '' : '';
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -1659,24 +1924,46 @@ async function buyTitle(titleId) {
 }
 
 // ── TITLES SETTINGS ─────────────────────────────
+// Resolve a title definition from shop OR custom hotel purchases
+function resolveTitleDef(tid) {
+  const shopTitle = SHOP_TITLES.find(x => x.id === tid);
+  if (shopTitle) return shopTitle;
+  const custom = (state.customTitles || {})[tid];
+  if (custom) return custom;
+  return null;
+}
+
+// Same but for any account (for leaderboard / profile modal)
+function resolveAnyTitleDef(tid, acc) {
+  const shopTitle = SHOP_TITLES.find(x => x.id === tid);
+  if (shopTitle) return shopTitle;
+  const custom = ((acc && acc.customTitles) || {})[tid];
+  if (custom) return custom;
+  return null;
+}
+
 function renderTitlesSettings() {
   const owned = state.ownedTitles || [];
 
-  // TITLES
+  // TITLES (shop + custom hotel)
   const container = document.getElementById('titlesSettings');
-  const ownedTitles = owned.filter(tid => { const t = SHOP_TITLES.find(x => x.id === tid); return t && t.type === 'title'; });
+  const ownedTitles = owned.filter(tid => {
+    const t = resolveTitleDef(tid);
+    return t && t.type === 'title';
+  });
   if (!ownedTitles.length) {
     container.innerHTML = '<div style="color:var(--muted);font-size:.85rem;">Tu n\'as aucun titre. Rends-toi à la boutique !</div>';
   } else {
     container.innerHTML = '';
     ownedTitles.forEach(tid => {
-      const title = SHOP_TITLES.find(t => t.id === tid);
+      const title = resolveTitleDef(tid);
       if (!title) return;
       const isActive = (state.activeTitles || []).includes(tid);
+      const isCustom = tid.startsWith('custom_');
       const row = document.createElement('div');
       row.className = 'title-toggle-row';
       row.innerHTML = `
-        <span class="tt-name">${title.name}</span>
+        <span class="tt-name">${title.name}${isCustom ? ' <span style="font-size:.65rem;color:var(--muted);">(Hôtel)</span>' : ''}</span>
         <label class="toggle-switch">
           <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleTitle('${tid}', this.checked)" />
           <span class="toggle-slider"></span>
@@ -2035,6 +2322,7 @@ async function renderHome() {
 
   // Run all sections in parallel
   await Promise.all([
+    renderHomeQuetes(),
     renderHomeRoulette(),
     renderHomeTopBalance(),
     renderHomeTopSnake(),
@@ -2042,6 +2330,41 @@ async function renderHome() {
     renderHomeLivePost(),
     renderHomeBets(),
   ]);
+}
+
+async function renderHomeQuetes() {
+  const card = document.getElementById('homeQuetesCard');
+  const el   = document.getElementById('homeQuetes');
+
+  const allQuetes = await getAllQuetes();
+  // Quêtes reçues en attente OU en cours pour moi
+  const mine = allQuetes.filter(q =>
+    q.targetCode === state.code && (q.status === 'pending' || q.status === 'accepted')
+  ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  if (!mine.length) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  el.innerHTML = '';
+
+  mine.forEach(q => {
+    const statusLabel = q.status === 'pending' ? '⏳ En attente de ta réponse' : '🔥 En cours — à toi de jouer !';
+    const statusColor = q.status === 'pending' ? '#5b8def' : 'var(--yellow)';
+    const div = document.createElement('div');
+    div.className = 'home-bet-row';
+    div.innerHTML = `
+      <div class="home-bet-desc">${q.desc}</div>
+      <div class="home-bet-meta">
+        <span>De <strong>${q.creatorName}</strong></span>
+        <span style="color:var(--green);font-weight:700;">+${q.reward.toLocaleString('fr-FR')} 🪙</span>
+        <span style="color:${statusColor};font-weight:600;">${statusLabel}</span>
+      </div>
+    `;
+    el.appendChild(div);
+  });
 }
 
 async function renderHomeRoulette() {
@@ -2167,19 +2490,42 @@ async function renderHomeLivePost() {
     el.innerHTML = '<div class="home-live-empty">Aucun post aujourd\'hui.</div>';
     return;
   }
-  const top = posts.sort((a,b) => (b.likes||[]).length - (a.likes||[]).length)[0];
-  const likes = (top.likes||[]).length;
-  const time = new Date(top.createdAt).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
-  el.innerHTML = `
-    <div class="home-live-post">
-      <div class="home-live-post-meta">
-        <span><strong>${top.authorName}</strong></span>
-        <span>${time}</span>
+
+  const byLikes = [...posts].sort((a,b) => (b.likes||[]).length - (a.likes||[]).length);
+  const byTime  = [...posts].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const topLiked  = byLikes[0];
+  const topRecent = byTime[0];
+  // They might be the same post
+  const samePost = topLiked.id === topRecent.id;
+
+  const buildPostHTML = (post, label) => {
+    const likes    = (post.likes||[]).length;
+    const dislikes = (post.dislikes||[]).length;
+    const time     = new Date(post.createdAt).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    return `
+      <div class="home-live-label">${label}</div>
+      <div class="home-live-post">
+        <div class="home-live-post-meta">
+          <span><strong>${post.authorName}</strong></span>
+          <span>${time}</span>
+        </div>
+        <div class="home-live-post-text">${post.text}</div>
+        <div style="display:flex;gap:10px;margin-top:2px;">
+          <span class="home-live-post-likes">👍 ${likes}</span>
+          ${dislikes > 0 ? `<span style="font-size:.82rem;color:var(--muted);">👎 ${dislikes}</span>` : ''}
+        </div>
       </div>
-      <div class="home-live-post-text">${top.text}</div>
-      <div class="home-live-post-likes">👍 ${likes} like${likes > 1 ? 's' : ''}</div>
-    </div>
-  `;
+    `;
+  };
+
+  if (samePost) {
+    el.innerHTML = buildPostHTML(topLiked, '⭐ Post le plus liké & le plus récent');
+  } else {
+    el.innerHTML =
+      buildPostHTML(topLiked,  '⭐ Le plus liké') +
+      buildPostHTML(topRecent, '🕐 Le plus récent');
+  }
 }
 
 async function renderHomeBets() {
@@ -2522,6 +2868,384 @@ function renderSnakePage() {
   renderSnakeLb();
 }
 
+// ── HOTEL DES VENTES ─────────────────────────────
+async function cleanupHotelListings() {
+  const all = await getAllHotelListings();
+  const now = Date.now();
+  for (const item of all) {
+    if (now - new Date(item.createdAt).getTime() > 24 * 3600 * 1000) {
+      await deleteHotelListing(item.id);
+    }
+  }
+}
+
+async function handleCreateHotelListing() {
+  const titleName = document.getElementById('hotelTitleInput').value.trim();
+  const price     = parseInt(document.getElementById('hotelPriceInput').value);
+
+  if (!titleName)          { setAlert('hotelCreateAlert', 'Donne un nom à ton titre !', 'error'); return; }
+  if (!price || price < 1) { setAlert('hotelCreateAlert', 'Entre un prix valide !', 'error'); return; }
+
+  // One listing per day per user
+  await cleanupHotelListings();
+  const all = await getAllHotelListings();
+  const today = getTodayKey();
+  const alreadyToday = all.find(l => l.creatorCode === state.code && l.createdAt.startsWith(today));
+  if (alreadyToday) { setAlert('hotelCreateAlert', 'Tu as déjà mis un titre en vente aujourd\'hui !', 'error'); return; }
+
+  const id = 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+  const listing = {
+    id, titleName, price,
+    creatorCode: state.code,
+    creatorName: state.name,
+    createdAt: new Date().toISOString(),
+    buyers: [],  // list of codes who bought
+  };
+  await saveHotelListing(listing);
+  document.getElementById('hotelTitleInput').value = '';
+  document.getElementById('hotelPriceInput').value = '';
+  setAlert('hotelCreateAlert', '✅ Titre mis en vente pour 24h !', 'success');
+  setTimeout(() => { document.getElementById('hotelCreateAlert').className = 'alert'; }, 3000);
+  renderHotel();
+}
+
+async function buyHotelListing(listingId) {
+  const listing = await getHotelListing(listingId);
+  if (!listing) { alert('Ce titre n\'est plus disponible.'); renderHotel(); return; }
+
+  // Check already bought
+  if ((listing.buyers || []).includes(state.code)) { alert('Tu possèdes déjà ce titre !'); return; }
+  // Creator can't buy their own
+  if (listing.creatorCode === state.code) { alert('Tu ne peux pas acheter ton propre titre !'); return; }
+  // Check balance
+  if (state.balance < listing.price) { alert(`Solde insuffisant ! Il te faut ${listing.price.toLocaleString('fr-FR')} Pomels.`); return; }
+
+  // Deduct from buyer
+  state.balance -= listing.price;
+  state.history.unshift({ type: 'hotel', desc: `Titre acheté : "${listing.titleName}" (Hôtel des Ventes)`, amount: -listing.price, date: new Date().toISOString() });
+
+  // Add custom title to buyer's owned titles
+  const customId = 'custom_' + listingId;
+  if (!state.ownedTitles) state.ownedTitles = [];
+  if (!state.ownedTitles.includes(customId)) state.ownedTitles.push(customId);
+
+  // Store custom title definition locally in account
+  if (!state.customTitles) state.customTitles = {};
+  state.customTitles[customId] = { id: customId, name: listing.titleName, type: 'title' };
+
+  await saveAccount(state);
+
+  // Credit creator
+  const creator = await getAccount(listing.creatorCode);
+  if (creator) {
+    creator.balance += listing.price;
+    creator.history = creator.history || [];
+    creator.history.unshift({ type: 'hotel', desc: `Titre vendu : "${listing.titleName}"`, amount: listing.price, date: new Date().toISOString() });
+    await saveAccount(creator);
+  }
+
+  // Mark buyer in listing
+  listing.buyers = listing.buyers || [];
+  listing.buyers.push(state.code);
+  await saveHotelListing(listing);
+
+  refreshUI();
+  setAlert('hotelCreateAlert', `✅ Titre "${listing.titleName}" acheté et ajouté à tes paramètres !`, 'success');
+  setTimeout(() => { document.getElementById('hotelCreateAlert').className = 'alert'; }, 4000);
+  renderHotel();
+}
+
+function timeLeft(createdAt) {
+  const expiresAt = new Date(createdAt).getTime() + 24 * 3600 * 1000;
+  const diff = expiresAt - Date.now();
+  if (diff <= 0) return 'Expiré';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return `⏳ ${h}h ${m}min`;
+}
+
+async function renderHotel() {
+  await cleanupHotelListings();
+  const all = await getAllHotelListings();
+  const list = document.getElementById('hotelList');
+  list.innerHTML = '';
+
+  // Check if user already posted today
+  const today = getTodayKey();
+  const alreadyToday = all.find(l => l.creatorCode === state.code && l.createdAt.startsWith(today));
+  const createZone = document.getElementById('hotelCreateZone');
+  if (alreadyToday) {
+    createZone.style.opacity = '.5';
+    createZone.style.pointerEvents = 'none';
+    createZone.querySelector('h3').textContent = 'Titre en vente (1 par jour max — reviens demain !)';
+  } else {
+    createZone.style.opacity = '';
+    createZone.style.pointerEvents = '';
+    createZone.querySelector('h3').textContent = 'Mettre en vente un titre';
+  }
+
+  const sorted = [...all].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  if (!sorted.length) {
+    list.innerHTML = '<div class="bet-empty">Aucun titre en vente pour le moment.</div>';
+    return;
+  }
+
+  sorted.forEach(item => {
+    const isMine   = item.creatorCode === state.code;
+    const alreadyBought = (item.buyers || []).includes(state.code);
+    // Check if owned via ownedTitles
+    const customId = 'custom_' + item.id;
+    const owned    = (state.ownedTitles || []).includes(customId);
+    const canAfford = state.balance >= item.price;
+
+    const div = document.createElement('div');
+    div.className = 'hotel-item' + (isMine ? ' mine' : '') + (owned ? ' owned' : '');
+
+    let actionBtn = '';
+    if (isMine) {
+      actionBtn = '<span class="hotel-badge-mine">Mon titre</span>';
+    } else if (owned) {
+      actionBtn = '<button class="btn-buy owned-btn" disabled>✅ Possédé</button>';
+    } else {
+      actionBtn = `<button class="btn-buy" ${!canAfford ? 'disabled title="Solde insuffisant"' : ''} onclick="buyHotelListing('${item.id}')">${canAfford ? 'Acheter' : 'Pas assez'}</button>`;
+    }
+
+    div.innerHTML = `
+      <div class="hotel-item-info">
+        <div class="hotel-item-name">
+          <span class="title-badge">${item.titleName}</span>
+          ${isMine ? '<span class="hotel-badge-mine">Moi</span>' : ''}
+          ${owned && !isMine ? '<span class="hotel-badge-owned">Possédé</span>' : ''}
+        </div>
+        <div class="hotel-item-creator">Par <strong>${item.creatorName}</strong> · ${(item.buyers||[]).length} acheteur${(item.buyers||[]).length > 1 ? 's' : ''}</div>
+        <div class="hotel-item-expires">${timeLeft(item.createdAt)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <span class="hotel-item-price">${item.price.toLocaleString('fr-FR')} 🪙</span>
+        ${actionBtn}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ── QUÊTES ──────────────────────────────────────
+// Statuses: pending → accepted / refused → done
+
+async function renderQuetes() {
+  // Auto-supprimer les quêtes non terminées de plus de 3 jours
+  const allRaw = await getAllQuetes();
+  const now = Date.now();
+  for (const q of allRaw) {
+    const age = now - new Date(q.createdAt).getTime();
+    if (age > 3 * 24 * 3600 * 1000 && q.status !== 'done') {
+      await deleteQuete(q.id);
+    }
+  }
+  // Populate player select
+  const all = await getAllAccounts();
+  const select = document.getElementById('queteTargetSelect');
+  select.innerHTML = '<option value="">— Choisir un joueur —</option>';
+  all.filter(a => a.code !== state.code).forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.code;
+    opt.textContent = a.name;
+    select.appendChild(opt);
+  });
+
+  const allQuetes = await getAllQuetes();
+
+  // Split into sections
+  const incoming = allQuetes.filter(q => q.targetCode === state.code && q.status === 'pending');
+  const myCreated = allQuetes.filter(q => q.creatorCode === state.code && q.status !== 'done' && q.status !== 'refused');
+  const active = allQuetes.filter(q =>
+    q.status === 'accepted' &&
+    q.targetCode !== state.code &&
+    q.creatorCode !== state.code
+  );
+  const done = allQuetes.filter(q => q.status === 'done' || q.status === 'refused')
+    .sort((a, b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt))
+    .slice(0, 10);
+  const openForAll = allQuetes.filter(q => q.status === 'pending' || q.status === 'accepted')
+    .filter(q => q.targetCode !== state.code && q.creatorCode !== state.code)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  // Incoming section
+  const incomingSection = document.getElementById('quetesIncomingSection');
+  const incomingList = document.getElementById('quetesIncomingList');
+  if (incoming.length) {
+    incomingSection.style.display = 'block';
+    incomingList.innerHTML = '';
+    incoming.forEach(q => incomingList.appendChild(buildQueteCard(q, 'incoming')));
+  } else {
+    incomingSection.style.display = 'none';
+  }
+
+  // My created section
+  const mySection = document.getElementById('quetesMySection');
+  const myList = document.getElementById('quetesMyList');
+  if (myCreated.length) {
+    mySection.style.display = 'block';
+    myList.innerHTML = '';
+    myCreated.forEach(q => myList.appendChild(buildQueteCard(q, 'mine')));
+  } else {
+    mySection.style.display = 'none';
+  }
+
+  // Active for all
+  const activeList = document.getElementById('quetesActiveList');
+  activeList.innerHTML = '';
+  if (!openForAll.length) {
+    activeList.innerHTML = '<div class="bet-empty">Aucune quête en cours.</div>';
+  } else {
+    openForAll.forEach(q => activeList.appendChild(buildQueteCard(q, 'view')));
+  }
+
+  // Done
+  const doneList = document.getElementById('quetesDoneList');
+  doneList.innerHTML = '';
+  if (!done.length) {
+    doneList.innerHTML = '<div class="bet-empty">Aucune quête terminée récemment.</div>';
+  } else {
+    done.forEach(q => doneList.appendChild(buildQueteCard(q, 'done')));
+  }
+}
+
+function buildQueteCard(q, role) {
+  const card = document.createElement('div');
+  const statusLabels = {
+    pending:  '⏳ En attente',
+    accepted: '🔥 En cours',
+    done:     '✅ Terminée',
+    refused:  '❌ Refusée',
+  };
+  const statusClass = q.status;
+  card.className = 'quete-card' +
+    (role === 'incoming' ? ' incoming' : '') +
+    (role === 'mine' ? ' mine' : '') +
+    (q.status === 'done' || q.status === 'refused' ? ' ' + q.status : '');
+
+  const date = new Date(q.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+  let actionsHTML = '';
+  if (role === 'incoming' && q.status === 'pending') {
+    actionsHTML = `
+      <div class="quete-actions">
+        <button class="btn-quete accept" onclick="respondQuete('${q.id}', true)">✅ Accepter</button>
+        <button class="btn-quete refuse" onclick="respondQuete('${q.id}', false)">❌ Refuser</button>
+      </div>`;
+  } else if (role === 'mine' && q.status === 'accepted') {
+    actionsHTML = `
+      <div class="quete-actions">
+        <button class="btn-quete validate" onclick="validateQuete('${q.id}')">🏆 Valider la quête</button>
+        <button class="btn-quete cancel" onclick="cancelQuete('${q.id}')">Annuler</button>
+      </div>`;
+  } else if (role === 'mine' && q.status === 'pending') {
+    actionsHTML = `
+      <div class="quete-actions">
+        <button class="btn-quete cancel" onclick="cancelQuete('${q.id}')">🗑️ Annuler</button>
+      </div>`;
+  }
+
+  card.innerHTML = `
+    <div class="quete-header">
+      <span class="quete-status ${statusClass}">${statusLabels[q.status] || q.status}</span>
+      <span style="font-size:.72rem;color:var(--muted);">${date}</span>
+    </div>
+    <div class="quete-desc">${q.desc}</div>
+    <div class="quete-meta">
+      <span>De <strong>${q.creatorName}</strong> → <strong>${q.targetName}</strong></span>
+      <span class="quete-reward">+${q.reward.toLocaleString('fr-FR')} 🪙 offerts</span>
+    </div>
+    ${actionsHTML}
+  `;
+  return card;
+}
+
+async function handleCreateQuete() {
+  const targetCode = document.getElementById('queteTargetSelect').value;
+  const desc       = document.getElementById('queteDescInput').value.trim();
+  const reward     = parseInt(document.getElementById('queteRewardInput').value);
+
+  if (!targetCode)        { setAlert('queteCreateAlert', 'Choisis un joueur !', 'error'); return; }
+  if (!desc)              { setAlert('queteCreateAlert', 'Décris la mission !', 'error'); return; }
+  if (!reward || reward < 1) { setAlert('queteCreateAlert', 'Entre une récompense valide !', 'error'); return; }
+
+  // Find target name
+  const all = await getAllAccounts();
+  const target = all.find(a => a.code === targetCode);
+  if (!target) { setAlert('queteCreateAlert', 'Joueur introuvable.', 'error'); return; }
+
+  const id = 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const quete = {
+    id,
+    creatorCode: state.code,
+    creatorName: state.name,
+    targetCode,
+    targetName: target.name,
+    desc,
+    reward,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  await saveQuete(quete);
+  document.getElementById('queteTargetSelect').value = '';
+  document.getElementById('queteDescInput').value = '';
+  document.getElementById('queteRewardInput').value = '';
+  setAlert('queteCreateAlert', `✅ Quête envoyée à ${target.name} !`, 'success');
+  setTimeout(() => { document.getElementById('queteCreateAlert').className = 'alert'; }, 3000);
+  renderQuetes();
+}
+
+async function respondQuete(queteId, accept) {
+  const q = await getQuete(queteId);
+  if (!q || q.targetCode !== state.code) return;
+  q.status = accept ? 'accepted' : 'refused';
+  q.updatedAt = new Date().toISOString();
+  await saveQuete(q);
+  renderQuetes();
+}
+
+async function validateQuete(queteId) {
+  const q = await getQuete(queteId);
+  if (!q || q.creatorCode !== state.code || q.status !== 'accepted') return;
+
+  // Award Pomels to target (free — not from creator)
+  const target = await getAccount(q.targetCode);
+  if (target) {
+    target.balance += q.reward;
+    target.history = target.history || [];
+    target.history.unshift({
+      type: 'quete',
+      desc: `⚔️ Quête accomplie : "${q.desc}"`,
+      amount: q.reward,
+      date: new Date().toISOString(),
+    });
+    await saveAccount(target);
+    // Update local state if it's us
+    if (target.code === state.code) { state = migrateAccount(target); refreshUI(); }
+  }
+
+  q.status = 'done';
+  q.updatedAt = new Date().toISOString();
+  await saveQuete(q);
+  setAlert('queteCreateAlert', `🏆 Quête validée ! ${target ? target.name : ''} reçoit ${q.reward.toLocaleString('fr-FR')} Pomels !`, 'success');
+  setTimeout(() => { document.getElementById('queteCreateAlert').className = 'alert'; }, 4000);
+  renderQuetes();
+}
+
+async function cancelQuete(queteId) {
+  const q = await getQuete(queteId);
+  if (!q || q.creatorCode !== state.code) return;
+  showConfirm('Annuler cette quête ?', async () => {
+    await deleteQuete(queteId);
+    closeConfirm();
+    renderQuetes();
+  });
+}
+
 // ── PROVERBE DU JOUR ────────────────────────────
 function getTodayKey() {
   const d = new Date();
@@ -2780,7 +3504,7 @@ function renderHistory() {
     const div = document.createElement('div');
     div.className = 'history-item';
     const isPos = h.amount > 0;
-    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : '💸';
+    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : h.type === 'hotel' ? '🏨' : h.type === 'quete' ? '⚔️' : '💸';
     const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     div.innerHTML = `
       <span class="hi-type">${icon}</span>
@@ -2799,12 +3523,12 @@ function renderProfile() {
   const sent = (state.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
   const joined = new Date(state.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const titlesHTML = (state.activeTitles || []).map(tid => {
-    const t = SHOP_TITLES.find(st => st.id === tid);
+    const t = resolveTitleDef(tid);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
   }).join('') || '<span style="color:var(--muted)">Aucun</span>';
   const nameClass = state.activeColor === 'rainbow' ? 'rainbow-text' : '';
-  const badgeEmoji = state.activeBadge ? (SHOP_TITLES.find(t => t.id === state.activeBadge) || {}).emoji || '' : '';
-  const colorLabel = state.activeColor ? (SHOP_TITLES.find(t => t.id === state.activeColor) || {}).name || 'Aucun' : 'Aucun';
+  const badgeEmoji = state.activeBadge ? (resolveTitleDef(state.activeBadge) || {}).emoji || '' : '';
+  const colorLabel = state.activeColor ? (resolveTitleDef(state.activeColor) || {}).name || 'Aucun' : 'Aucun';
   el.innerHTML = `
     <div class="pi-row"><span class="pi-label">Pseudo</span><span class="pi-val"><span class="${nameClass}">${state.name}${badgeEmoji ? ' ' + badgeEmoji : ''}</span></span></div>
     <div class="pi-row"><span class="pi-label">Titres actifs</span><span class="pi-val">${titlesHTML}</span></div>
@@ -2845,5 +3569,6 @@ document.addEventListener('keydown', e => {
 // ── BOOT ─────────────────────────────────────────
 init();
 </script>
+<footer class="site-footer">Ce site est à but humoristique, toute dérive ne sera pas tolérée. Nous ne vous réclamerons jamais aucune information personnelle ou download/upload de quelconques données.</footer>
 </body>
 </html>
