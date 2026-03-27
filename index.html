@@ -4063,12 +4063,6 @@ function drawJardin(flowers) {
     ctx.arc(0, 0, fl.centerR, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-
-    // Nom du planteur (tout petit)
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = '7px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(f.playerName.slice(0, 8), f.x, f.y - fl.stemH - fl.centerR - 2);
   });
 }
 
