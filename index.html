@@ -420,6 +420,36 @@
   .hotel-badge-mine { font-size: .62rem; font-weight: 700; background: rgba(235,88,70,0.15); color: var(--primary); border: 1px solid rgba(235,88,70,0.3); border-radius: 4px; padding: 2px 6px; }
   .hotel-badge-owned { font-size: .62rem; font-weight: 700; background: rgba(62,207,110,0.15); color: var(--green); border: 1px solid rgba(62,207,110,0.3); border-radius: 4px; padding: 2px 6px; }
 
+  /* CLICKER */
+  .clicker-wrap { display: flex; flex-direction: column; gap: 24px; max-width: 700px; }
+  .clicker-stats-bar { display: flex; gap: 12px; flex-wrap: wrap; }
+  .clicker-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; flex: 1; min-width: 120px; }
+  .clicker-stat-label { font-size: .68rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+  .clicker-stat-val { font-family: 'Space Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+  .clicker-fruits-zone { display: flex; justify-content: center; gap: 40px; align-items: center; padding: 20px 0; flex-wrap: wrap; }
+  .clicker-fruit { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; user-select: none; transition: transform .08s; }
+  .clicker-fruit:active { transform: scale(.88); }
+  .clicker-fruit svg { width: 110px; height: 110px; filter: drop-shadow(0 0 18px var(--primary-glow)); transition: filter .15s; }
+  .clicker-fruit:hover svg { filter: drop-shadow(0 0 28px var(--primary-glow)) brightness(1.1); }
+  .clicker-fruit-label { font-family: 'Space Mono', monospace; font-size: .85rem; font-weight: 700; color: var(--primary); }
+  .clicker-fruit.hidden { display: none; }
+  .clicker-fruit-pop { animation: fruitPop .12s ease-out; }
+  @keyframes fruitPop { 0%{transform:scale(1)} 50%{transform:scale(.82)} 100%{transform:scale(1)} }
+  .clicker-seed-float { position: fixed; font-family: 'Space Mono', monospace; font-size: .9rem; font-weight: 700; color: var(--green); pointer-events: none; z-index: 500; animation: seedFloat .8s ease-out forwards; }
+  @keyframes seedFloat { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)} }
+  .clicker-collect-zone { background: var(--surface); border: 2px solid var(--yellow); border-radius: var(--radius); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .clicker-collect-info { display: flex; align-items: center; gap: 10px; font-size: .9rem; color: var(--muted); }
+  .clicker-collect-info strong { font-family: 'Space Mono', monospace; font-size: 1.1rem; color: var(--yellow); }
+  .clicker-upgrades { display: flex; flex-direction: column; gap: 12px; }
+  .clicker-upgrades-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .clicker-upgrade-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; transition: border-color .2s; }
+  .clicker-upgrade-card:hover { border-color: rgba(235,88,70,0.3); }
+  .clicker-upgrade-card.owned { border-color: var(--green); opacity: .75; }
+  .clicker-upgrade-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .clicker-upgrade-name { font-weight: 700; font-size: .95rem; }
+  .clicker-upgrade-desc { font-size: .8rem; color: var(--muted); line-height: 1.4; }
+  .clicker-upgrade-price { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--primary); font-weight: 700; margin-top: 4px; }
+
   /* SNAKE */
   .snake-wrap { display: flex; flex-direction: column; gap: 20px; }
   .snake-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
@@ -594,6 +624,7 @@
         <button class="nav-dropdown-item" onclick="goToFromDropdown('roulette','gagne',this)">🎰 Roulette</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('paris','gagne',this)">🎲 Paris</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('snake','gagne',this)">🐍 Serpent</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('clicker','gagne',this)">🌱 Clicker</button>
       </div>
     </div>
 
@@ -789,6 +820,97 @@
           <div class="bet-empty">Aucun pari terminé.</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- CLICKER -->
+  <div class="page" id="page-clicker">
+    <div class="clicker-wrap">
+
+      <!-- Header stats -->
+      <div class="clicker-stats-bar">
+        <div class="clicker-stat">
+          <div class="clicker-stat-label">🌱 Graines totales</div>
+          <div class="clicker-stat-val" id="clickerSeeds">0</div>
+        </div>
+        <div class="clicker-stat">
+          <div class="clicker-stat-label">📦 Stock auto</div>
+          <div class="clicker-stat-val" id="clickerStock">0 <span style="font-size:.7rem;color:var(--muted);">/ 1000</span></div>
+        </div>
+        <div class="clicker-stat">
+          <div class="clicker-stat-label">⚡ Par seconde</div>
+          <div class="clicker-stat-val" id="clickerRate">0</div>
+        </div>
+      </div>
+
+      <!-- Zone de clic -->
+      <div class="clicker-fruits-zone" id="clickerFruitsZone">
+        <div class="clicker-fruit" id="fruit1" onclick="clickFruit(1)">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="40" cy="46" rx="28" ry="26" fill="var(--primary)"/>
+            <ellipse cx="40" cy="44" rx="26" ry="24" fill="#f07060"/>
+            <path d="M40 20 Q44 8 54 10" stroke="#3ecf6e" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="54" cy="9" rx="6" ry="4" fill="#3ecf6e" transform="rotate(-20,54,9)"/>
+          </svg>
+          <div class="clicker-fruit-label">+1 🌱</div>
+        </div>
+        <div class="clicker-fruit hidden" id="fruit2" onclick="clickFruit(2)">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="30" cy="50" rx="22" ry="20" fill="var(--primary)"/>
+            <ellipse cx="52" cy="44" rx="20" ry="18" fill="#c03c2c"/>
+            <circle cx="30" cy="48" rx="20" ry="18" fill="#f07060"/>
+            <circle cx="52" cy="42" rx="18" ry="16" fill="#c84030"/>
+            <path d="M38 18 Q40 8 48 12" stroke="#3ecf6e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <ellipse cx="49" cy="11" rx="5" ry="3.5" fill="#3ecf6e" transform="rotate(-15,49,11)"/>
+          </svg>
+          <div class="clicker-fruit-label">+1 🌱</div>
+        </div>
+      </div>
+
+      <!-- Récupérer stock auto -->
+      <div class="clicker-collect-zone" id="clickerCollectZone" style="display:none;">
+        <div class="clicker-collect-info">
+          <span>🤖 Stock auto-clicker :</span>
+          <strong id="clickerStockVal">0</strong> graines
+        </div>
+        <button class="btn-primary" style="width:auto;padding:10px 28px;" onclick="collectAutoStock()">Récupérer 📦</button>
+      </div>
+
+      <!-- Améliorations -->
+      <div class="clicker-upgrades">
+        <div class="clicker-upgrades-title">🛠️ Améliorations</div>
+
+        <div class="clicker-upgrade-card" id="upgradeAutoClicker">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">🤖 Auto-Clicker</div>
+            <div class="clicker-upgrade-desc">Génère 1 graine / 2 sec automatiquement (stocké jusqu'à 1 000)</div>
+            <div class="clicker-upgrade-price">200 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnAutoClicker" onclick="buyUpgrade('autoClicker')">Acheter</button>
+        </div>
+
+        <div class="clicker-upgrade-card" id="upgradeSecondFruit">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">🍎 Second Fruit</div>
+            <div class="clicker-upgrade-desc">Un deuxième fruit cliquable — double ta production manuelle</div>
+            <div class="clicker-upgrade-price">10 000 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnSecondFruit" onclick="buyUpgrade('secondFruit')">Acheter</button>
+        </div>
+
+        <div class="clicker-upgrade-card">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">💱 Échanger des graines</div>
+            <div class="clicker-upgrade-desc">100 graines = 1 Pomel</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+              <input type="number" id="exchangeAmount" min="1" max="1000" placeholder="Pomels voulus" oninput="updateExchangePrice()" style="width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:.85rem;outline:none;" />
+              <span style="font-size:.85rem;color:var(--muted);">= <strong id="exchangeCost" style="color:var(--primary);">0</strong> 🌱</span>
+            </div>
+          </div>
+          <button class="btn-buy" id="btnExchange" onclick="exchangeSeeds()" style="align-self:flex-end;">Échanger</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1578,6 +1700,8 @@ function _onPageLoad(id) {
     snakeLoop = null;
     snakeState = null;
   }
+  // Stop clicker if navigating away
+  if (id !== 'clicker') stopClickerPage();
   if (id === 'compteur') renderHistory();
   if (id === 'settings') { renderProfile(); renderTitlesSettings(); }
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
@@ -1588,6 +1712,7 @@ function _onPageLoad(id) {
   if (id === 'live') renderLive();
   if (id === 'quetes') renderQuetes();
   if (id === 'snake') renderSnakePage();
+  if (id === 'clicker') renderClickerPage();
 }
 
 // ── PRIZES ───────────────────────────────────────
@@ -2319,6 +2444,7 @@ function goToHome() {
   closeUserMenu();
   // Stop snake if running
   if (snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; snakeState = null; }
+  stopClickerPage();
   renderHome();
 }
 
@@ -2598,6 +2724,194 @@ async function renderHomeBets() {
     `;
     el.appendChild(div);
   });
+}
+
+// ── CLICKER ──────────────────────────────────────
+// Clicker state is stored per-user in Firebase under clicker/<code>
+// Seeds = graines de Pomels (monnaie locale)
+
+let clickerData = {
+  seeds: 0,         // total graines
+  autoStock: 0,     // stock auto non récupéré
+  upgrades: { autoClicker: false, secondFruit: false },
+};
+let clickerAutoInterval = null;
+let clickerActive = false;
+
+async function loadClickerData() {
+  const saved = await dbGet('clicker/' + state.code);
+  if (saved) {
+    clickerData = {
+      seeds: saved.seeds || 0,
+      autoStock: Math.min(saved.autoStock || 0, 1000),
+      upgrades: saved.upgrades || { autoClicker: false, secondFruit: false },
+    };
+  }
+}
+
+async function saveClickerData() {
+  await dbSet('clicker/' + state.code, {
+    seeds: Math.floor(clickerData.seeds),
+    autoStock: Math.floor(clickerData.autoStock),
+    upgrades: clickerData.upgrades,
+  });
+}
+
+async function renderClickerPage() {
+  clickerActive = true;
+  await loadClickerData();
+  updateClickerUI();
+  startAutoClicker();
+}
+
+function stopClickerPage() {
+  clickerActive = false;
+  if (clickerAutoInterval) { clearInterval(clickerAutoInterval); clickerAutoInterval = null; }
+}
+
+function startAutoClicker() {
+  if (clickerAutoInterval) clearInterval(clickerAutoInterval);
+  if (!clickerData.upgrades.autoClicker) return;
+  clickerAutoInterval = setInterval(() => {
+    if (!clickerActive) { clearInterval(clickerAutoInterval); return; }
+    if (clickerData.autoStock < 1000) {
+      clickerData.autoStock = Math.min(1000, clickerData.autoStock + 1);
+      updateClickerUI();
+      saveClickerData();
+    }
+  }, 2000);
+}
+
+function updateClickerUI() {
+  document.getElementById('clickerSeeds').textContent = Math.floor(clickerData.seeds).toLocaleString('fr-FR');
+  document.getElementById('clickerStock').innerHTML = Math.floor(clickerData.autoStock).toLocaleString('fr-FR') + ' <span style="font-size:.7rem;color:var(--muted);">/ 1000</span>';
+  const rate = clickerData.upgrades.autoClicker ? 0.5 : 0;
+  document.getElementById('clickerRate').textContent = rate.toFixed(1);
+
+  // Second fruit visibility
+  const f2 = document.getElementById('fruit2');
+  if (clickerData.upgrades.secondFruit) f2.classList.remove('hidden');
+  else f2.classList.add('hidden');
+
+  // Collect zone
+  const collectZone = document.getElementById('clickerCollectZone');
+  const stockVal = document.getElementById('clickerStockVal');
+  if (clickerData.upgrades.autoClicker) {
+    collectZone.style.display = 'flex';
+    stockVal.textContent = Math.floor(clickerData.autoStock).toLocaleString('fr-FR');
+  } else {
+    collectZone.style.display = 'none';
+  }
+
+  // Upgrade buttons
+  const canAuto = clickerData.seeds >= 200 && !clickerData.upgrades.autoClicker;
+  const canFruit = clickerData.seeds >= 10000 && !clickerData.upgrades.secondFruit;
+
+  const btnAuto = document.getElementById('btnAutoClicker');
+  const upgradeAutoCard = document.getElementById('upgradeAutoClicker');
+  if (clickerData.upgrades.autoClicker) {
+    btnAuto.textContent = '✅ Acheté';
+    btnAuto.disabled = true;
+    btnAuto.className = 'btn-buy owned-btn';
+    upgradeAutoCard.classList.add('owned');
+  } else {
+    btnAuto.textContent = 'Acheter';
+    btnAuto.disabled = !canAuto;
+    btnAuto.className = 'btn-buy';
+  }
+
+  const btnFruit = document.getElementById('btnSecondFruit');
+  const upgradeFruitCard = document.getElementById('upgradeSecondFruit');
+  if (clickerData.upgrades.secondFruit) {
+    btnFruit.textContent = '✅ Acheté';
+    btnFruit.disabled = true;
+    btnFruit.className = 'btn-buy owned-btn';
+    upgradeFruitCard.classList.add('owned');
+  } else {
+    btnFruit.textContent = clickerData.seeds >= 10000 ? 'Acheter' : 'Pas assez';
+    btnFruit.disabled = !canFruit;
+    btnFruit.className = 'btn-buy';
+  }
+
+  updateExchangePrice();
+}
+
+function clickFruit(fruitNum) {
+  if (!clickerActive) return;
+  clickerData.seeds += 1;
+
+  // Pop animation
+  const fruit = document.getElementById('fruit' + fruitNum);
+  fruit.classList.remove('clicker-fruit-pop');
+  void fruit.offsetWidth;
+  fruit.classList.add('clicker-fruit-pop');
+  setTimeout(() => fruit.classList.remove('clicker-fruit-pop'), 150);
+
+  // Floating seed
+  const rect = fruit.getBoundingClientRect();
+  const span = document.createElement('span');
+  span.className = 'clicker-seed-float';
+  span.textContent = '+1 🌱';
+  span.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+  span.style.top = (rect.top - 10) + 'px';
+  document.body.appendChild(span);
+  setTimeout(() => span.remove(), 850);
+
+  updateClickerUI();
+  saveClickerData();
+}
+
+function collectAutoStock() {
+  if (clickerData.autoStock <= 0) return;
+  clickerData.seeds += Math.floor(clickerData.autoStock);
+  clickerData.autoStock = 0;
+  updateClickerUI();
+  saveClickerData();
+  showWinToast(`+${Math.floor(clickerData.seeds)} 🌱 graines récupérées !`);
+}
+
+function buyUpgrade(id) {
+  if (id === 'autoClicker') {
+    if (clickerData.seeds < 200 || clickerData.upgrades.autoClicker) return;
+    clickerData.seeds -= 200;
+    clickerData.upgrades.autoClicker = true;
+    startAutoClicker();
+  } else if (id === 'secondFruit') {
+    if (clickerData.seeds < 10000 || clickerData.upgrades.secondFruit) return;
+    clickerData.seeds -= 10000;
+    clickerData.upgrades.secondFruit = true;
+  }
+  updateClickerUI();
+  saveClickerData();
+}
+
+function updateExchangePrice() {
+  const input = document.getElementById('exchangeAmount');
+  const costEl = document.getElementById('exchangeCost');
+  const btn = document.getElementById('btnExchange');
+  if (!input || !costEl) return;
+  const pomels = Math.max(0, parseInt(input.value) || 0);
+  const cost = pomels * 100;
+  costEl.textContent = cost.toLocaleString('fr-FR');
+  const canExchange = pomels > 0 && clickerData.seeds >= cost;
+  btn.disabled = !canExchange;
+  btn.textContent = canExchange ? 'Échanger' : (clickerData.seeds < cost ? 'Pas assez' : 'Échanger');
+}
+
+async function exchangeSeeds() {
+  const pomels = parseInt(document.getElementById('exchangeAmount').value) || 0;
+  const cost = pomels * 100;
+  if (pomels <= 0 || clickerData.seeds < cost) return;
+  clickerData.seeds -= cost;
+  state.balance += pomels;
+  state.history.unshift({ type: 'clicker', desc: `🌱 Échange : ${cost} graines → ${pomels} Pomels`, amount: pomels, date: new Date().toISOString() });
+  await saveAccount(state);
+  await saveClickerData();
+  refreshUI();
+  updateClickerUI();
+  document.getElementById('exchangeAmount').value = '';
+  updateExchangePrice();
+  showWinToast(`+${pomels.toLocaleString('fr-FR')} Pomels échangés ! 💱`);
 }
 
 // ── SNAKE GAME ───────────────────────────────────
@@ -3561,7 +3875,7 @@ function renderHistory() {
     const div = document.createElement('div');
     div.className = 'history-item';
     const isPos = h.amount > 0;
-    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : h.type === 'hotel' ? '🏨' : h.type === 'quete' ? '⚔️' : '💸';
+    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : h.type === 'hotel' ? '🏨' : h.type === 'quete' ? '⚔️' : h.type === 'clicker' ? '🌱' : '💸';
     const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     div.innerHTML = `
       <span class="hi-type">${icon}</span>
