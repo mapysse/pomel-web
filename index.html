@@ -322,6 +322,54 @@
   @keyframes lspin { to { transform: rotate(360deg); } }
   .loader-text { font-size: .9rem; color: var(--muted); }
 
+  /* HOME */
+  .home-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .home-greeting { font-size: 1.8rem; font-weight: 800; letter-spacing: -.5px; }
+  .home-sub { font-size: .9rem; color: var(--muted); margin-top: -16px; }
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .home-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: border-color .2s; }
+  .home-card:hover { border-color: rgba(235,88,70,0.3); }
+  .home-card-full { grid-column: 1 / -1; }
+  .home-card-title { font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .home-card-list { display: flex; flex-direction: column; gap: 8px; }
+  .home-rank-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--surface2); border-radius: 8px; }
+  .home-rank-num { font-family: 'Space Mono', monospace; font-weight: 700; font-size: .85rem; width: 22px; flex-shrink: 0; }
+  .home-rank-num.top1 { color: #FFD700; }
+  .home-rank-num.top2 { color: #C0C0C0; }
+  .home-rank-num.top3 { color: #CD7F32; }
+  .home-rank-name { flex: 1; font-weight: 700; font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .home-rank-val { font-family: 'Space Mono', monospace; font-size: .8rem; color: var(--primary); font-weight: 700; flex-shrink: 0; }
+  .home-proverbe-zone { display: flex; flex-direction: column; gap: 8px; }
+  .home-proverbe-text { font-size: 1.05rem; font-style: italic; line-height: 1.6; color: var(--text); }
+  .home-proverbe-author { font-size: .82rem; color: var(--muted); }
+  .home-proverbe-waiting { font-size: .9rem; color: var(--muted); font-style: italic; }
+  .home-live-zone { display: flex; flex-direction: column; gap: 8px; }
+  .home-live-post { background: var(--surface2); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .home-live-post-meta { display: flex; align-items: center; justify-content: space-between; font-size: .78rem; color: var(--muted); }
+  .home-live-post-text { font-size: .95rem; line-height: 1.5; }
+  .home-live-post-likes { font-size: .82rem; color: var(--green); font-weight: 700; }
+  .home-live-empty { font-size: .88rem; color: var(--muted); font-style: italic; }
+  .home-bets-zone { display: flex; flex-direction: column; gap: 10px; }
+  .home-bet-row { background: var(--surface2); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .home-bet-desc { font-size: .92rem; font-weight: 700; line-height: 1.4; }
+  .home-bet-meta { display: flex; gap: 16px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
+  .home-bet-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .home-bet-option { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: .78rem; font-weight: 600; color: var(--muted); }
+  .home-empty { font-size: .88rem; color: var(--muted); font-style: italic; }
+  .home-roulette-status { border-color: var(--border); transition: border-color .2s, box-shadow .2s; }
+  .home-roulette-status:hover { border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
+  .home-roulette-available { display: flex; align-items: center; gap: 14px; }
+  .home-roulette-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); flex-shrink: 0; animation: pulse-dot 1.4s ease-in-out infinite; }
+  .home-roulette-dot.off { background: var(--muted); box-shadow: none; animation: none; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+  .home-roulette-text { display: flex; flex-direction: column; gap: 2px; }
+  .home-roulette-text strong { font-size: 1rem; font-weight: 700; }
+  .home-roulette-text span { font-size: .82rem; color: var(--muted); }
+  .home-roulette-cta { margin-left: auto; background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .home-roulette-cta.disabled { background: var(--surface2); color: var(--muted); cursor: default; }
+
+  @media (max-width: 600px) { .home-grid { grid-template-columns: 1fr; } .home-card-full { grid-column: 1; } }
+
   /* SNAKE */
   .snake-wrap { display: flex; flex-direction: column; gap: 20px; }
   .snake-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
@@ -468,7 +516,7 @@
 <div id="app">
   <canvas class="sparkle-canvas" id="sparkles"></canvas>
   <header>
-    <div class="logo">Pomel<span>.</span></div>
+    <div class="logo" onclick="goToHome()" style="cursor:pointer;">Pomel<span>.</span></div>
     <div class="wallet">
       <span class="coin">🪙</span>
       <div>
@@ -516,8 +564,56 @@
     </div>
   </nav>
 
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="home-wrap">
+      <div class="home-greeting" id="homeGreeting">Bonjour ! 👋</div>
+      <div class="home-sub">Voici ce qui se passe sur Pomel. aujourd'hui</div>
+
+      <div class="home-grid">
+
+        <!-- Statut roulette -->
+        <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="goToFromDropdown('roulette','gagne', document.querySelector('#dropdown-gagne .nav-dropdown-item'))" style="cursor:pointer;">
+          <div class="home-card-title">🎰 Roulette Quotidienne</div>
+          <div id="homeRouletteStatus"></div>
+        </div>
+
+        <!-- Top 3 classement -->
+        <div class="home-card">
+          <div class="home-card-title">🏆 Top Pomels</div>
+          <div class="home-card-list" id="homeTopBalance"></div>
+        </div>
+
+        <!-- Top 3 Serpent -->
+        <div class="home-card">
+          <div class="home-card-title">🐍 Top Serpent</div>
+          <div class="home-card-list" id="homeTopSnake"></div>
+        </div>
+
+        <!-- Proverbe du jour -->
+        <div class="home-card home-card-full">
+          <div class="home-card-title">📜 Proverbe du Jour</div>
+          <div id="homeProverbe" class="home-proverbe-zone"></div>
+        </div>
+
+        <!-- Post le plus liké -->
+        <div class="home-card home-card-full">
+          <div class="home-card-title">📡 Post Live du Jour</div>
+          <div id="homeLivePost" class="home-live-zone"></div>
+        </div>
+
+        <!-- Paris en cours -->
+        <div class="home-card home-card-full">
+          <div class="home-card-title">🎲 Paris en cours</div>
+          <div id="homeBets" class="home-bets-zone"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- ROULETTE -->
-  <div class="page active" id="page-roulette">
+  <div class="page" id="page-roulette">
     <div class="roulette-container">
       <div class="roulette-title">
         <h2>Roulette Quotidienne</h2>
@@ -1058,16 +1154,15 @@ async function handleCreate() {
 function launchApp() {
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.add('visible');
-  // Set roulette as active page with its dropdown trigger highlighted
-  const trigger = document.querySelector('#dropdown-gagne .nav-dropdown-trigger');
-  if (trigger) trigger.classList.add('active');
-  const rouletteItem = document.querySelector('#dropdown-gagne .nav-dropdown-item');
-  if (rouletteItem) rouletteItem.classList.add('active');
+  // Start on home page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
   refreshUI();
   checkSpinAvailability();
   renderPrizes();
   renderHistory();
   renderProfile();
+  renderHome();
 }
 
 function refreshUI() {
@@ -1918,6 +2013,205 @@ function buildBetCard(bet) {
     ${resultHTML}
   `;
   return card;
+}
+
+// ── HOME PAGE ────────────────────────────────────
+function goToHome() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  clearAllNavActive();
+  closeAllDropdowns();
+  closeUserMenu();
+  // Stop snake if running
+  if (snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; snakeState = null; }
+  renderHome();
+}
+
+async function renderHome() {
+  // Greeting
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+  document.getElementById('homeGreeting').textContent = `${greet}, ${state.name} ! 👋`;
+
+  // Run all sections in parallel
+  await Promise.all([
+    renderHomeRoulette(),
+    renderHomeTopBalance(),
+    renderHomeTopSnake(),
+    renderHomeProverbe(),
+    renderHomeLivePost(),
+    renderHomeBets(),
+  ]);
+}
+
+async function renderHomeRoulette() {
+  const el = document.getElementById('homeRouletteStatus');
+  const card = document.getElementById('homeRouletteCard');
+  const available = canSpin();
+  const now = new Date();
+  const beforeTime = now.getHours() < 9 || (now.getHours() === 9 && now.getMinutes() < 15);
+
+  if (available) {
+    card.style.borderColor = 'var(--green)';
+    card.style.boxShadow = '0 0 20px rgba(62,207,110,0.2)';
+    el.innerHTML = `
+      <div class="home-roulette-available">
+        <div class="home-roulette-dot"></div>
+        <div class="home-roulette-text">
+          <strong style="color:var(--green)">Tirage disponible !</strong>
+          <span>Clique ici pour tourner la roulette maintenant</span>
+        </div>
+        <button class="home-roulette-cta">Tourner 🎰</button>
+      </div>
+    `;
+  } else if (beforeTime) {
+    card.style.borderColor = '';
+    card.style.boxShadow = '';
+    const t = new Date(); t.setHours(9,15,0,0);
+    const diff = t - now;
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    el.innerHTML = `
+      <div class="home-roulette-available">
+        <div class="home-roulette-dot off"></div>
+        <div class="home-roulette-text">
+          <strong>Pas encore disponible</strong>
+          <span>La roulette ouvre à 9h15 — dans ${h > 0 ? h + 'h ' : ''}${m}min</span>
+        </div>
+        <button class="home-roulette-cta disabled" onclick="event.stopPropagation()">Bientôt…</button>
+      </div>
+    `;
+  } else {
+    card.style.borderColor = '';
+    card.style.boxShadow = '';
+    const next = nextSpinTime();
+    el.innerHTML = `
+      <div class="home-roulette-available">
+        <div class="home-roulette-dot off"></div>
+        <div class="home-roulette-text">
+          <strong>Déjà tourné aujourd'hui</strong>
+          <span>Prochain tirage demain à ${next.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
+        </div>
+        <button class="home-roulette-cta disabled" onclick="event.stopPropagation()">Reviens demain</button>
+      </div>
+    `;
+  }
+}
+
+async function renderHomeTopBalance() {
+  const el = document.getElementById('homeTopBalance');
+  el.innerHTML = '<div class="home-empty">Chargement…</div>';
+  const all = await getAllAccounts();
+  if (!all.length) { el.innerHTML = '<div class="home-empty">Aucun joueur.</div>'; return; }
+  const sorted = [...all].sort((a, b) => {
+    const ea = (a.history||[]).filter(h=>h.amount>0).reduce((s,h)=>s+h.amount,0);
+    const eb = (b.history||[]).filter(h=>h.amount>0).reduce((s,h)=>s+h.amount,0);
+    return eb - ea;
+  }).slice(0, 3);
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = '';
+  sorted.forEach((acc, i) => {
+    const earned = (acc.history||[]).filter(h=>h.amount>0).reduce((s,h)=>s+h.amount,0);
+    const rankClass = `top${i+1}`;
+    const div = document.createElement('div');
+    div.className = 'home-rank-row';
+    div.innerHTML = `
+      <span class="home-rank-num ${rankClass}">${medals[i]}</span>
+      <span class="home-rank-name">${acc.name}</span>
+      <span class="home-rank-val">${earned.toLocaleString('fr-FR')} 🪙</span>
+    `;
+    el.appendChild(div);
+  });
+}
+
+async function renderHomeTopSnake() {
+  const el = document.getElementById('homeTopSnake');
+  el.innerHTML = '<div class="home-empty">Chargement…</div>';
+  const snap = await dbGet('snake_lb');
+  if (!snap) { el.innerHTML = '<div class="home-empty">Aucun score.</div>'; return; }
+  const entries = Object.values(snap).sort((a,b)=>b.score-a.score).slice(0,3);
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = '';
+  entries.forEach((e, i) => {
+    const div = document.createElement('div');
+    div.className = 'home-rank-row';
+    div.innerHTML = `
+      <span class="home-rank-num top${i+1}">${medals[i]}</span>
+      <span class="home-rank-name">${e.name}</span>
+      <span class="home-rank-val">${e.score} 🍎</span>
+    `;
+    el.appendChild(div);
+  });
+}
+
+async function renderHomeProverbe() {
+  const el = document.getElementById('homeProverbe');
+  const today = getTodayKey();
+  const data = await getProverbeData();
+  if (!data || !data.today || data.today.date !== today) {
+    el.innerHTML = '<div class="home-proverbe-waiting">Aucun proverbe aujourd\'hui encore…</div>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="home-proverbe-text">"${data.today.text}"</div>
+    <div class="home-proverbe-author">— <strong>${data.today.authorName}</strong></div>
+  `;
+}
+
+async function renderHomeLivePost() {
+  const el = document.getElementById('homeLivePost');
+  const today = getTodayKey();
+  const rawPosts = await getLivePosts() || {};
+  const posts = Object.values(rawPosts).filter(p => p.date === today);
+  if (!posts.length) {
+    el.innerHTML = '<div class="home-live-empty">Aucun post aujourd\'hui.</div>';
+    return;
+  }
+  const top = posts.sort((a,b) => (b.likes||[]).length - (a.likes||[]).length)[0];
+  const likes = (top.likes||[]).length;
+  const time = new Date(top.createdAt).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  el.innerHTML = `
+    <div class="home-live-post">
+      <div class="home-live-post-meta">
+        <span><strong>${top.authorName}</strong></span>
+        <span>${time}</span>
+      </div>
+      <div class="home-live-post-text">${top.text}</div>
+      <div class="home-live-post-likes">👍 ${likes} like${likes > 1 ? 's' : ''}</div>
+    </div>
+  `;
+}
+
+async function renderHomeBets() {
+  const el = document.getElementById('homeBets');
+  el.innerHTML = '<div class="home-empty">Chargement…</div>';
+  const all = await getAllBets();
+  const now = Date.now();
+  const openBets = all
+    .filter(b => b.status === 'open' && now - new Date(b.createdAt).getTime() < 3*24*3600*1000)
+    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
+  if (!openBets.length) { el.innerHTML = '<div class="home-empty">Aucun pari en cours.</div>'; return; }
+  el.innerHTML = '';
+  openBets.forEach(bet => {
+    const bettors = bet.bettors || [];
+    const pot = bettors.reduce((s,b)=>s+b.amount, 0);
+    const div = document.createElement('div');
+    div.className = 'home-bet-row';
+    div.innerHTML = `
+      <div class="home-bet-desc">${bet.desc}</div>
+      <div class="home-bet-options">
+        <span class="home-bet-option">🅰️ ${bet.option1}</span>
+        <span class="home-bet-option">🅱️ ${bet.option2}</span>
+      </div>
+      <div class="home-bet-meta">
+        <span>Par <strong>${bet.creatorName}</strong></span>
+        <span>Pot : <strong style="color:var(--primary)">${pot.toLocaleString('fr-FR')} 🪙</strong></span>
+        <span>${bettors.length} parieur${bettors.length > 1 ? 's' : ''}</span>
+      </div>
+    `;
+    el.appendChild(div);
+  });
 }
 
 // ── SNAKE GAME ───────────────────────────────────
