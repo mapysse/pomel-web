@@ -3873,49 +3873,68 @@ const CONSOLATION = 500;
 let jardinTimerInterval = null;
 
 // Calcule le prochain dimanche à 12h
-// Prochain dimanche 12h (reset)
+// Prochain dimanche 12h (reset) — si on EST dimanche avant 12h, c'est aujourd'hui
 function nextJardinReset() {
   const now = new Date();
   const d = new Date(now);
   const day = d.getDay(); // 0=Sun
-  const daysUntilSun = day === 0 ? 7 : 7 - day;
-  d.setDate(d.getDate() + daysUntilSun);
-  d.setHours(12, 0, 0, 0);
+  if (day === 0 && (now.getHours() < 12)) {
+    // Ce dimanche à 12h
+    d.setHours(12, 0, 0, 0);
+  } else {
+    const daysUntilSun = day === 0 ? 7 : 7 - day;
+    d.setDate(d.getDate() + daysUntilSun);
+    d.setHours(12, 0, 0, 0);
+  }
   return d;
 }
 
-// Jardin fermé : dimanche 12h → lundi 12h30
+// Jardin fermé : dimanche 12h00 → lundi 12h30
 function isJardinClosed() {
   const now = new Date();
   const day = now.getDay(); // 0=Sun, 1=Mon
   const h = now.getHours(), m = now.getMinutes();
-  if (day === 0 && (h > 12 || (h === 12 && m >= 0))) return true;  // dim 12h+
-  if (day === 1 && (h < 12 || (h === 12 && m < 30))) return true;  // lun avant 12h30
+  const totalMin = h * 60 + m;
+  if (day === 0 && totalMin >= 12 * 60) return true;       // dim à partir de 12h00
+  if (day === 1 && totalMin < 12 * 60 + 30) return true;   // lun avant 12h30
   return false;
 }
 
 function jardinClosedUntil() {
-  // Retourne l'heure de réouverture : lundi 12h30
   const now = new Date();
   const d = new Date(now);
   const day = d.getDay();
-  if (day === 0) { // dimanche → trouver lundi
-    d.setDate(d.getDate() + 1);
-  } else if (day !== 1) { // pas lundi non plus — ne devrait pas arriver
-    d.setDate(d.getDate() + (8 - day));
-  }
+  if (day === 0) d.setDate(d.getDate() + 1); // dimanche → lundi
+  // Si on est lundi mais après 12h30 ça ne devrait pas arriver, mais au cas où
   d.setHours(12, 30, 0, 0);
   return d;
 }
 
+// Clé de semaine stable — basée sur le dernier dimanche 12h passé
 function getJardinWeekKey() {
-  const reset = nextJardinReset();
-  const weekStart = new Date(reset);
-  weekStart.setDate(weekStart.getDate() - 7);
-  const y = weekStart.getFullYear();
-  const startOfYear = new Date(y, 0, 1);
-  const weekNum = Math.ceil(((weekStart - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
-  return `${y}-W${String(weekNum).padStart(2,'0')}`;
+  const now = new Date();
+  const day = now.getDay();
+  const h = now.getHours(), m = now.getMinutes();
+
+  // Trouver le dernier dimanche à 12h passé
+  const lastSunday = new Date(now);
+  if (day === 0 && (h > 12 || (h === 12 && m >= 0))) {
+    // Ce dimanche à 12h est passé — c'est lui le début de semaine
+    lastSunday.setHours(12, 0, 0, 0);
+  } else if (day === 0) {
+    // Dimanche avant 12h — remonter au dimanche précédent
+    lastSunday.setDate(lastSunday.getDate() - 7);
+    lastSunday.setHours(12, 0, 0, 0);
+  } else {
+    // Lundi à dimanche — remonter au dernier dimanche
+    lastSunday.setDate(lastSunday.getDate() - day);
+    lastSunday.setHours(12, 0, 0, 0);
+  }
+
+  const y = lastSunday.getFullYear();
+  const mo = String(lastSunday.getMonth() + 1).padStart(2, '0');
+  const da = String(lastSunday.getDate()).padStart(2, '0');
+  return `${y}-${mo}-${da}`;
 }
 
 function jardinTimerString() {
@@ -4180,6 +4199,12 @@ async function distributeJardinRewards(flowers) {
 }
 
 async function plantFlower() {
+  if (isJardinClosed()) {
+    setAlert('jardinPlantAlert', '🔒 Le jardin est fermé en ce moment !', 'error');
+    return;
+  }
+
+  // Lire les graines directement depuis Firebase (source de vérité)
   const savedClicker = await dbGet('clicker/' + state.code);
   const mySeeds = savedClicker ? Math.floor(savedClicker.seeds || 0) : 0;
 
@@ -4188,29 +4213,27 @@ async function plantFlower() {
     return;
   }
 
-  // Déduire les graines
-  if (!clickerData.loaded) {
-    // Charger si pas encore fait
-    const saved = await dbGet('clicker/' + state.code);
-    if (saved) {
-      clickerData = Object.assign({ loaded: true }, saved);
-    }
-  }
-  clickerData.seeds = Math.max(0, Math.floor((savedClicker.seeds || 0) - JARDIN_FLOWER_COST));
+  // Déduire les graines — mettre à jour clickerData ET Firebase
+  clickerData.seeds = Math.max(0, mySeeds - JARDIN_FLOWER_COST);
+  clickerData.autoStock = savedClicker ? Math.floor(savedClicker.autoStock || 0) : 0;
+  clickerData.upgrades = savedClicker ? (savedClicker.upgrades || {}) : {};
+  clickerData.lastSaved = savedClicker ? (savedClicker.lastSaved || null) : null;
   clickerData.loaded = true;
   await saveClickerData();
 
-  // Ajouter la fleur au jardin
-  const data = await getJardin() || { weekKey: getJardinWeekKey(), flowers: [] };
+  // Récupérer le jardin courant (après reset éventuel)
   await checkJardinReset();
-  const freshData = await getJardin() || { weekKey: getJardinWeekKey(), flowers: [] };
+  const freshData = await getJardin() || { weekKey: getJardinWeekKey(), flowers: [], lastWinners: [], lastWinnersDate: null };
+
+  // S'assurer que flowers est un tableau
+  if (!Array.isArray(freshData.flowers)) freshData.flowers = [];
 
   const myFlowers = freshData.flowers.filter(f => f.playerCode === state.code);
 
-  // Position aléatoire mais dans le jardin (pas trop sur les bords)
-  const margin = 30;
+  // Position dans le canvas — zone herbacée visible
+  const margin = 35;
   const x = margin + Math.floor(Math.random() * (JARDIN_W - margin * 2));
-  const y = (JARDIN_H - 60) - Math.floor(Math.random() * (JARDIN_H - 120));
+  const y = 60 + Math.floor(Math.random() * (JARDIN_H - 100)); // entre y=60 et y=JARDIN_H-40
 
   freshData.flowers.push({
     playerCode: state.code,
@@ -4222,7 +4245,10 @@ async function plantFlower() {
 
   await saveJardin(freshData);
   setAlert('jardinPlantAlert', '🌸 Fleur plantée avec succès !', 'success');
-  setTimeout(() => { document.getElementById('jardinPlantAlert').className = 'alert'; }, 3000);
+  setTimeout(() => {
+    const el = document.getElementById('jardinPlantAlert');
+    if (el) el.className = 'alert';
+  }, 3000);
   renderJardin();
 }
 
@@ -4615,29 +4641,15 @@ setInterval(verifyStateIntegrity, 8000);
   ['log','warn','info','debug','table','dir','dirxml','group','groupEnd','groupCollapsed','count','countReset','time','timeEnd','timeLog','trace','clear','assert'].forEach(k => {
     try { console[k] = noop; } catch(e) {}
   });
-  // Bloquer la redéfinition
   try {
     Object.defineProperty(window, 'console', { get: () => ({ log: noop, warn: noop, error: noop, info: noop, debug: noop }), set: () => {} });
   } catch(e) {}
 })();
 
-// 2. Boucle debugger — rend les DevTools très lents
-setInterval(function() { (function() { debugger; })(); }, 100);
-
-// 3. Détecter ouverture DevTools via timing debugger
-setInterval(function() {
-  const t = performance.now();
-  (function() { debugger; })();
-  if (performance.now() - t > 150) {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px;background:#0d0d0f;color:#eee;"><h2 style="color:#EB5846;">⛔ Accès refusé</h2><p style="color:#888;">Ferme les outils de développement pour continuer.</p></div>';
-    setTimeout(() => window.location.reload(), 2000);
-  }
-}, 1000);
-
-// 4. Bloquer le clic droit
+// 2. Bloquer le clic droit
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-// 5. Bloquer les raccourcis DevTools
+// 3. Bloquer les raccourcis DevTools
 document.addEventListener('keydown', e => {
   if (
     e.key === 'F12' ||
