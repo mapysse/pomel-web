@@ -629,10 +629,16 @@
 
       <div class="home-grid">
 
-        <!-- Quêtes à traiter -->
-        <div class="home-card home-card-full" id="homeQuetesCard" style="display:none; border-color:#5b8def; box-shadow:0 0 20px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
-          <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes en attente</div>
-          <div id="homeQuetes" class="home-bets-zone"></div>
+        <!-- Quêtes reçues -->
+        <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
+          <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes reçues</div>
+          <div id="homeQuetesIn" class="home-bets-zone"></div>
+        </div>
+
+        <!-- Quêtes créées (suivi) -->
+        <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
+          <div class="home-card-title" style="color:var(--primary);">🧭 Mes quêtes créées</div>
+          <div id="homeQuetesOut" class="home-bets-zone"></div>
         </div>
 
         <!-- Statut roulette -->
@@ -965,7 +971,7 @@
         </div>
         <div class="form-group">
           <label>Récompense (Pomels offerts)</label>
-          <input type="number" id="queteRewardInput" placeholder="ex: 300" min="1" max="99999" />
+          <input type="number" id="queteRewardInput" placeholder="ex: 300" min="1" max="500" />
         </div>
         <div id="queteCreateAlert" class="alert"></div>
         <button class="btn-primary" onclick="handleCreateQuete()">Lancer la quête ⚔️</button>
@@ -1152,9 +1158,9 @@
         <h3>⚔️ Les Quêtes</h3>
         <p>Assigne une mission à un autre joueur et offre-lui des Pomels en récompense — les Pomels sont offerts par le système, pas prélevés sur toi !</p>
         <ul>
-          <li>Choisis un joueur, décris sa mission et fixe la récompense</li>
+          <li>Choisis un joueur, décris sa mission et fixe la récompense (<strong>500 Pomels max</strong>)</li>
           <li>Le joueur peut <strong>accepter ou refuser</strong> la quête</li>
-          <li>Une fois la mission accomplie, le créateur <strong>valide</strong> la quête et les Pomels sont versés automatiquement</li>
+          <li>Une fois la mission accomplie, le créateur <strong>valide</strong> la quête : le joueur reçoit la récompense complète, et le créateur reçoit <strong>la moitié (arrondie au supérieur)</strong> en bonus</li>
           <li>Les quêtes non terminées sont supprimées après <strong>3 jours</strong></li>
           <li>Tes quêtes en attente s'affichent directement sur la <strong>page d'accueil</strong></li>
         </ul>
@@ -2333,38 +2339,70 @@ async function renderHome() {
 }
 
 async function renderHomeQuetes() {
-  const card = document.getElementById('homeQuetesCard');
-  const el   = document.getElementById('homeQuetes');
-
   const allQuetes = await getAllQuetes();
-  // Quêtes reçues en attente OU en cours pour moi
-  const mine = allQuetes.filter(q =>
+
+  // ── Quêtes REÇUES (en attente ou en cours)
+  const incoming = allQuetes.filter(q =>
     q.targetCode === state.code && (q.status === 'pending' || q.status === 'accepted')
   ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  if (!mine.length) {
-    card.style.display = 'none';
-    return;
+  const inCard = document.getElementById('homeQuetesInCard');
+  const inEl   = document.getElementById('homeQuetesIn');
+  if (incoming.length) {
+    inCard.style.display = 'block';
+    inEl.innerHTML = '';
+    incoming.forEach(q => {
+      const statusLabel = q.status === 'pending' ? '⏳ En attente de ta réponse' : '🔥 En cours — à toi de jouer !';
+      const statusColor = q.status === 'pending' ? '#5b8def' : 'var(--yellow)';
+      const div = document.createElement('div');
+      div.className = 'home-bet-row';
+      div.innerHTML = `
+        <div class="home-bet-desc">${q.desc}</div>
+        <div class="home-bet-meta">
+          <span>De <strong>${q.creatorName}</strong></span>
+          <span style="color:var(--green);font-weight:700;">+${q.reward.toLocaleString('fr-FR')} 🪙</span>
+          <span style="color:${statusColor};font-weight:600;">${statusLabel}</span>
+        </div>
+      `;
+      inEl.appendChild(div);
+    });
+  } else {
+    inCard.style.display = 'none';
   }
 
-  card.style.display = 'block';
-  el.innerHTML = '';
+  // ── Quêtes CRÉÉES (toutes sauf done/supprimées)
+  const STATUS_LABELS = {
+    pending:  { label: '⏳ En attente de réponse', color: '#5b8def' },
+    accepted: { label: '🔥 Acceptée — en cours',   color: 'var(--yellow)' },
+    refused:  { label: '❌ Refusée',               color: 'var(--muted)' },
+  };
+  const created = allQuetes.filter(q =>
+    q.creatorCode === state.code && q.status !== 'done'
+  ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  mine.forEach(q => {
-    const statusLabel = q.status === 'pending' ? '⏳ En attente de ta réponse' : '🔥 En cours — à toi de jouer !';
-    const statusColor = q.status === 'pending' ? '#5b8def' : 'var(--yellow)';
-    const div = document.createElement('div');
-    div.className = 'home-bet-row';
-    div.innerHTML = `
-      <div class="home-bet-desc">${q.desc}</div>
-      <div class="home-bet-meta">
-        <span>De <strong>${q.creatorName}</strong></span>
-        <span style="color:var(--green);font-weight:700;">+${q.reward.toLocaleString('fr-FR')} 🪙</span>
-        <span style="color:${statusColor};font-weight:600;">${statusLabel}</span>
-      </div>
-    `;
-    el.appendChild(div);
-  });
+  const outCard = document.getElementById('homeQuetesOutCard');
+  const outEl   = document.getElementById('homeQuetesOut');
+  if (created.length) {
+    outCard.style.display = 'block';
+    outEl.innerHTML = '';
+    created.forEach(q => {
+      const s = STATUS_LABELS[q.status] || { label: q.status, color: 'var(--muted)' };
+      const creatorBonus = Math.ceil(q.reward / 2);
+      const div = document.createElement('div');
+      div.className = 'home-bet-row';
+      div.innerHTML = `
+        <div class="home-bet-desc">${q.desc}</div>
+        <div class="home-bet-meta">
+          <span>Pour <strong>${q.targetName}</strong></span>
+          <span style="color:var(--green);font-weight:700;">${q.reward.toLocaleString('fr-FR')} 🪙 + ${creatorBonus} 🪙 pour toi</span>
+          <span style="color:${s.color};font-weight:600;">${s.label}</span>
+        </div>
+      `;
+      outEl.appendChild(div);
+    });
+  } else {
+    outCard.style.display = 'none';
+  }
 }
 
 async function renderHomeRoulette() {
@@ -3170,6 +3208,7 @@ async function handleCreateQuete() {
   if (!targetCode)        { setAlert('queteCreateAlert', 'Choisis un joueur !', 'error'); return; }
   if (!desc)              { setAlert('queteCreateAlert', 'Décris la mission !', 'error'); return; }
   if (!reward || reward < 1) { setAlert('queteCreateAlert', 'Entre une récompense valide !', 'error'); return; }
+  if (reward > 500) { setAlert('queteCreateAlert', 'La récompense maximum est de 500 Pomels !', 'error'); return; }
 
   // Find target name
   const all = await getAllAccounts();
@@ -3212,7 +3251,9 @@ async function validateQuete(queteId) {
   const q = await getQuete(queteId);
   if (!q || q.creatorCode !== state.code || q.status !== 'accepted') return;
 
-  // Award Pomels to target (free — not from creator)
+  const creatorBonus = Math.ceil(q.reward / 2);
+
+  // Award Pomels to target
   const target = await getAccount(q.targetCode);
   if (target) {
     target.balance += q.reward;
@@ -3224,15 +3265,29 @@ async function validateQuete(queteId) {
       date: new Date().toISOString(),
     });
     await saveAccount(target);
-    // Update local state if it's us
     if (target.code === state.code) { state = migrateAccount(target); refreshUI(); }
+  }
+
+  // Award bonus to creator (half, rounded up)
+  const creator = await getAccount(q.creatorCode);
+  if (creator) {
+    creator.balance += creatorBonus;
+    creator.history = creator.history || [];
+    creator.history.unshift({
+      type: 'quete',
+      desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`,
+      amount: creatorBonus,
+      date: new Date().toISOString(),
+    });
+    await saveAccount(creator);
+    if (creator.code === state.code) { state = migrateAccount(creator); refreshUI(); }
   }
 
   q.status = 'done';
   q.updatedAt = new Date().toISOString();
   await saveQuete(q);
-  setAlert('queteCreateAlert', `🏆 Quête validée ! ${target ? target.name : ''} reçoit ${q.reward.toLocaleString('fr-FR')} Pomels !`, 'success');
-  setTimeout(() => { document.getElementById('queteCreateAlert').className = 'alert'; }, 4000);
+  setAlert('queteCreateAlert', `🏆 Quête validée ! ${target ? target.name : ''} reçoit ${q.reward.toLocaleString('fr-FR')} 🪙 et tu reçois ${creatorBonus.toLocaleString('fr-FR')} 🪙 en bonus !`, 'success');
+  setTimeout(() => { document.getElementById('queteCreateAlert').className = 'alert'; }, 5000);
   renderQuetes();
 }
 
