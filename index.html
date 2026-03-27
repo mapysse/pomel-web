@@ -660,6 +660,12 @@
 
       <div class="home-grid">
 
+        <!-- Clicker stock plein -->
+        <div class="home-card home-card-full" id="homeClickerCard" style="display:none; border-color:var(--green); box-shadow:0 0 16px rgba(62,207,110,0.2); cursor:pointer;" onclick="goToFromDropdown('clicker','gagne', document.querySelectorAll('#dropdown-gagne .nav-dropdown-item')[3])">
+          <div class="home-card-title" style="color:var(--green);">🌱 Clicker — Stock prêt !</div>
+          <div id="homeClickerStatus"></div>
+        </div>
+
         <!-- Quêtes reçues -->
         <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
           <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes reçues</div>
@@ -883,16 +889,34 @@
         <div class="clicker-upgrade-card" id="upgradeAutoClicker">
           <div class="clicker-upgrade-info">
             <div class="clicker-upgrade-name">🤖 Auto-Clicker</div>
-            <div class="clicker-upgrade-desc">Génère 1 graine / 2 sec automatiquement (stocké jusqu'à 1 000)</div>
+            <div class="clicker-upgrade-desc">Génère 1 graine / 2 sec automatiquement (stocké jusqu'à capacité max). L'auto-clicker fonctionne sur tous les fruits débloqués.</div>
             <div class="clicker-upgrade-price">200 🌱</div>
           </div>
           <button class="btn-buy" id="btnAutoClicker" onclick="buyUpgrade('autoClicker')">Acheter</button>
         </div>
 
+        <div class="clicker-upgrade-card" id="upgradeAutoSpeed">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">⚡ Turbo Auto-Clicker</div>
+            <div class="clicker-upgrade-desc">L'auto-clicker passe à 1 graine / 1 sec — double la production automatique</div>
+            <div class="clicker-upgrade-price">1 000 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnAutoSpeed" onclick="buyUpgrade('autoSpeed')">Acheter</button>
+        </div>
+
+        <div class="clicker-upgrade-card" id="upgradeStockExt">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">🗄️ Extension de stock</div>
+            <div class="clicker-upgrade-desc">Augmente la capacité du stock auto de 1 000 à 2 000 graines</div>
+            <div class="clicker-upgrade-price">2 000 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnStockExt" onclick="buyUpgrade('stockExt')">Acheter</button>
+        </div>
+
         <div class="clicker-upgrade-card" id="upgradeSecondFruit">
           <div class="clicker-upgrade-info">
             <div class="clicker-upgrade-name">🍎 Second Fruit</div>
-            <div class="clicker-upgrade-desc">Un deuxième fruit cliquable — double ta production manuelle</div>
+            <div class="clicker-upgrade-desc">Un deuxième fruit cliquable — l'auto-clicker génère une graine supplémentaire par fruit débloqué. Stock auto +1 000.</div>
             <div class="clicker-upgrade-price">10 000 🌱</div>
           </div>
           <button class="btn-buy" id="btnSecondFruit" onclick="buyUpgrade('secondFruit')">Acheter</button>
@@ -2456,6 +2480,7 @@ async function renderHome() {
 
   // Run all sections in parallel
   await Promise.all([
+    renderHomeClicker(),
     renderHomeQuetes(),
     renderHomeRoulette(),
     renderHomeTopBalance(),
@@ -2464,6 +2489,38 @@ async function renderHome() {
     renderHomeLivePost(),
     renderHomeBets(),
   ]);
+}
+
+async function renderHomeClicker() {
+  const card = document.getElementById('homeClickerCard');
+  const el   = document.getElementById('homeClickerStatus');
+  const saved = await dbGet('clicker/' + state.code);
+  if (!saved || !saved.upgrades || !saved.upgrades.autoClicker) {
+    card.style.display = 'none';
+    return;
+  }
+  // Compute max stock from saved upgrades
+  let maxStock = 1000;
+  if (saved.upgrades.stockExt) maxStock += 1000;
+  if (saved.upgrades.secondFruit) maxStock += 1000;
+  const autoStock = Math.floor(saved.autoStock || 0);
+
+  if (autoStock < maxStock) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  el.innerHTML = `
+    <div class="home-roulette-available">
+      <div class="home-roulette-dot" style="background:var(--green);box-shadow:0 0 10px var(--green);"></div>
+      <div class="home-roulette-text">
+        <strong style="color:var(--green);">📦 Stock auto-clicker plein ! (${autoStock.toLocaleString('fr-FR')} 🌱)</strong>
+        <span>Clique ici pour récupérer tes graines</span>
+      </div>
+      <button class="home-roulette-cta" style="background:var(--green);">Récupérer</button>
+    </div>
+  `;
 }
 
 async function renderHomeQuetes() {
@@ -2727,25 +2784,42 @@ async function renderHomeBets() {
 }
 
 // ── CLICKER ──────────────────────────────────────
-// Clicker state is stored per-user in Firebase under clicker/<code>
-// Seeds = graines de Pomels (monnaie locale)
-
 let clickerData = {
-  seeds: 0,         // total graines
-  autoStock: 0,     // stock auto non récupéré
-  upgrades: { autoClicker: false, secondFruit: false },
+  seeds: 0,
+  autoStock: 0,
+  upgrades: { autoClicker: false, autoSpeed: false, stockExt: false, secondFruit: false },
 };
 let clickerAutoInterval = null;
 let clickerActive = false;
+
+function clickerMaxStock() {
+  let max = clickerData.upgrades.autoClicker ? 1000 : 0;
+  if (clickerData.upgrades.stockExt) max += 1000;
+  if (clickerData.upgrades.secondFruit) max += 1000;
+  return max;
+}
+
+function clickerAutoRate() {
+  // graines par tick (chaque tick = 1 intervalle)
+  if (!clickerData.upgrades.autoClicker) return 0;
+  const fruitsUnlocked = clickerData.upgrades.secondFruit ? 2 : 1;
+  return fruitsUnlocked; // 1 par fruit débloqué
+}
+
+function clickerIntervalMs() {
+  return clickerData.upgrades.autoSpeed ? 1000 : 2000;
+}
 
 async function loadClickerData() {
   const saved = await dbGet('clicker/' + state.code);
   if (saved) {
     clickerData = {
       seeds: saved.seeds || 0,
-      autoStock: Math.min(saved.autoStock || 0, 1000),
-      upgrades: saved.upgrades || { autoClicker: false, secondFruit: false },
+      autoStock: saved.autoStock || 0,
+      upgrades: Object.assign({ autoClicker: false, autoSpeed: false, stockExt: false, secondFruit: false }, saved.upgrades || {}),
     };
+    // Recalibrate autoStock to current max
+    clickerData.autoStock = Math.min(clickerData.autoStock, clickerMaxStock());
   }
 }
 
@@ -2774,21 +2848,26 @@ function startAutoClicker() {
   if (!clickerData.upgrades.autoClicker) return;
   clickerAutoInterval = setInterval(() => {
     if (!clickerActive) { clearInterval(clickerAutoInterval); return; }
-    if (clickerData.autoStock < 1000) {
-      clickerData.autoStock = Math.min(1000, clickerData.autoStock + 1);
+    const max = clickerMaxStock();
+    if (clickerData.autoStock < max) {
+      clickerData.autoStock = Math.min(max, clickerData.autoStock + clickerAutoRate());
       updateClickerUI();
       saveClickerData();
     }
-  }, 2000);
+  }, clickerIntervalMs());
 }
 
 function updateClickerUI() {
+  const max = clickerMaxStock();
   document.getElementById('clickerSeeds').textContent = Math.floor(clickerData.seeds).toLocaleString('fr-FR');
-  document.getElementById('clickerStock').innerHTML = Math.floor(clickerData.autoStock).toLocaleString('fr-FR') + ' <span style="font-size:.7rem;color:var(--muted);">/ 1000</span>';
-  const rate = clickerData.upgrades.autoClicker ? 0.5 : 0;
-  document.getElementById('clickerRate').textContent = rate.toFixed(1);
+  document.getElementById('clickerStock').innerHTML = Math.floor(clickerData.autoStock).toLocaleString('fr-FR') +
+    ` <span style="font-size:.7rem;color:var(--muted);">/ ${max.toLocaleString('fr-FR')}</span>`;
+  const ratePerSec = clickerData.upgrades.autoClicker
+    ? (clickerAutoRate() / (clickerIntervalMs() / 1000)).toFixed(1)
+    : '0';
+  document.getElementById('clickerRate').textContent = ratePerSec;
 
-  // Second fruit visibility
+  // Fruits
   const f2 = document.getElementById('fruit2');
   if (clickerData.upgrades.secondFruit) f2.classList.remove('hidden');
   else f2.classList.add('hidden');
@@ -2803,35 +2882,35 @@ function updateClickerUI() {
     collectZone.style.display = 'none';
   }
 
-  // Upgrade buttons
-  const canAuto = clickerData.seeds >= 200 && !clickerData.upgrades.autoClicker;
-  const canFruit = clickerData.seeds >= 10000 && !clickerData.upgrades.secondFruit;
+  // Helper to set upgrade button state
+  const setUpgradeBtn = (btnId, cardId, owned, canAfford) => {
+    const btn = document.getElementById(btnId);
+    const card = document.getElementById(cardId);
+    if (!btn || !card) return;
+    if (owned) {
+      btn.textContent = '✅ Acheté'; btn.disabled = true; btn.className = 'btn-buy owned-btn';
+      card.classList.add('owned');
+    } else {
+      btn.textContent = canAfford ? 'Acheter' : 'Pas assez';
+      btn.disabled = !canAfford;
+      btn.className = 'btn-buy';
+      card.classList.remove('owned');
+    }
+  };
 
-  const btnAuto = document.getElementById('btnAutoClicker');
-  const upgradeAutoCard = document.getElementById('upgradeAutoClicker');
-  if (clickerData.upgrades.autoClicker) {
-    btnAuto.textContent = '✅ Acheté';
-    btnAuto.disabled = true;
-    btnAuto.className = 'btn-buy owned-btn';
-    upgradeAutoCard.classList.add('owned');
-  } else {
-    btnAuto.textContent = 'Acheter';
-    btnAuto.disabled = !canAuto;
-    btnAuto.className = 'btn-buy';
-  }
+  setUpgradeBtn('btnAutoClicker', 'upgradeAutoClicker', clickerData.upgrades.autoClicker, clickerData.seeds >= 200);
+  setUpgradeBtn('btnAutoSpeed',   'upgradeAutoSpeed',   clickerData.upgrades.autoSpeed,
+    clickerData.upgrades.autoClicker && clickerData.seeds >= 1000 && !clickerData.upgrades.autoSpeed);
+  setUpgradeBtn('btnStockExt',    'upgradeStockExt',    clickerData.upgrades.stockExt,
+    clickerData.upgrades.autoClicker && clickerData.seeds >= 2000 && !clickerData.upgrades.stockExt);
+  setUpgradeBtn('btnSecondFruit', 'upgradeSecondFruit', clickerData.upgrades.secondFruit, clickerData.seeds >= 10000);
 
-  const btnFruit = document.getElementById('btnSecondFruit');
-  const upgradeFruitCard = document.getElementById('upgradeSecondFruit');
-  if (clickerData.upgrades.secondFruit) {
-    btnFruit.textContent = '✅ Acheté';
-    btnFruit.disabled = true;
-    btnFruit.className = 'btn-buy owned-btn';
-    upgradeFruitCard.classList.add('owned');
-  } else {
-    btnFruit.textContent = clickerData.seeds >= 10000 ? 'Acheter' : 'Pas assez';
-    btnFruit.disabled = !canFruit;
-    btnFruit.className = 'btn-buy';
-  }
+  // Grey out upgrades requiring autoClicker first
+  ['upgradeAutoSpeed', 'upgradeStockExt'].forEach(id => {
+    const card = document.getElementById(id);
+    if (card && !clickerData.upgrades.autoClicker) card.style.opacity = '.4';
+    else if (card) card.style.opacity = '';
+  });
 
   updateExchangePrice();
 }
@@ -2840,14 +2919,12 @@ function clickFruit(fruitNum) {
   if (!clickerActive) return;
   clickerData.seeds += 1;
 
-  // Pop animation
   const fruit = document.getElementById('fruit' + fruitNum);
   fruit.classList.remove('clicker-fruit-pop');
   void fruit.offsetWidth;
   fruit.classList.add('clicker-fruit-pop');
   setTimeout(() => fruit.classList.remove('clicker-fruit-pop'), 150);
 
-  // Floating seed
   const rect = fruit.getBoundingClientRect();
   const span = document.createElement('span');
   span.className = 'clicker-seed-float';
@@ -2863,24 +2940,31 @@ function clickFruit(fruitNum) {
 
 function collectAutoStock() {
   if (clickerData.autoStock <= 0) return;
-  clickerData.seeds += Math.floor(clickerData.autoStock);
+  const collected = Math.floor(clickerData.autoStock);
+  clickerData.seeds += collected;
   clickerData.autoStock = 0;
   updateClickerUI();
   saveClickerData();
-  showWinToast(`+${Math.floor(clickerData.seeds)} 🌱 graines récupérées !`);
+  showWinToast(`+${collected.toLocaleString('fr-FR')} 🌱 graines récupérées !`);
 }
 
 function buyUpgrade(id) {
-  if (id === 'autoClicker') {
-    if (clickerData.seeds < 200 || clickerData.upgrades.autoClicker) return;
-    clickerData.seeds -= 200;
-    clickerData.upgrades.autoClicker = true;
+  const costs = { autoClicker: 200, autoSpeed: 1000, stockExt: 2000, secondFruit: 10000 };
+  const cost = costs[id];
+  if (!cost || clickerData.upgrades[id] || clickerData.seeds < cost) return;
+
+  // Prerequisites
+  if ((id === 'autoSpeed' || id === 'stockExt') && !clickerData.upgrades.autoClicker) return;
+
+  clickerData.seeds -= cost;
+  clickerData.upgrades[id] = true;
+
+  // Second fruit: add 1000 to current autoStock cap (already handled by clickerMaxStock)
+  // Also restart auto-clicker to apply new rate/interval
+  if (id === 'autoClicker' || id === 'autoSpeed' || id === 'secondFruit') {
     startAutoClicker();
-  } else if (id === 'secondFruit') {
-    if (clickerData.seeds < 10000 || clickerData.upgrades.secondFruit) return;
-    clickerData.seeds -= 10000;
-    clickerData.upgrades.secondFruit = true;
   }
+
   updateClickerUI();
   saveClickerData();
 }
