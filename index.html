@@ -3684,6 +3684,49 @@ setInterval(verifyStateIntegrity, 8000);
 // Désactiver les outils de dev en prod (optionnel — commenté par défaut)
 // (function(){const a=new Image;Object.defineProperty(a,'id',{get:function(){window.location.reload();}});console.log('%c',a);})();
 
+// ── PROTECTION CONSOLE / DEVTOOLS ────────────────
+
+// 1. Bloquer la console
+(function() {
+  const noop = () => {};
+  ['log','warn','info','debug','table','dir','dirxml','group','groupEnd','groupCollapsed','count','countReset','time','timeEnd','timeLog','trace','clear','assert'].forEach(k => {
+    try { console[k] = noop; } catch(e) {}
+  });
+  // Bloquer la redéfinition
+  try {
+    Object.defineProperty(window, 'console', { get: () => ({ log: noop, warn: noop, error: noop, info: noop, debug: noop }), set: () => {} });
+  } catch(e) {}
+})();
+
+// 2. Boucle debugger — rend les DevTools très lents
+setInterval(function() { (function() { debugger; })(); }, 100);
+
+// 3. Détecter ouverture DevTools via timing debugger
+setInterval(function() {
+  const t = performance.now();
+  (function() { debugger; })();
+  if (performance.now() - t > 150) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px;background:#0d0d0f;color:#eee;"><h2 style="color:#EB5846;">⛔ Accès refusé</h2><p style="color:#888;">Ferme les outils de développement pour continuer.</p></div>';
+    setTimeout(() => window.location.reload(), 2000);
+  }
+}, 1000);
+
+// 4. Bloquer le clic droit
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// 5. Bloquer les raccourcis DevTools
+document.addEventListener('keydown', e => {
+  if (
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && ['I','J','C','K'].includes(e.key.toUpperCase())) ||
+    (e.ctrlKey && e.key === 'U')
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
+});
+
 // ── BOOT ─────────────────────────────────────────
 init();
 </script>
