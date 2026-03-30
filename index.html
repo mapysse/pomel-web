@@ -106,6 +106,30 @@
   .nav-dropdown-item.active { background: rgba(235,88,70,0.1); color: var(--primary); }
   .page { display: none; width: 100%; max-width: 700px; padding: 40px 24px 80px; }
   .page.active { display: block; }
+  #page-home { max-width: 1100px; }
+  .home-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .home-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  /* full = 3 colonnes, half = 1 colonne sur 3 (soit 1/3), span2 = 2 colonnes sur 3 */
+  .home-card-full  { grid-column: 1 / -1; }
+  .home-card-span2 { grid-column: span 2; }
+
+  /* Sur tablette (< 900px) : 2 colonnes */
+  @media (max-width: 900px) {
+    #page-home { max-width: 100%; }
+    .home-grid { grid-template-columns: repeat(2, 1fr); }
+    .home-card-span2 { grid-column: 1 / -1; }
+  }
+  /* Sur mobile (< 600px) : 1 colonne */
+  @media (max-width: 600px) {
+    #page-home { max-width: 100%; }
+    .home-grid { grid-template-columns: 1fr; }
+    .home-card-full  { grid-column: 1; }
+    .home-card-span2 { grid-column: 1; }
+  }
 
   /* ROULETTE */
   .roulette-container { display: flex; flex-direction: column; align-items: center; gap: 36px; }
@@ -325,13 +349,10 @@
   .loader-text { font-size: .9rem; color: var(--muted); }
 
   /* HOME */
-  .home-wrap { display: flex; flex-direction: column; gap: 24px; }
   .home-greeting { font-size: 1.8rem; font-weight: 800; letter-spacing: -.5px; }
   .home-sub { font-size: .9rem; color: var(--muted); margin-top: -16px; }
-  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .home-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: border-color .2s; }
   .home-card:hover { border-color: rgba(235,88,70,0.3); }
-  .home-card-full { grid-column: 1 / -1; }
   .home-card-title { font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
   .home-card-list { display: flex; flex-direction: column; gap: 8px; }
   .home-rank-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--surface2); border-radius: 8px; }
@@ -371,8 +392,6 @@
   .home-roulette-text span { font-size: .82rem; color: var(--muted); }
   .home-roulette-cta { margin-left: auto; background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .home-roulette-cta.disabled { background: var(--surface2); color: var(--muted); cursor: default; }
-
-  @media (max-width: 600px) { .home-grid { grid-template-columns: 1fr; } .home-card-full { grid-column: 1; } }
 
   /* QUÊTES */
   .quetes-wrap { display: flex; flex-direction: column; gap: 24px; }
@@ -676,56 +695,56 @@
 
       <div class="home-grid">
 
-        <!-- 1. Clicker stock plein (urgent, personnel) -->
+        <!-- 1. Clicker stock plein (urgent, personnel) — full width -->
         <div class="home-card home-card-full" id="homeClickerCard" style="display:none; border-color:var(--green); box-shadow:0 0 16px rgba(62,207,110,0.2); cursor:pointer;" onclick="goToFromDropdown('clicker','gagne', document.querySelectorAll('#dropdown-gagne .nav-dropdown-item')[3])">
           <div class="home-card-title" style="color:var(--green);">🌱 Clicker — Stock prêt !</div>
           <div id="homeClickerStatus"></div>
         </div>
 
-        <!-- 2. Quêtes reçues (urgent, personnel) -->
+        <!-- 2. Quêtes reçues (urgent, personnel) — full width -->
         <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
           <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes reçues</div>
           <div id="homeQuetesIn" class="home-bets-zone"></div>
         </div>
 
-        <!-- 3. Quêtes créées (suivi personnel) -->
+        <!-- 3. Quêtes créées (suivi personnel) — full width -->
         <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
           <div class="home-card-title" style="color:var(--primary);">🧭 Mes quêtes créées</div>
           <div id="homeQuetesOut" class="home-bets-zone"></div>
         </div>
 
-        <!-- 4. Statut roulette (quotidien) -->
+        <!-- 4. Roulette (quotidien) — pleine largeur pour le CTA -->
         <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="goToFromDropdown('roulette','gagne', document.querySelector('#dropdown-gagne .nav-dropdown-item'))" style="cursor:pointer;">
           <div class="home-card-title">🎰 Roulette Quotidienne</div>
           <div id="homeRouletteStatus"></div>
         </div>
 
-        <!-- 5. Hôtel des Ventes — derniers ajouts -->
-        <div class="home-card home-card-full" id="homeHotelCard" style="cursor:pointer;" onclick="goToFromDropdown('hotel','commerce', document.querySelector('#dropdown-commerce .nav-dropdown-item'))">
+        <!-- 5. Hôtel des Ventes — span 2 (plus large car liste) -->
+        <div class="home-card home-card-span2" id="homeHotelCard" style="cursor:pointer;" onclick="goToFromDropdown('hotel','commerce', document.querySelector('#dropdown-commerce .nav-dropdown-item'))">
           <div class="home-card-title">🏨 Hôtel des Ventes</div>
           <div id="homeHotelList" class="home-bets-zone"></div>
         </div>
 
-        <!-- 6. Résultats Jardin (hebdo, conditionnel) -->
-        <div class="home-card home-card-full" id="homeJardinWinnersCard" style="display:none;">
-          <div class="home-card-title">🌸 Résultats du Jardin de la semaine passée</div>
+        <!-- 6. Résultats Jardin (hebdo, conditionnel) — 1 colonne -->
+        <div class="home-card" id="homeJardinWinnersCard" style="display:none;">
+          <div class="home-card-title">🌸 Résultats du Jardin</div>
           <div id="homeJardinWinners" class="home-bets-zone"></div>
         </div>
 
-        <!-- 7. Paris en cours -->
-        <div class="home-card home-card-full">
+        <!-- 7. Paris en cours — span 2 -->
+        <div class="home-card home-card-span2">
           <div class="home-card-title">🎲 Paris en cours</div>
           <div id="homeBets" class="home-bets-zone"></div>
         </div>
 
-        <!-- 8. Pomel'Live du jour -->
-        <div class="home-card home-card-full">
-          <div class="home-card-title">📡 Pomel'Live du Jour</div>
+        <!-- 8. Pomel'Live du jour — 1 colonne -->
+        <div class="home-card">
+          <div class="home-card-title">📡 Pomel'Live</div>
           <div id="homeLivePost" class="home-live-zone"></div>
         </div>
 
-        <!-- 9. Proverbe du jour -->
-        <div class="home-card home-card-full">
+        <!-- 9. Proverbe du jour — 1 colonne -->
+        <div class="home-card">
           <div class="home-card-title">📜 Proverbe du Jour</div>
           <div id="homeProverbe" class="home-proverbe-zone"></div>
         </div>
