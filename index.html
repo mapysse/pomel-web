@@ -964,12 +964,6 @@
           <div id="homeHotelList" class="home-bets-zone"></div>
         </div>
 
-        <!-- 7. Résultats Jardin (hebdo, conditionnel) — 1 colonne -->
-        <div class="home-card" id="homeJardinWinnersCard" style="display:none;">
-          <div class="home-card-title">🌸 Résultats du Jardin</div>
-          <div id="homeJardinWinners" class="home-bets-zone"></div>
-        </div>
-
         <!-- 8. Paris en cours — span 2 -->
         <div class="home-card home-card-span2">
           <div class="home-card-title">🎲 Paris en cours</div>
@@ -2460,28 +2454,65 @@ async function openProfileModal(code) {
   const acc = await getAccount(code);
   if (!acc) return;
   const migrated = migrateAccount(acc);
-  const joined = new Date(migrated.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const joined     = new Date(migrated.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const earned     = (migrated.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+  const spent      = (migrated.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
+  const spins      = (migrated.history || []).filter(h => h.type === 'roulette').length;
+  const snakeGames = (migrated.history || []).filter(h => h.type === 'snake').length;
+
   const titlesHTML = (migrated.activeTitles || []).map(tid => {
     const t = resolveAnyTitleDef(tid, migrated);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
-  }).join('') || '<span style="color:var(--muted);font-size:.85rem;">Aucun titre</span>';
-  const nameClass = getNameColorClass(migrated.activeColor);
+  }).join('') || '<span style="color:var(--muted);font-size:.82rem;">Aucun titre actif</span>';
+
+  const nameClass  = getNameColorClass(migrated.activeColor);
   const badgeEmoji = migrated.activeBadge ? (resolveAnyTitleDef(migrated.activeBadge, migrated) || {}).emoji || '' : '';
-  const groupName = migrated.group ? (await resolveGroupName(migrated.group) || '?') : 'Aucun';
+  const groupName  = migrated.group ? (await resolveGroupName(migrated.group) || '?') : null;
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'profileModal';
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   overlay.innerHTML = `
-    <div class="modal-box">
-      <h2><span class="${nameClass}">${migrated.name}${badgeEmoji ? ' ' + badgeEmoji : ''}</span> <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button></h2>
-      <div class="profile-info">
-        <div class="pi-row"><span class="pi-label">Pomels</span><span class="pi-val" style="color:var(--primary)">${migrated.balance.toLocaleString('fr-FR')} 🪙</span></div>
-        <div class="pi-row"><span class="pi-label">Titres</span><span class="pi-val">${titlesHTML}</span></div>
-        <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${groupName}</span></div>
-        <div class="pi-row"><span class="pi-label">Membre depuis</span><span class="pi-val">${joined}</span></div>
+    <div class="modal-box" style="max-width:480px;">
+      <h2>
+        <span class="${nameClass}">${migrated.name}${badgeEmoji ? ' ' + badgeEmoji : ''}</span>
+        <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button>
+      </h2>
+      <div style="font-size:.78rem;color:var(--muted);">Membre depuis ${joined}${groupName ? ` · ${groupName}` : ''}</div>
+
+      <div class="profil-me-stats">
+        <div class="profil-stat">
+          <span class="profil-stat-val">${migrated.balance.toLocaleString('fr-FR')}</span>
+          <span class="profil-stat-label">🪙 Pomels</span>
+        </div>
+        <div class="profil-stat">
+          <span class="profil-stat-val">${earned.toLocaleString('fr-FR')}</span>
+          <span class="profil-stat-label">📈 Total gagné</span>
+        </div>
+        <div class="profil-stat">
+          <span class="profil-stat-val">${spent.toLocaleString('fr-FR')}</span>
+          <span class="profil-stat-label">📉 Total dépensé</span>
+        </div>
+        <div class="profil-stat">
+          <span class="profil-stat-val">${spins}</span>
+          <span class="profil-stat-label">🎰 Tirages</span>
+        </div>
+        <div class="profil-stat">
+          <span class="profil-stat-val">${snakeGames}</span>
+          <span class="profil-stat-label">🐍 Parties Serpent</span>
+        </div>
+        <div class="profil-stat">
+          <span class="profil-stat-val">${(migrated.ownedTitles || []).length}</span>
+          <span class="profil-stat-label">🏷️ Titres possédés</span>
+        </div>
       </div>
+
+      ${titlesHTML !== '<span style="color:var(--muted);font-size:.82rem;">Aucun titre actif</span>'
+        ? `<div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);">${titlesHTML}</div>`
+        : `<div style="padding-top:12px;border-top:1px solid var(--border);color:var(--muted);font-size:.82rem;">Aucun titre actif</div>`
+      }
     </div>
   `;
   document.body.appendChild(overlay);
@@ -3280,7 +3311,6 @@ async function renderHome() {
   // Run all sections in parallel
   await Promise.all([
     renderHomeClicker(),
-    renderHomeJardinWinners(),
     renderHomeQuetes(),
     renderHomeRoulette(),
     renderHomeHotel(),
@@ -3288,45 +3318,6 @@ async function renderHome() {
     renderHomeLivePost(),
     renderHomeBets(),
   ]);
-}
-
-async function renderHomeJardinWinners() {
-  const card = document.getElementById('homeJardinWinnersCard');
-  const el   = document.getElementById('homeJardinWinners');
-  const data = await getJardin();
-
-  // Afficher uniquement si on a des gagnants récents (< 7 jours)
-  if (!data || !data.lastWinners || !data.lastWinners.length || !data.lastWinnersDate) {
-    card.style.display = 'none';
-    return;
-  }
-  const age = Date.now() - new Date(data.lastWinnersDate).getTime();
-  if (age > 7 * 24 * 3600 * 1000) { card.style.display = 'none'; return; }
-
-  card.style.display = 'block';
-  el.innerHTML = '';
-
-  const medals = ['🥇','🥈','🥉'];
-  const dateStr = new Date(data.lastWinnersDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-
-  const dateDiv = document.createElement('div');
-  dateDiv.style.cssText = 'font-size:.75rem;color:var(--muted);margin-bottom:8px;';
-  dateDiv.textContent = `Semaine du ${dateStr}`;
-  el.appendChild(dateDiv);
-
-  data.lastWinners.forEach(w => {
-    const isMe = w.code === state.code;
-    const div = document.createElement('div');
-    div.className = 'home-rank-row' + (isMe ? ' me' : '');
-    if (isMe) div.style.cssText = 'border:1px solid var(--primary);background:rgba(235,88,70,0.05);';
-    div.innerHTML = `
-      <span class="home-rank-num ${w.rank <= 3 ? 'top'+w.rank : ''}">${medals[w.rank-1] || w.rank}</span>
-      <span class="home-rank-name">${w.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
-      <span style="font-size:.78rem;color:var(--muted);">${w.count} 🌸</span>
-      <span class="home-rank-val">+${w.prize.toLocaleString('fr-FR')} 🪙</span>
-    `;
-    el.appendChild(div);
-  });
 }
 
 async function renderHomeClicker() {
@@ -5522,7 +5513,8 @@ function renderProfile() {
 // ── MON PROFIL ───────────────────────────────────
 function renderMonProfil() {
   const me = state;
-  const spins   = (me.history || []).filter(h => h.type === 'roulette').length;
+  const spins      = (me.history || []).filter(h => h.type === 'roulette').length;
+  const snakeGames = (me.history || []).filter(h => h.type === 'snake').length;
   const earned  = (me.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
   const spent   = (me.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
   const joined  = new Date(me.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -5557,6 +5549,10 @@ function renderMonProfil() {
       <div class="profil-stat">
         <span class="profil-stat-val">${spins}</span>
         <span class="profil-stat-label">🎰 Tirages</span>
+      </div>
+      <div class="profil-stat">
+        <span class="profil-stat-val">${snakeGames}</span>
+        <span class="profil-stat-label">🐍 Parties Serpent</span>
       </div>
       <div class="profil-stat">
         <span class="profil-stat-val">${(me.ownedTitles || []).length}</span>
