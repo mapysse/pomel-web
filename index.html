@@ -510,6 +510,9 @@
   .snake-lb-name { flex: 1; font-weight: 700; font-size: .9rem; }
   .snake-lb-score { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--primary); font-weight: 700; }
   .snake-lb-pomels { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--green); }
+  /* Classements côte à côte */
+  .snake-lb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .snake-lb-row { grid-template-columns: 1fr; } }
 
   /* PROVERBE DU JOUR */
   .proverbe-wrap { display: flex; flex-direction: column; gap: 24px; }
@@ -517,6 +520,12 @@
   .proverbe-today-label { font-size: .7rem; font-weight: 700; color: var(--primary); letter-spacing: .12em; text-transform: uppercase; }
   .proverbe-today-author { font-size: .85rem; color: var(--muted); }
   .proverbe-today-author strong { color: var(--text); }
+  /* Réactions proverbe */
+  .prov-reactions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .prov-react-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: .92rem; cursor: pointer; transition: all .18s; display: flex; align-items: center; gap: 5px; color: var(--text); font-family: 'Syne', sans-serif; font-weight: 600; }
+  .prov-react-btn:hover { border-color: var(--primary); transform: scale(1.06); }
+  .prov-react-btn.reacted { background: rgba(235,88,70,0.15); border-color: var(--primary); }
+  .prov-react-count { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--muted); min-width: 10px; }
   .proverbe-input-zone { display: flex; flex-direction: column; gap: 12px; }
   .proverbe-submitted { background: rgba(62,207,110,0.1); border: 1px solid rgba(62,207,110,0.3); border-radius: 10px; padding: 14px 18px; color: var(--green); font-size: .9rem; font-weight: 600; }
   .proverbe-history-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
@@ -549,6 +558,17 @@
   .live-dislike-warn { font-size: .72rem; color: var(--red); margin-left: auto; }
   .live-empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 40px 0; }
   .live-date-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-size: .78rem; color: var(--muted); text-align: center; font-family: 'Space Mono', monospace; }
+  /* Réponses Live */
+  .live-replies { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .live-reply-item { display: flex; gap: 8px; align-items: flex-start; background: var(--surface2); border-radius: 8px; padding: 8px 12px; font-size: .85rem; }
+  .live-reply-author { font-weight: 700; color: var(--primary); flex-shrink: 0; }
+  .live-reply-text { color: var(--text); line-height: 1.4; flex: 1; }
+  .live-reply-input-zone { display: flex; gap: 8px; margin-top: 4px; }
+  .live-reply-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .82rem; outline: none; transition: border .2s; }
+  .live-reply-input:focus { border-color: var(--primary); }
+  .live-reply-btn { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: filter .2s; }
+  .live-reply-btn:hover { filter: brightness(1.1); }
+  .live-reply-btn:disabled { opacity: .4; cursor: not-allowed; }
 
   /* INFORMATIONS */
   .info-wrap { display: flex; flex-direction: column; gap: 20px; }
@@ -634,9 +654,57 @@
   .profil-dots-name { font-size: .88rem; font-weight: 600; color: var(--text); }
   .profil-dots-empty { font-size: .82rem; color: var(--muted); font-style: italic; padding: 2px 0; }
 
-  /* RAINBOW EFFECT */
+  /* STREAK — Série quotidienne */
+  .streak-widget { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; cursor: pointer; transition: border-color .2s, box-shadow .2s; user-select: none; }
+  .streak-widget:hover { border-color: var(--yellow); box-shadow: 0 0 10px rgba(240,192,64,0.2); }
+  .streak-widget.ready { border-color: var(--yellow); box-shadow: 0 0 12px rgba(240,192,64,0.35); animation: streak-pulse 1.6s ease-in-out infinite; }
+  @keyframes streak-pulse { 0%,100%{box-shadow:0 0 8px rgba(240,192,64,0.3)} 50%{box-shadow:0 0 22px rgba(240,192,64,0.6)} }
+  .streak-days { display: flex; gap: 3px; }
+  .streak-day { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background .2s; }
+  .streak-day.done { background: var(--yellow); }
+  .streak-day.today-ready { background: var(--primary); animation: streak-pulse 1s ease-in-out infinite; }
+  .streak-day.final { width: 14px; height: 14px; }
+  .streak-label { font-size: .7rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .streak-label.ready { color: var(--yellow); }
   @keyframes rainbow { 0%{color:#EB5846} 16%{color:#f0c040} 33%{color:#3ecf6e} 50%{color:#5b8def} 66%{color:#b05bef} 83%{color:#ef5bb0} 100%{color:#EB5846} }
   .rainbow-text { animation: rainbow 2s linear infinite; font-weight: 700; }
+
+  /* SPARKLE EFFECT */
+  @keyframes sparkle-rotate { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+  .sparkle-text {
+    position: relative;
+    display: inline-block;
+    font-weight: 700;
+    background: linear-gradient(90deg, #EB5846, #f0c040, #3ecf6e, #5b8def, #b05bef, #ef5bb0, #EB5846);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: sparkle-shimmer 1.8s linear infinite;
+  }
+  @keyframes sparkle-shimmer {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+  .sparkle-text::before, .sparkle-text::after {
+    content: '✦';
+    position: absolute;
+    font-size: .55em;
+    -webkit-text-fill-color: initial;
+    background: none;
+    animation: sparkle-star 1.2s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  .sparkle-text::before { top: -4px; left: -10px; color: #f0c040; animation-delay: 0s; }
+  .sparkle-text::after  { bottom: -4px; right: -10px; color: #3ecf6e; animation-delay: .6s; }
+  @keyframes sparkle-star { 0%{opacity:.2;transform:scale(.7)} 100%{opacity:1;transform:scale(1.2)} }
+
+  /* PSEUDO COLOR CLASSES */
+  .name-color-green  { color: #3ecf6e !important; -webkit-text-fill-color: #3ecf6e; }
+  .name-color-blue   { color: #5b8def !important; -webkit-text-fill-color: #5b8def; }
+  .name-color-orange { color: #f0a040 !important; -webkit-text-fill-color: #f0a040; }
+  .name-color-red    { color: #EB5846 !important; -webkit-text-fill-color: #EB5846; }
+  .name-color-brown  { color: #a0622a !important; -webkit-text-fill-color: #a0622a; }
 
   /* BADGES */
   .user-badge-emoji { font-size: 1rem; }
@@ -711,6 +779,11 @@
         <div class="amount" id="headerBalance">0</div>
         <div class="label">Pomels</div>
       </div>
+    </div>
+    <!-- Série quotidienne -->
+    <div class="streak-widget" id="streakWidget" onclick="claimStreak()" title="Série quotidienne — clique chaque jour !">
+      <div class="streak-days" id="streakDays"></div>
+      <span class="streak-label" id="streakLabel">🔥</span>
     </div>
     <div class="user-badge" id="userBadge" onclick="toggleUserMenu(event)">
       Bonjour, <strong id="headerName">—</strong>
@@ -1071,7 +1144,7 @@
         <div class="clicker-upgrade-card" id="upgradeSecondFruit">
           <div class="clicker-upgrade-info">
             <div class="clicker-upgrade-name">🍎 Second Fruit</div>
-            <div class="clicker-upgrade-desc">Un deuxième fruit cliquable — l'auto-clicker génère une graine supplémentaire par fruit débloqué. Stock auto +1 000.</div>
+            <div class="clicker-upgrade-desc">Un deuxième fruit cliquable — chaque clic rapporte <strong>2 graines</strong> au lieu de 1. L'auto-clicker génère une graine supplémentaire par fruit. Stock auto +1 000.</div>
             <div class="clicker-upgrade-price">10 000 🌱</div>
           </div>
           <button class="btn-buy" id="btnSecondFruit" onclick="buyUpgrade('secondFruit')">Acheter</button>
@@ -1123,11 +1196,21 @@
         <span>Espace pour pause</span>
       </div>
 
+      <div class="snake-lb-row">
       <div class="snake-lb-card">
         <div class="snake-lb-title">🏆 Meilleurs scores</div>
         <div class="snake-lb-list" id="snakeLbList">
           <div class="history-empty">Aucun score enregistré.</div>
         </div>
+      </div>
+
+      <div class="snake-lb-card" id="snakeWeeklyLbCard">
+        <div class="snake-lb-title">📅 Classement de la semaine <span id="snakeWeeklyPrizeInfo" style="font-size:.72rem;color:var(--muted);font-weight:400;"></span></div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">🥇 2 000 🪙 · 🥈 1 500 🪙 · 🥉 1 000 🪙 · autres 500 🪙 — récompenses versées le lundi à 9h</div>
+        <div class="snake-lb-list" id="snakeWeeklyLbList">
+          <div class="history-empty">Chargement…</div>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -1273,7 +1356,7 @@
         </div>
         <div class="form-group">
           <label>Récompense (Pomels offerts)</label>
-          <input type="number" id="queteRewardInput" placeholder="ex: 300" min="1" max="500" />
+          <input type="number" id="queteRewardInput" placeholder="ex: 300" min="1" max="5000" />
         </div>
         <div id="queteCreateAlert" class="alert"></div>
         <button class="btn-primary" onclick="handleCreateQuete()">Lancer la quête ⚔️</button>
@@ -1345,8 +1428,8 @@
         <canvas id="jardinCanvas"></canvas>
       </div>
 
-      <!-- Classement du jardin -->
-      <div class="jardin-lb" id="jardinLbSection">
+      <!-- Classement du jardin — masqué visuellement -->
+      <div class="jardin-lb" id="jardinLbSection" style="display:none;">
         <div class="jardin-lb-title">🏆 Classement de la semaine</div>
         <div id="jardinLbList"></div>
       </div>
@@ -1380,6 +1463,7 @@
       <div class="proverbe-today-card" id="provTodayCard">
         <div class="proverbe-today-label">✨ Aujourd'hui</div>
         <div class="proverbe-waiting" id="provTodayContent">Chargement…</div>
+        <div id="provReactionsZone" style="display:none;"></div>
       </div>
       <div id="provInputZone" style="display:none;">
         <div class="bet-create-card">
@@ -1469,7 +1553,7 @@
         <h3>🎲 Les Paris</h3>
         <p>Crée ou rejoins un pari entre amis sur n'importe quel sujet. Mise des Pomels sur l'option de ton choix !</p>
         <ul>
-          <li>Les gagnants récupèrent leur mise + une part <strong>équitable</strong> des mises perdantes (arrondie au supérieur)</li>
+          <li>Les gagnants récupèrent <strong>2× leur mise</strong> + une part <strong>équitable</strong> des mises perdantes (arrondie au supérieur)</li>
           <li>Le créateur du pari peut le supprimer à tout moment (les mises sont remboursées)</li>
           <li>Les paris non clôturés sont supprimés automatiquement après <strong>3 jours</strong></li>
           <li>Les paris terminés disparaissent après <strong>24h</strong></li>
@@ -1487,6 +1571,7 @@
           <li>Contrôles : flèches ⬆⬇⬅➡, ZQSD ou swipe sur mobile</li>
           <li>Espace pour mettre en pause</li>
           <li>Un <strong>leaderboard</strong> conserve ton meilleur score</li>
+          <li><strong>Classement hebdomadaire</strong> — le lundi à 9h : 🥇 2 000 🪙 · 🥈 1 500 🪙 · 🥉 1 000 🪙 · autres 500 🪙</li>
         </ul>
       </div>
 
@@ -1497,7 +1582,7 @@
         <p>Dépense tes Pomels pour acheter des titres, des badges et des effets visuels. Active-les ensuite dans <strong>Paramètres</strong>.</p>
         <ul>
           <li><strong>Titres</strong> — s'affichent à côté de ton nom dans le classement</li>
-          <li><strong>Couleur du pseudo</strong> — effet Arc-en-ciel animé pour 50 000 🪙</li>
+          <li><strong>Couleur du pseudo</strong> — Effet Arc-en-ciel animé (50 000 🪙), Effet Particules Brillantes (50 000 🪙), ou couleur fixe : Vert, Bleu, Orange, Rouge, Marron (1 000 🪙 chacun)</li>
           <li><strong>Badges</strong> — émojis affichés à côté de ton nom : Expert 🎖️ (1 000), Pomélien 🌟 (5 000), Censure 🚫 (10 000)</li>
           <li>Titre spécial : <em>Criminel des WC</em> pour 10 000 🪙</li>
         </ul>
@@ -1524,7 +1609,7 @@
         <h3>⚔️ Les Quêtes</h3>
         <p>Assigne une mission à un autre joueur et offre-lui des Pomels en récompense — les Pomels sont offerts par le système, pas prélevés sur toi !</p>
         <ul>
-          <li>Choisis un joueur, décris sa mission et fixe la récompense (<strong>500 Pomels max</strong>)</li>
+          <li>Choisis un joueur, décris sa mission et fixe la récompense (<strong>5 000 Pomels max</strong>)</li>
           <li>Le joueur peut <strong>accepter ou refuser</strong> la quête</li>
           <li>Une fois la mission accomplie, le créateur <strong>valide</strong> la quête : le joueur reçoit la récompense complète, et le créateur reçoit <strong>la moitié (arrondie au supérieur)</strong> en bonus</li>
           <li>Les quêtes non terminées sont supprimées après <strong>3 jours</strong></li>
@@ -1570,6 +1655,7 @@
         <p>Chaque jour, un membre est tiré au sort pour partager un proverbe ou une phrase motivante.</p>
         <ul>
           <li>Si c'est ton tour, un champ s'affiche pour écrire ta phrase</li>
+          <li>Une fois publié, tout le monde peut réagir avec des <strong>émojis</strong> (❤️ 😂 🔥 etc.)</li>
           <li>Les <strong>10 derniers proverbes</strong> sont conservés en grisé</li>
           <li>Le proverbe du jour est affiché directement sur la <strong>page d'accueil</strong></li>
         </ul>
@@ -1612,7 +1698,7 @@
         <h3>🌱 Le Clicker</h3>
         <p>Un mini-jeu de clicker où tu génères des <strong>graines de Pomels</strong>, une monnaie propre à ce jeu, en cliquant sur un fruit.</p>
         <ul>
-          <li>Clique sur le fruit pour générer <strong>1 graine</strong> par clic</li>
+          <li>Clique sur le fruit pour générer <strong>1 graine</strong> par clic (2 graines avec le Second Fruit débloqué !)</li>
           <li>Les graines servent à acheter des améliorations et à planter des fleurs dans le Jardin</li>
           <li>Échange tes graines contre des Pomels : <strong>100 graines = 1 Pomel</strong></li>
         </ul>
@@ -1671,6 +1757,12 @@ const SHOP_TITLES = [
   { id: 'criminel_wc', name: 'Criminel des WC', price: 10000, type: 'title' },
   { id: 'expert_pomdoc', name: 'Expert Pomdoc', price: 100000, type: 'title' },
   { id: 'rainbow', name: 'Effet Arc-en-ciel', price: 50000, type: 'color', desc: 'Pseudo arc-en-ciel animé !' },
+  { id: 'sparkle', name: '✨ Effet Particules Brillantes', price: 50000, type: 'color', desc: 'Pseudo entouré de particules colorées scintillantes !' },
+  { id: 'color_green', name: '🟢 Pseudo Vert', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en vert' },
+  { id: 'color_blue', name: '🔵 Pseudo Bleu', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en bleu' },
+  { id: 'color_orange', name: '🟠 Pseudo Orange', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en orange' },
+  { id: 'color_red', name: '🔴 Pseudo Rouge', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en rouge' },
+  { id: 'color_brown', name: '🟤 Pseudo Marron', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en marron' },
   { id: 'badge_survivant_30mars', name: 'Badge Survivant 🪲', price: 0, type: 'badge', emoji: '🪲'},
   { id: 'badge_expert', name: 'Badge Expert 🎖️', price: 1000, type: 'badge', emoji: '🎖️' },
   { id: 'badge_pomelien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟' },
@@ -1706,7 +1798,11 @@ async function dbGetAll(path) {
 
 // ── ACCOUNT HELPERS ──────────────────────────────
 async function getAccount(code) { return dbGet('accounts/' + code); }
-async function saveAccount(acc) { await dbSet('accounts/' + acc.code, acc); }
+async function saveAccount(acc) {
+  // Limiter l'historique à 20 entrées avant toute sauvegarde
+  if (acc.history && acc.history.length > 20) acc.history = acc.history.slice(0, 20);
+  await dbSet('accounts/' + acc.code, acc);
+}
 async function getAllAccounts() { return dbGetAll('accounts'); }
 async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); }
 
@@ -1758,6 +1854,7 @@ function migrateAccount(acc) {
   if (!acc.activeBadge) acc.activeBadge = null;
   if (!acc.customTitles) acc.customTitles = {};
   if (!acc.password) acc.password = acc.code;
+  if (!acc.streak) acc.streak = { days: 0, lastClaim: null, cycleStart: null };
   return acc;
 }
 
@@ -1878,6 +1975,7 @@ function refreshUI() {
   document.getElementById('headerBalance').textContent = state.balance.toLocaleString('fr-FR');
   document.getElementById('headerName').textContent = state.name;
   document.getElementById('transferBalance').textContent = state.balance.toLocaleString('fr-FR') + ' Pomels';
+  renderStreakWidget();
   takeStateSnapshot();
 }
 
@@ -2169,6 +2267,19 @@ function launchSparkles() {
   requestAnimationFrame(draw);
 }
 
+// ── NAME COLOR HELPER ────────────────────────────
+function getNameColorClass(activeColor) {
+  if (!activeColor) return '';
+  if (activeColor === 'rainbow') return 'rainbow-text';
+  if (activeColor === 'sparkle') return 'sparkle-text';
+  if (activeColor === 'color_green')  return 'name-color-green';
+  if (activeColor === 'color_blue')   return 'name-color-blue';
+  if (activeColor === 'color_orange') return 'name-color-orange';
+  if (activeColor === 'color_red')    return 'name-color-red';
+  if (activeColor === 'color_brown')  return 'name-color-brown';
+  return '';
+}
+
 // ── LEADERBOARD ──────────────────────────────────
 let currentLbMode = 'balance';
 
@@ -2209,7 +2320,7 @@ async function renderLeaderboard(mode) {
       return t ? `<span class="title-badge">${t.name}</span>` : '';
     }).join('');
     // Rainbow effect
-    const nameClass = acc.activeColor === 'rainbow' ? 'lb-name rainbow-text' : 'lb-name';
+    const nameClass = 'lb-name ' + getNameColorClass(acc.activeColor);
     // Badge emoji
     const badgeEmoji = acc.activeBadge ? (resolveAnyTitleDef(acc.activeBadge, acc) || {}).emoji || '' : '';
     const safeCode = acc.code.replace(/'/g, "\\'");
@@ -2238,7 +2349,7 @@ async function openProfileModal(code) {
     const t = resolveAnyTitleDef(tid, migrated);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
   }).join('') || '<span style="color:var(--muted);font-size:.85rem;">Aucun titre</span>';
-  const nameClass = migrated.activeColor === 'rainbow' ? 'rainbow-text' : '';
+  const nameClass = getNameColorClass(migrated.activeColor);
   const badgeEmoji = migrated.activeBadge ? (resolveAnyTitleDef(migrated.activeBadge, migrated) || {}).emoji || '' : '';
 
   const overlay = document.createElement('div');
@@ -2612,10 +2723,10 @@ async function closeBet(betId, winnerOption) {
   await saveBet(bet);
 
   if (winners.length > 0) {
-    // Each winner gets their bet back + equal share of loser pool (arrondi au-dessus)
+    // Each winner gets 2× their bet + equal share of loser pool (arrondi au-dessus)
     const sharePerWinner = Math.ceil(loserPool / winners.length);
     for (const w of winners) {
-      const totalWin = w.amount + sharePerWinner;
+      const totalWin = w.amount * 2 + sharePerWinner;
       const acc = await getAccount(w.code);
       if (acc) {
         acc.balance += totalWin;
@@ -2762,7 +2873,7 @@ function buildBetCard(bet) {
     const losersPool = (bet.winnerOption === 1 ? total2 : total1);
     const winnersCount = (bet.winnerOption === 1 ? bettors1 : bettors2).length;
     const sharePerWinner = winnersCount > 0 ? Math.ceil(losersPool / winnersCount) : 0;
-    resultHTML = `<div class="bet-winner-result">🏆 "${winLabel}" a gagné ! Chaque gagnant reçoit sa mise + ${sharePerWinner.toLocaleString('fr-FR')} 🪙 bonus</div>`;
+    resultHTML = `<div class="bet-winner-result">🏆 "${winLabel}" a gagné ! Chaque gagnant reçoit 2× sa mise + ${sharePerWinner.toLocaleString('fr-FR')} 🪙 bonus (part du pool perdants)</div>`;
   }
 
   const win1 = bet.status === 'closed' && bet.winnerOption === 1 ? ' winner-block' : '';
@@ -3342,7 +3453,9 @@ function updateClickerUI() {
 
 function clickFruit(fruitNum) {
   if (!clickerActive) return;
-  clickerData.seeds += 1;
+  // 2 graines par clic si les 2 fruits sont débloqués, sinon 1
+  const gain = clickerData.upgrades.secondFruit ? 2 : 1;
+  clickerData.seeds += gain;
 
   const fruit = document.getElementById('fruit' + fruitNum);
   fruit.classList.remove('clicker-fruit-pop');
@@ -3353,7 +3466,7 @@ function clickFruit(fruitNum) {
   const rect = fruit.getBoundingClientRect();
   const span = document.createElement('span');
   span.className = 'clicker-seed-float';
-  span.textContent = '+1 🌱';
+  span.textContent = '+' + gain + ' 🌱';
   span.style.left = (rect.left + rect.width / 2 - 20) + 'px';
   span.style.top = (rect.top - 10) + 'px';
   document.body.appendChild(span);
@@ -3619,6 +3732,7 @@ async function gameOverSnake() {
 
   // Save leaderboard entry
   await saveSnakeScore(finalScore);
+  await saveSnakeWeeklyScore(finalScore);
 
   // Show overlay
   const overlay = snakeOverlay();
@@ -3632,6 +3746,7 @@ async function gameOverSnake() {
   snakeState = null;
   updateSnakeScoreUI();
   renderSnakeLb();
+  renderSnakeWeeklyLb();
 }
 
 // ── SNAKE LEADERBOARD (Firebase) ─────────────────
@@ -3667,6 +3782,98 @@ async function renderSnakeLb() {
     `;
     list.appendChild(div);
   });
+}
+
+// ── SNAKE WEEKLY LEADERBOARD ─────────────────────
+const SNAKE_WEEKLY_PRIZES = [2000, 1500, 1000];
+const SNAKE_WEEKLY_CONSOLATION = 500;
+
+// Clé de semaine : lundi de la semaine courante (YYYY-MM-DD)
+function getSnakeWeekKey() {
+  const now = new Date();
+  const day = now.getDay(); // 0=dim, 1=lun…
+  const diff = (day === 0 ? -6 : 1 - day); // décalage pour aller au lundi
+  const mon = new Date(now);
+  mon.setDate(now.getDate() + diff);
+  return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+}
+
+async function saveSnakeWeeklyScore(score) {
+  if (score === 0) return;
+  const weekKey = getSnakeWeekKey();
+  const path = `snake_weekly/${weekKey}/${state.code}`;
+  const existing = await dbGet(path);
+  if (!existing || score > existing.score) {
+    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
+  }
+}
+
+async function renderSnakeWeeklyLb() {
+  const list = document.getElementById('snakeWeeklyLbList');
+  if (!list) return;
+  list.innerHTML = '<div class="history-empty">Chargement…</div>';
+  const weekKey = getSnakeWeekKey();
+  const snap = await dbGet('snake_weekly/' + weekKey);
+
+  if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
+  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+
+  list.innerHTML = '';
+  const medals = ['🥇','🥈','🥉'];
+  entries.forEach((e, i) => {
+    const rank = i + 1;
+    const isMe = e.code === state.code;
+    const prize = i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION;
+    const rankClass = rank <= 3 ? `top${rank}` : '';
+    const medal = rank <= 3 ? medals[i] : '';
+    const div = document.createElement('div');
+    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    div.innerHTML = `
+      <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
+      <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-score">${e.score} 🍎</span>
+      <span class="snake-lb-pomels">→ ${prize.toLocaleString('fr-FR')} 🪙</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+async function checkSnakeWeeklyReset() {
+  // Distribuer les récompenses le lundi à partir de 9h pour la semaine précédente
+  const now = new Date();
+  if (now.getDay() !== 1 || now.getHours() < 9) return;
+
+  // Semaine précédente = lundi d'il y a 7 jours
+  const prevMon = new Date(now);
+  prevMon.setDate(now.getDate() - 7);
+  const prevKey = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
+
+  // Vérifier si déjà distribué
+  const distributed = await dbGet('snake_weekly_distributed/' + prevKey);
+  if (distributed) return;
+
+  const snap = await dbGet('snake_weekly/' + prevKey);
+  if (!snap) {
+    await dbSet('snake_weekly_distributed/' + prevKey, true);
+    return;
+  }
+
+  // Anti-race condition : marquer immédiatement
+  await dbSet('snake_weekly_distributed/' + prevKey, true);
+
+  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const prize = i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION;
+    const acc = await getAccount(e.code);
+    if (acc) {
+      acc.balance += prize;
+      acc.history = acc.history || [];
+      acc.history.unshift({ type: 'snake', desc: `🐍 Classement hebdo Serpent — #${i+1}`, amount: prize, date: new Date().toISOString() });
+      await saveAccount(acc);
+      if (e.code === state.code) { state = migrateAccount(acc); refreshUI(); }
+    }
+  }
 }
 
 // ── SNAKE CONTROLS ───────────────────────────────
@@ -3738,6 +3945,8 @@ function renderSnakePage() {
   document.getElementById('snakeScore').textContent = '0';
   document.getElementById('snakeEarned').textContent = '+0 🪙';
   renderSnakeLb();
+  renderSnakeWeeklyLb();
+  checkSnakeWeeklyReset().catch(() => {});
 }
 
 // ── HOTEL DES VENTES ─────────────────────────────
@@ -4043,7 +4252,7 @@ async function handleCreateQuete() {
   if (!targetCode)        { setAlert('queteCreateAlert', 'Choisis un joueur !', 'error'); return; }
   if (!desc)              { setAlert('queteCreateAlert', 'Décris la mission !', 'error'); return; }
   if (!reward || reward < 1) { setAlert('queteCreateAlert', 'Entre une récompense valide !', 'error'); return; }
-  if (reward > 500) { setAlert('queteCreateAlert', 'La récompense maximum est de 500 Pomels !', 'error'); return; }
+  if (reward > 5000) { setAlert('queteCreateAlert', 'La récompense maximum est de 5 000 Pomels !', 'error'); return; }
 
   // Find target name
   const all = await getAllAccounts();
@@ -4580,15 +4789,18 @@ async function renderProverbe() {
       <div class="proverbe-today-author">— <strong>${data.today.authorName}</strong></div>
     `;
     inputZone.style.display = 'none';
+    renderProvReactions(data.today);
   } else if (isMyTurn) {
     // It's my turn to write
     todayCard.innerHTML = `<div class="proverbe-waiting">C'est ton tour aujourd'hui, <strong>${state.name}</strong> ! Partage une phrase inspirante ✨</div>`;
     inputZone.style.display = 'block';
+    document.getElementById('provReactionsZone').style.display = 'none';
   } else {
     // Waiting for the chosen person
     const waitName = chosenAcc ? chosenAcc.name : '?';
     todayCard.innerHTML = `<div class="proverbe-waiting">En attente du proverbe de <strong>${waitName}</strong> pour aujourd'hui…</div>`;
     inputZone.style.display = 'none';
+    document.getElementById('provReactionsZone').style.display = 'none';
   }
 
   // History (last 10, most recent first)
@@ -4618,13 +4830,63 @@ async function submitProverbe() {
   const data = await getProverbeData() || { history: [], today: null };
   if (data.today && data.today.date === today) { setAlert('provAlert', 'Proverbe déjà soumis aujourd\'hui !', 'error'); return; }
 
-  const entry = { date: today, text, authorCode: state.code, authorName: state.name };
+  const entry = { date: today, text, authorCode: state.code, authorName: state.name, reactions: {} };
   // Prepend to history
   const history = [entry, ...(data.history || [])].slice(0, 10);
   await saveProverbeData({ today: entry, history });
   document.getElementById('provInput').value = '';
   checkNotifUpdates();
   renderProverbe();
+}
+
+// ── PROVERBE RÉACTIONS ───────────────────────────
+const PROV_EMOJIS = ['❤️','😂','😮','👏','🔥','🤔','😢','💯','🙌','✨'];
+
+function renderProvReactions(todayEntry) {
+  const zone = document.getElementById('provReactionsZone');
+  if (!zone) return;
+  zone.style.display = 'block';
+  zone.innerHTML = '';
+
+  const reactions = todayEntry.reactions || {};
+  // reactions = { '❤️': ['code1','code2'], '😂': ['code3'], … }
+
+  const row = document.createElement('div');
+  row.className = 'prov-reactions';
+
+  PROV_EMOJIS.forEach(emoji => {
+    const users = reactions[emoji] || [];
+    const count = users.length;
+    const reacted = users.includes(state.code);
+    const btn = document.createElement('button');
+    btn.className = 'prov-react-btn' + (reacted ? ' reacted' : '');
+    btn.innerHTML = `${emoji} <span class="prov-react-count">${count > 0 ? count : ''}</span>`;
+    btn.title = count > 0 ? `${count} réaction${count > 1 ? 's' : ''}` : '';
+    btn.onclick = () => reactProverbe(emoji);
+    row.appendChild(btn);
+  });
+
+  zone.appendChild(row);
+}
+
+async function reactProverbe(emoji) {
+  const today = getTodayKey();
+  const data = await getProverbeData();
+  if (!data || !data.today || data.today.date !== today) return;
+
+  if (!data.today.reactions) data.today.reactions = {};
+  const users = data.today.reactions[emoji] || [];
+
+  if (users.includes(state.code)) {
+    // Toggle off
+    data.today.reactions[emoji] = users.filter(c => c !== state.code);
+    if (data.today.reactions[emoji].length === 0) delete data.today.reactions[emoji];
+  } else {
+    data.today.reactions[emoji] = [...users, state.code];
+  }
+
+  await saveProverbeData(data);
+  renderProvReactions(data.today);
 }
 
 // ── POMEL'LIVE ───────────────────────────────────
@@ -4681,7 +4943,29 @@ async function renderLive() {
     const myDislike = (post.dislikes || []).includes(state.code);
     const dislikes = (post.dislikes || []).length;
     const likes = (post.likes || []).length;
-    // Badge/rainbow for author
+
+    // Réponses
+    const replies = post.replies || {};
+    const repliesArr = Object.values(replies).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    const myReply = repliesArr.find(r => r.authorCode === state.code);
+    const isAuthor = post.authorCode === state.code;
+    const canReply = canPost && !isAuthor && !myReply;
+
+    const repliesHTML = repliesArr.length ? `
+      <div class="live-replies">
+        ${repliesArr.map(r => `
+          <div class="live-reply-item">
+            <span class="live-reply-author">${r.authorName}</span>
+            <span class="live-reply-text">${r.text}</span>
+          </div>`).join('')}
+      </div>` : '';
+
+    const replyInputHTML = canReply ? `
+      <div class="live-reply-input-zone">
+        <input class="live-reply-input" id="reply-input-${post.id}" placeholder="Répondre…" maxlength="100" />
+        <button class="live-reply-btn" onclick="submitReplyLive('${post.id}')">↩ Répondre</button>
+      </div>` : (myReply ? `<div style="font-size:.78rem;color:var(--muted);margin-top:4px;">✅ Tu as déjà répondu</div>` : '');
+
     card.innerHTML = `
       <div class="live-post-header">
         <span class="live-post-author">${post.authorName}</span>
@@ -4693,6 +4977,8 @@ async function renderLive() {
         <button class="live-react-btn ${myDislike ? 'disliked' : ''}" onclick="reactLive('${post.id}', 'dislike')">👎 ${dislikes}</button>
         ${dislikes >= 4 ? `<span class="live-dislike-warn">⚠️ ${5 - dislikes} dislike(s) avant suppression</span>` : ''}
       </div>
+      ${repliesHTML}
+      ${replyInputHTML}
     `;
     list.appendChild(card);
   });
@@ -4769,6 +5055,36 @@ async function reactLive(postId, type) {
   renderLive();
 }
 
+async function submitReplyLive(postId) {
+  const inputEl = document.getElementById('reply-input-' + postId);
+  if (!inputEl) return;
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  const today = getTodayKey();
+  const rawPosts = await getLivePosts() || {};
+  const post = rawPosts[postId];
+  if (!post || post.date !== today) return;
+
+  // L'auteur du post ne peut pas répondre
+  if (post.authorCode === state.code) return;
+
+  // Une seule réponse par personne par post
+  const replies = post.replies || {};
+  if (replies[state.code]) { return; }
+
+  replies[state.code] = {
+    authorCode: state.code,
+    authorName: state.name,
+    text,
+    createdAt: new Date().toISOString(),
+  };
+  post.replies = replies;
+  rawPosts[postId] = post;
+  await saveLivePosts(rawPosts);
+  renderLive();
+}
+
 // ── TRANSFER ─────────────────────────────────────
 async function handleTransfer() {
   const recipientName = document.getElementById('recipientInput').value.trim();
@@ -4801,15 +5117,22 @@ async function handleTransfer() {
 }
 
 // ── HISTORY ──────────────────────────────────────
+function trimHistory() {
+  // Garde seulement les 20 entrées les plus récentes
+  if (state.history && state.history.length > 20) {
+    state.history = state.history.slice(0, 20);
+  }
+}
+
 function renderHistory() {
   const list = document.getElementById('historyList');
   list.innerHTML = '';
   if (!state.history || !state.history.length) { list.innerHTML = '<div class="history-empty">Aucune transaction pour l\'instant.</div>'; return; }
-  state.history.slice(0, 30).forEach(h => {
+  state.history.slice(0, 20).forEach(h => {
     const div = document.createElement('div');
     div.className = 'history-item';
     const isPos = h.amount > 0;
-    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : h.type === 'hotel' ? '🏨' : h.type === 'quete' ? '⚔️' : h.type === 'clicker' ? '🌱' : h.type === 'jardin' ? '🌸' : '💸';
+    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : h.type === 'hotel' ? '🏨' : h.type === 'quete' ? '⚔️' : h.type === 'clicker' ? '🌱' : h.type === 'jardin' ? '🌸' : h.type === 'streak' ? '🔥' : '💸';
     const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     div.innerHTML = `
       <span class="hi-type">${icon}</span>
@@ -4832,7 +5155,7 @@ function renderProfile() {
     const t = resolveTitleDef(tid);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
   }).join('') || '<span style="color:var(--muted)">Aucun</span>';
-  const nameClass = state.activeColor === 'rainbow' ? 'rainbow-text' : '';
+  const nameClass = getNameColorClass(state.activeColor);
   const badgeEmoji = state.activeBadge ? (resolveTitleDef(state.activeBadge) || {}).emoji || '' : '';
   const colorLabel = state.activeColor ? (resolveTitleDef(state.activeColor) || {}).name || 'Aucun' : 'Aucun';
   el.innerHTML = `
@@ -4856,7 +5179,7 @@ function renderMonProfil() {
   const earned  = (me.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
   const spent   = (me.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
   const joined  = new Date(me.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const nameClass = me.activeColor === 'rainbow' ? 'rainbow-text' : '';
+  const nameClass = getNameColorClass(me.activeColor);
   const badge = me.activeBadge ? (resolveTitleDef(me.activeBadge) || {}).emoji || '' : '';
   const titlesHTML = (me.activeTitles || []).map(tid => {
     const t = resolveTitleDef(tid);
@@ -5006,7 +5329,7 @@ async function renderProfils() {
   grid.innerHTML = '';
   others.forEach(acc => {
     const migrated = migrateAccount(acc);
-    const nameClass = migrated.activeColor === 'rainbow' ? 'rainbow-text' : '';
+    const nameClass = getNameColorClass(migrated.activeColor);
     const badge = migrated.activeBadge ? (resolveAnyTitleDef(migrated.activeBadge, migrated) || {}).emoji || '' : '';
     const spins = (migrated.history || []).filter(h => h.type === 'roulette').length;
     const earned = (migrated.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
@@ -5146,6 +5469,129 @@ document.addEventListener('keydown', e => {
     return false;
   }
 });
+
+// ── SÉRIE QUOTIDIENNE (STREAK) ───────────────────
+// state.streak = { days: 0..5, lastClaim: 'YYYY-MM-DD', cycleStart: 'YYYY-MM-DD' }
+// Jour 1-4 : +500 🪙 | Jour 5 : +1 000 🪙, puis reset
+
+const STREAK_REWARDS = [500, 500, 500, 500, 1000]; // index 0..4
+
+function getStreakState() {
+  return state.streak || { days: 0, lastClaim: null, cycleStart: null };
+}
+
+function canClaimStreak() {
+  const s = getStreakState();
+  const today = getTodayKey();
+  // Déjà réclamé aujourd'hui
+  if (s.lastClaim === today) return false;
+  // Série cassée ? (plus de 1 jour de gap depuis lastClaim)
+  if (s.lastClaim) {
+    const last = new Date(s.lastClaim);
+    const now  = new Date(today);
+    const diffDays = Math.round((now - last) / 86400000);
+    // Si plus d'un jour de gap : la série se remet à zéro mais on peut quand même réclamer aujourd'hui
+  }
+  return true;
+}
+
+function streakDayIndex() {
+  // Retourne le nombre de jours validés dans le cycle actuel (0..4)
+  const s = getStreakState();
+  const today = getTodayKey();
+  if (!s.lastClaim) return 0; // pas encore commencé
+  const last = new Date(s.lastClaim);
+  const now  = new Date(today);
+  const diffDays = Math.round((now - last) / 86400000);
+  if (diffDays > 1) return 0; // série cassée, on repart de 0
+  return s.days; // 1..5 (nombre de jours déjà validés)
+}
+
+function renderStreakWidget() {
+  const s = getStreakState();
+  const today = getTodayKey();
+  const widget = document.getElementById('streakWidget');
+  const daysEl = document.getElementById('streakDays');
+  const label  = document.getElementById('streakLabel');
+  if (!widget || !daysEl || !label) return;
+
+  const claimed = s.lastClaim === today;
+  const doneDays = claimed ? s.days : streakDayIndex(); // jours déjà faits (incluant aujourd'hui si claimé)
+  const todayIdx = claimed ? -1 : doneDays; // index du jour à réclamer aujourd'hui (0-based)
+  const ready = canClaimStreak();
+
+  daysEl.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const dot = document.createElement('div');
+    const isFinal = i === 4;
+    dot.className = 'streak-day' + (isFinal ? ' final' : '');
+    if (i < doneDays) {
+      dot.classList.add('done');
+      dot.title = `Jour ${i+1} ✅`;
+    } else if (i === todayIdx && ready) {
+      dot.classList.add('today-ready');
+      dot.title = `Jour ${i+1} — Clique pour réclamer !`;
+    } else {
+      dot.title = `Jour ${i+1} — ${isFinal ? '1 000' : '500'} 🪙`;
+    }
+    daysEl.appendChild(dot);
+  }
+
+  if (claimed) {
+    const nextReward = s.days < 5 ? STREAK_REWARDS[s.days] : STREAK_REWARDS[0];
+    label.textContent = `🔥 ${s.days}/5`;
+    label.className = 'streak-label';
+    widget.classList.remove('ready');
+    widget.title = `Série : ${s.days}/5 — Reviens demain pour +${nextReward.toLocaleString('fr-FR')} 🪙`;
+  } else if (ready) {
+    const reward = STREAK_REWARDS[todayIdx] || 500;
+    label.textContent = `+${reward.toLocaleString('fr-FR')} 🪙`;
+    label.className = 'streak-label ready';
+    widget.classList.add('ready');
+    widget.title = `Clique pour réclamer +${reward.toLocaleString('fr-FR')} Pomels !`;
+  } else {
+    label.textContent = `🔥 0/5`;
+    label.className = 'streak-label';
+    widget.classList.remove('ready');
+    widget.title = 'Série quotidienne — reviens demain !';
+  }
+}
+
+async function claimStreak() {
+  if (!canClaimStreak()) return;
+  const today = getTodayKey();
+  const s = getStreakState();
+
+  // Calcul du jour actuel dans le cycle
+  let currentDay = streakDayIndex(); // 0-based index du jour à valider
+  if (currentDay >= 5) currentDay = 0; // sécurité
+
+  const reward = STREAK_REWARDS[currentDay];
+  const newDays = currentDay + 1; // 1..5 après claim
+
+  // Reset du cycle si on arrive au jour 5
+  state.streak = {
+    days: newDays >= 5 ? 0 : newDays, // 0 après le 5e pour repartir
+    lastClaim: today,
+    cycleStart: (newDays === 1 || !s.cycleStart) ? today : s.cycleStart,
+  };
+  // Mais on affiche 5/5 le temps du render avant reset
+  const displayDays = newDays;
+
+  state.balance += reward;
+  state.history.unshift({
+    type: 'streak',
+    desc: `🔥 Série quotidienne — Jour ${displayDays}/5`,
+    amount: reward,
+    date: new Date().toISOString(),
+  });
+
+  await saveAccount(state);
+  refreshUI();
+  renderStreakWidget();
+  showWinToast(`+${reward.toLocaleString('fr-FR')} Pomels — Série jour ${displayDays}/5 ! 🔥`);
+  launchSparkles();
+}
 
 // ── NOTIFICATIONS / PASTILLES ────────────────────
 // Stockage local : timestamps de la dernière visite par page
