@@ -3335,7 +3335,21 @@ async function renderHomeClicker() {
   if (saved.upgrades.stockExt2) maxStock = Math.max(maxStock, 5000);
   if (saved.upgrades.stockExt3) maxStock = Math.max(maxStock, 10000);
   if (saved.upgrades.secondFruit) maxStock += 1000;
-  const autoStock = Math.floor(saved.autoStock || 0);
+
+  // Compute offline production since lastSaved
+  let autoStock = Math.floor(saved.autoStock || 0);
+  if (saved.lastSaved) {
+    const elapsed = (Date.now() - new Date(saved.lastSaved).getTime()) / 1000;
+    const u = saved.upgrades;
+    const intervalSec = (u.autoSpeed || u.superSpeed || u.ultraSpeed) ? 1 : 2;
+    const fruitsUnlocked = u.secondFruit ? 2 : 1;
+    let ratePerFruit = 1;
+    if (u.superSpeed) ratePerFruit = 2;
+    if (u.ultraSpeed) ratePerFruit = 5;
+    const autoRate = fruitsUnlocked * ratePerFruit;
+    const ticks = Math.floor(elapsed / intervalSec);
+    autoStock = Math.min(maxStock, autoStock + ticks * autoRate);
+  }
 
   if (autoStock < maxStock) {
     card.style.display = 'none';
@@ -3623,6 +3637,24 @@ let clickerData = {
 };
 let clickerAutoInterval = null;
 let clickerActive = false;
+let clickerSaveTimeout = null;
+
+// Sauvegarde debounced pour éviter le spam Firebase lors des clics rapides
+function debouncedSaveClicker() {
+  if (clickerSaveTimeout) clearTimeout(clickerSaveTimeout);
+  clickerSaveTimeout = setTimeout(() => {
+    saveClickerData();
+    clickerSaveTimeout = null;
+  }, 2000);
+}
+// Force la sauvegarde immédiate si un debounce est en attente
+function flushClickerSave() {
+  if (clickerSaveTimeout) {
+    clearTimeout(clickerSaveTimeout);
+    clickerSaveTimeout = null;
+    saveClickerData();
+  }
+}
 
 function clickerMaxStock() {
   let max = clickerData.upgrades.autoClicker ? 1000 : 0;
@@ -3697,7 +3729,8 @@ function stopClickerPage() {
   if (!clickerActive) return; // ne rien faire si le clicker n'était pas ouvert
   clickerActive = false;
   if (clickerAutoInterval) { clearInterval(clickerAutoInterval); clickerAutoInterval = null; }
-  // Sauvegarde finale avec timestamp pour le calcul offline
+  // Flush le debounce en attente et sauvegarder avec timestamp pour le calcul offline
+  flushClickerSave();
   if (clickerData.upgrades && clickerData.upgrades.autoClicker) saveClickerData();
 }
 
@@ -3710,16 +3743,17 @@ function startAutoClicker() {
   const saveEveryNTicks = Math.ceil(15000 / clickerIntervalMs());
 
   clickerAutoInterval = setInterval(() => {
-    if (!clickerActive) { clearInterval(clickerAutoInterval); return; }
+    if (!clickerActive) { clearInterval(clickerAutoInterval); clickerAutoInterval = null; return; }
     const max = clickerMaxStock();
     if (clickerData.autoStock < max) {
       clickerData.autoStock = Math.min(max, clickerData.autoStock + clickerAutoRate());
       updateClickerUI();
-      ticksSinceLastSave++;
-      if (ticksSinceLastSave >= saveEveryNTicks) {
-        saveClickerData();
-        ticksSinceLastSave = 0;
-      }
+    }
+    // Sauvegarder périodiquement même si le stock est plein (pour lastSaved)
+    ticksSinceLastSave++;
+    if (ticksSinceLastSave >= saveEveryNTicks) {
+      saveClickerData();
+      ticksSinceLastSave = 0;
     }
   }, clickerIntervalMs());
 }
@@ -3814,7 +3848,7 @@ function clickFruit(fruitNum) {
   setTimeout(() => span.remove(), 850);
 
   updateClickerUI();
-  saveClickerData();
+  debouncedSaveClicker();
 }
 
 function collectAutoStock() {
@@ -6071,16 +6105,21 @@ async function checkNotifUpdates() {
 // ── BOOT ─────────────────────────────────────────
 // Sauvegarder le clicker quand on quitte la page
 window.addEventListener('beforeunload', () => {
-  if (clickerData.upgrades && clickerData.upgrades.autoClicker) {
-    // Synchrone impossible avec Firebase, on utilise sendBeacon si dispo
-    const payload = JSON.stringify({
-      seeds: Math.floor(clickerData.seeds),
-      autoStock: Math.floor(clickerData.autoStock),
-      upgrades: clickerData.upgrades,
-      lastSaved: new Date().toISOString(),
-    });
-    // Fallback : juste déclencher la sauvegarde async
+  // Flush tout debounce en attente
+  flushClickerSave();
+  // Tenter une dernière sauvegarde async (best-effort, le navigateur peut l'ignorer)
+  if (clickerData.loaded && clickerData.upgrades && clickerData.upgrades.autoClicker) {
     saveClickerData();
+  }
+});
+
+// Sauvegarde plus fiable sur mobile (visibilitychange se déclenche mieux que beforeunload)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    flushClickerSave();
+    if (clickerData.loaded && clickerData.upgrades && clickerData.upgrades.autoClicker) {
+      saveClickerData();
+    }
   }
 });
 
