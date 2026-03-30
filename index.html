@@ -1662,7 +1662,13 @@ const db = firebase.database();
 
 const GROUPS = ['Projet','Team Prod A','Team Prod B','Confo','SSI/Devs','Créa'];
 
+// Timestamp d'expiration du titre/badge "Survivant du bug du 30 mars"
+// Disponible pendant 4h à partir du déploiement du jour
+const BUG_30MARS_EXPIRES = new Date('2025-03-30T23:59:00').getTime();
+
 const SHOP_TITLES = [
+  { id: 'survivant_bug_30mars', name: '🐛 Survivant du bug du 30 mars', price: 0, type: 'title', desc: 'Edition limitée — disponible 4h seulement.', expiresAt: BUG_30MARS_EXPIRES },
+  { id: 'badge_survivant_30mars', name: 'Badge Survivant 🪲', price: 0, type: 'badge', emoji: '🪲', desc: 'Edition limitée — disponible 4h seulement.', expiresAt: BUG_30MARS_EXPIRES },
   { id: 'expert_pomdoc', name: 'Expert Pomdoc', price: 100000, type: 'title' },
   { id: 'maitre_pokemon', name: 'Maître Pokemon', price: 10000, type: 'title' },
   { id: 'fck_israel', name: 'F*ck Isr**l', price: 1000, type: 'title' },
@@ -2338,15 +2344,29 @@ function renderShop() {
     grid.appendChild(secTitle);
     items.forEach(title => {
       const owned = (state.ownedTitles || []).includes(title.id);
+      const now = Date.now();
+      // Masquer si expiré ET non possédé
+      if (title.expiresAt && now > title.expiresAt && !owned) return;
       const canAfford = state.balance >= title.price;
       const item = document.createElement('div');
       item.className = 'shop-item' + (owned ? ' owned' : '');
       const descHtml = title.desc ? `<div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${title.desc}</div>` : '';
+      // Countdown si item limité dans le temps et pas encore expiré
+      let countdownHtml = '';
+      if (title.expiresAt && now <= title.expiresAt && !owned) {
+        const remaining = title.expiresAt - now;
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        const pad = n => String(n).padStart(2, '0');
+        countdownHtml = `<div style="font-size:.72rem;color:var(--yellow);font-weight:700;margin-top:3px;">⏳ Expire dans ${pad(h)}h${pad(m)}m${pad(s)}s</div>`;
+      }
       item.innerHTML = `
         <div class="shop-item-info">
           <div class="shop-item-name">${title.name}</div>
           ${descHtml}
-          <div class="shop-item-price">${title.price.toLocaleString('fr-FR')} 🪙</div>
+          ${countdownHtml}
+          <div class="shop-item-price">${title.price === 0 ? '<span style="color:var(--green);font-weight:700;">Gratuit !</span>' : title.price.toLocaleString('fr-FR') + ' 🪙'}</div>
         </div>
         ${owned
           ? '<button class="btn-buy owned-btn" disabled>✅ Possédé</button>'
@@ -2356,6 +2376,22 @@ function renderShop() {
       grid.appendChild(item);
     });
   });
+  startShopCountdown();
+}
+
+// Refresh boutique chaque seconde si un item limité dans le temps est actif
+let _shopCountdownTimer = null;
+function startShopCountdown() {
+  if (_shopCountdownTimer) return;
+  const hasLimited = SHOP_TITLES.some(t => t.expiresAt && Date.now() <= t.expiresAt && !(state.ownedTitles || []).includes(t.id));
+  if (!hasLimited) return;
+  _shopCountdownTimer = setInterval(() => {
+    const page = document.getElementById('page-boutique');
+    if (!page || !page.classList.contains('active')) {
+      clearInterval(_shopCountdownTimer); _shopCountdownTimer = null; return;
+    }
+    renderShop();
+  }, 1000);
 }
 
 async function buyTitle(titleId) {
@@ -4952,7 +4988,7 @@ async function renderProfils() {
   const all = await getAllAccounts();
   // Exclure soi-même, trier par solde
   const others = all
-    .filter(a => a.code !== me.code)
+    .filter(a => a.code !== state.code)
     .sort((a, b) => b.balance - a.balance);
 
   if (!others.length) {
