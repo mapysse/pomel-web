@@ -1181,10 +1181,10 @@
       <div class="jardin-header">
         <div>
           <div class="section-title">🌸 Jardin de Pomel'Land</div>
-          <div class="section-sub">Plante des fleurs avec tes graines — le jardin se remet à zéro chaque dimanche à 12h !</div>
+          <div class="section-sub">Plante des fleurs avec tes graines — le jardin <strong>ferme le dimanche à 12h</strong>, résultats annoncés le lundi à 12h, réouverture à 12h30 !</div>
         </div>
         <div class="jardin-timer-box">
-          <div class="clicker-stat-label">🔄 Reset dans</div>
+          <div class="clicker-stat-label" id="jardinTimerLabel">🔄 Reset dans</div>
           <div class="clicker-stat-val" id="jardinTimer" style="font-size:1rem;">—</div>
         </div>
       </div>
@@ -1209,6 +1209,12 @@
       <!-- Garden canvas -->
       <div class="jardin-canvas-wrap">
         <canvas id="jardinCanvas"></canvas>
+      </div>
+
+      <!-- Classement du jardin -->
+      <div class="jardin-lb" id="jardinLbSection">
+        <div class="jardin-lb-title">🏆 Classement de la semaine</div>
+        <div id="jardinLbList"></div>
       </div>
 
     </div>
@@ -1420,7 +1426,7 @@
 
       <div class="info-card">
         <h3>🌸 Jardin de Pomel'Land</h3>
-        <p>Un jardin communautaire partagé par tous les joueurs, qui se remet à zéro chaque <strong>dimanche à 12h</strong>.</p>
+        <p>Un jardin communautaire partagé par tous les joueurs. Le jardin <strong>ferme le dimanche à 12h</strong> pour empêcher toute plantation avant l'annonce. Les résultats sont annoncés le <strong>lundi à 12h</strong> (événement), et le jardin <strong>rouvre à 12h30</strong>.</p>
         <ul>
           <li>Plante une fleur pour <strong>10 000 graines de Pomels</strong> (monnaie du Clicker)</li>
           <li>Chaque fleur a une forme et une couleur unique générée à partir de ton pseudo</li>
@@ -1669,6 +1675,9 @@ function launchApp() {
   renderProfile();
   renderHome();
   takeStateSnapshot();
+  // Vérifier si les récompenses du jardin sont à distribuer (lundi après 12h)
+  // S'exécute en arrière-plan sans bloquer le chargement
+  checkJardinReset().catch(() => {});
 }
 
 function refreshUI() {
@@ -3939,14 +3948,17 @@ function getJardinWeekKey() {
 
 function jardinTimerString() {
   const now = new Date();
+  const labelEl = document.getElementById('jardinTimerLabel');
   if (isJardinClosed()) {
     const opens = jardinClosedUntil();
     const diff = opens - now;
-    if (diff <= 0) return 'Réouverture imminente…';
+    if (labelEl) labelEl.textContent = '🔒 Réouverture dans';
+    if (diff <= 0) return 'Imminente…';
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
-    return `Fermé — réouverture dans ${h}h ${m}m`;
+    return `${h}h ${m}m`;
   }
+  if (labelEl) labelEl.textContent = '🔄 Reset dans';
   const reset = nextJardinReset();
   const diff = reset - now;
   if (diff <= 0) return 'Bientôt !';
@@ -4091,12 +4103,16 @@ async function renderJardin() {
   if (closed) {
     if (actionBar) actionBar.style.display = 'none';
     if (canvasWrap) canvasWrap.style.display = 'none';
-    alertEl.textContent = '🔒 Le jardin est fermé pour la nuit des résultats. Il rouvre le lundi à 12h30 !';
+    const lbSection = document.getElementById('jardinLbSection');
+    if (lbSection) lbSection.style.display = 'none';
+    alertEl.textContent = '🔒 Le jardin est fermé — les résultats seront annoncés le lundi à 12h, réouverture à 12h30 !';
     alertEl.className = 'alert error visible';
     return;
   } else {
     if (actionBar) actionBar.style.display = 'flex';
     if (canvasWrap) canvasWrap.style.display = 'block';
+    const lbSection = document.getElementById('jardinLbSection');
+    if (lbSection) lbSection.style.display = 'block';
     alertEl.className = 'alert';
   }
 
@@ -4116,10 +4132,12 @@ async function renderJardin() {
   plantBtn.disabled = mySeeds < JARDIN_FLOWER_COST;
 
   drawJardin(flowers);
+  renderJardinLb(flowers);
 }
 
 function renderJardinLb(flowers) {
   const list = document.getElementById('jardinLbList');
+  if (!list) return;
   if (!flowers.length) { list.innerHTML = '<div class="history-empty">Aucune fleur plantée.</div>'; return; }
 
   // Count per player
@@ -4148,20 +4166,42 @@ function renderJardinLb(flowers) {
 }
 
 async function checkJardinReset() {
+  // Ne déclencher la distribution QUE le lundi après 12h00
+  // (la réouverture UI reste à 12h30 via isJardinClosed)
+  const now = new Date();
+  const day = now.getDay();
+  const totalMin = now.getHours() * 60 + now.getMinutes();
+  if (day !== 1 || totalMin < 12 * 60) return;
+
   const data = await getJardin();
   const currentKey = getJardinWeekKey();
+
+  // Déjà distribué cette semaine
   if (data && data.weekKey === currentKey) return;
 
-  // Reset — distribuer les récompenses et sauvegarder les gagnants
+  // Protection race condition : un autre client est en train de distribuer
+  if (data && data.resetInProgress) return;
+
+  // Marquer le reset en cours AVANT de distribuer (flag optimiste)
+  await saveJardin({ ...(data || {}), resetInProgress: true });
+
+  // Petit délai aléatoire puis re-lecture pour "gagner la course"
+  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+  const check = await getJardin();
+  // Si entre-temps un autre client a déjà fini (weekKey == currentKey) → abandonner
+  if (!check || check.weekKey === currentKey || !check.resetInProgress) return;
+
+  // Distribution des récompenses
   let winners = [];
   if (data && data.flowers && data.flowers.length > 0) {
     winners = await distributeJardinRewards(data.flowers);
   }
 
-  // Nouveau jardin vide avec les gagnants de la semaine passée
+  // Sauvegarder le nouveau jardin vide
   await saveJardin({
     weekKey: currentKey,
     flowers: [],
+    resetInProgress: false,
     lastWinners: winners,
     lastWinnersDate: new Date().toISOString(),
   });
