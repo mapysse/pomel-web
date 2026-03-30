@@ -110,6 +110,7 @@
   .page { display: none; width: 100%; max-width: 700px; padding: 40px 24px 80px; }
   .page.active { display: block; }
   #page-home { max-width: 1100px; }
+  #page-classement { max-width: 1100px; }
   .home-wrap { display: flex; flex-direction: column; gap: 24px; }
   .home-grid {
     display: grid;
@@ -206,17 +207,42 @@
   .lb-you-badge { font-size: .65rem; font-weight: 700; background: var(--primary); color: #fff; border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
   .lb-group-badge { font-size: .65rem; font-weight: 600; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
 
-  /* GROUP SECTION */
+  /* GROUPES DYNAMIQUES */
   .group-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
   .group-section h3 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
   .group-select-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .group-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--muted); font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s; }
   .group-chip:hover { border-color: var(--primary); color: var(--text); }
   .group-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .group-chip.joined { background: var(--green); color: #fff; border-color: var(--green); cursor: default; }
-  .group-current { font-size: .85rem; color: var(--muted); padding: 8px 0; }
+  .group-chip.joined { background: var(--green); color: #fff; border-color: var(--green); }
+  .group-current { font-size: .85rem; color: var(--muted); padding: 4px 0; }
   .group-current strong { color: var(--primary); }
   .group-lb-title { font-size: 1.1rem; font-weight: 800; margin-top: 8px; }
+  /* Liste des groupes */
+  .groups-list { display: flex; flex-direction: column; gap: 10px; }
+  .group-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; transition: border-color .2s; }
+  .group-item.mine { border-color: var(--primary); }
+  .group-item-name { font-weight: 700; font-size: 1rem; flex: 1; }
+  .group-item-meta { font-size: .78rem; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .group-item-score { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--yellow); font-weight: 700; }
+  .group-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-group { border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .btn-group.join  { background: var(--primary); color: #fff; }
+  .btn-group.leave { background: transparent; border: 1px solid var(--red); color: var(--red); }
+  .btn-group.leave:hover { background: var(--red); color: #fff; }
+  .btn-group.delete { background: transparent; border: 1px solid var(--muted); color: var(--muted); font-size: .75rem; }
+  .btn-group.delete:hover { border-color: var(--red); color: var(--red); }
+  .btn-group:disabled { opacity: .4; cursor: not-allowed; }
+  .group-week-info { font-size: .75rem; color: var(--muted); background: var(--surface2); border-radius: 8px; padding: 8px 14px; }
+  .group-week-info strong { color: var(--yellow); }
+  /* Layout 2 colonnes page classement */
+  .classement-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+  .classement-col-main { display: flex; flex-direction: column; gap: 0; }
+  .classement-col-side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 80px; }
+  @media (max-width: 860px) {
+    .classement-layout { grid-template-columns: 1fr; }
+    .classement-col-side { position: static; }
+  }
 
   /* PARIS (BETS) */
   .bets-wrap { display: flex; flex-direction: column; gap: 24px; }
@@ -655,17 +681,66 @@
   .profil-dots-empty { font-size: .82rem; color: var(--muted); font-style: italic; padding: 2px 0; }
 
   /* STREAK — Série quotidienne */
-  .streak-widget { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; cursor: pointer; transition: border-color .2s, box-shadow .2s; user-select: none; }
-  .streak-widget:hover { border-color: var(--yellow); box-shadow: 0 0 10px rgba(240,192,64,0.2); }
-  .streak-widget.ready { border-color: var(--yellow); box-shadow: 0 0 12px rgba(240,192,64,0.35); animation: streak-pulse 1.6s ease-in-out infinite; }
-  @keyframes streak-pulse { 0%,100%{box-shadow:0 0 8px rgba(240,192,64,0.3)} 50%{box-shadow:0 0 22px rgba(240,192,64,0.6)} }
-  .streak-days { display: flex; gap: 3px; }
-  .streak-day { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background .2s; }
+  .streak-widget {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 8px 14px;
+    cursor: pointer; transition: all .2s; user-select: none;
+    position: relative;
+  }
+  .streak-widget:hover { border-color: var(--yellow); }
+  /* État DISPONIBLE — très visible */
+  .streak-widget.ready {
+    background: rgba(240,192,64,0.12);
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px rgba(240,192,64,0.25), 0 0 18px rgba(240,192,64,0.35);
+    animation: streak-glow 1.4s ease-in-out infinite;
+  }
+  @keyframes streak-glow {
+    0%,100% { box-shadow: 0 0 0 2px rgba(240,192,64,0.2), 0 0 12px rgba(240,192,64,0.3); }
+    50%      { box-shadow: 0 0 0 3px rgba(240,192,64,0.4), 0 0 28px rgba(240,192,64,0.55); }
+  }
+  .streak-widget.ready .streak-label {
+    color: var(--yellow);
+    font-size: .85rem;
+    font-weight: 800;
+    animation: streak-label-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes streak-label-pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: .75; }
+  }
+  /* Points de progression */
+  .streak-days { display: flex; gap: 4px; align-items: center; }
+  .streak-day {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--border); transition: background .2s, transform .15s;
+    flex-shrink: 0;
+  }
   .streak-day.done { background: var(--yellow); }
-  .streak-day.today-ready { background: var(--primary); animation: streak-pulse 1s ease-in-out infinite; }
-  .streak-day.final { width: 14px; height: 14px; }
-  .streak-label { font-size: .7rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
-  .streak-label.ready { color: var(--yellow); }
+  .streak-day.today-ready {
+    background: var(--yellow);
+    box-shadow: 0 0 6px rgba(240,192,64,0.8);
+    animation: streak-dot-bounce .8s ease-in-out infinite;
+  }
+  .streak-day.final { width: 15px; height: 15px; }
+  @keyframes streak-dot-bounce {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.35); }
+  }
+  /* Séparateur visuel entre les jours */
+  .streak-sep { width: 4px; height: 2px; background: var(--border); border-radius: 2px; flex-shrink: 0; }
+  .streak-sep.done { background: rgba(240,192,64,0.5); }
+  /* Label */
+  .streak-label { font-size: .75rem; font-weight: 700; color: var(--muted); white-space: nowrap; line-height: 1; }
+  .streak-label.ready { color: var(--yellow); font-size: .82rem; font-weight: 800; }
+  /* Emoji feu */
+  .streak-fire { font-size: 1rem; line-height: 1; flex-shrink: 0; }
+  .streak-fire.ready { animation: streak-fire-shake .5s ease-in-out infinite alternate; }
+  @keyframes streak-fire-shake {
+    0%   { transform: rotate(-8deg) scale(1.1); }
+    100% { transform: rotate(8deg)  scale(1.2); }
+  }
   @keyframes rainbow { 0%{color:#EB5846} 16%{color:#f0c040} 33%{color:#3ecf6e} 50%{color:#5b8def} 66%{color:#b05bef} 83%{color:#ef5bb0} 100%{color:#EB5846} }
   .rainbow-text { animation: rainbow 2s linear infinite; font-weight: 700; }
 
@@ -782,8 +857,9 @@
     </div>
     <!-- Série quotidienne -->
     <div class="streak-widget" id="streakWidget" onclick="claimStreak()" title="Série quotidienne — clique chaque jour !">
+      <span class="streak-fire" id="streakFire">🔥</span>
       <div class="streak-days" id="streakDays"></div>
-      <span class="streak-label" id="streakLabel">🔥</span>
+      <span class="streak-label" id="streakLabel"></span>
     </div>
     <div class="user-badge" id="userBadge" onclick="toggleUserMenu(event)">
       Bonjour, <strong id="headerName">—</strong>
@@ -1227,21 +1303,50 @@
         </div>
       </div>
 
-      <!-- GROUP SECTION -->
-      <div class="group-section">
-        <h3>Mon groupe</h3>
-        <div class="group-current" id="groupCurrent">Tu n'as rejoint aucun groupe.</div>
-        <div class="group-select-row" id="groupSelect"></div>
-      </div>
+      <!-- LAYOUT 2 COLONNES : gauche = classements, droite = groupes -->
+      <div class="classement-layout">
 
-      <div class="lb-note">💡 Classement en ligne — tous les joueurs sont connectés en temps réel.</div>
-      <div class="lb-list" id="lbList"></div>
+        <!-- COLONNE GAUCHE -->
+        <div class="classement-col-main">
+          <div class="lb-note">💡 Classement en ligne — tous les joueurs sont connectés en temps réel.</div>
+          <div class="lb-list" id="lbList"></div>
 
-      <!-- GROUP LEADERBOARD -->
-      <div style="margin-top:8px;">
-        <div class="group-lb-title">🏅 Classement des Groupes</div>
-        <div class="lb-list" id="groupLbList" style="margin-top:14px;"></div>
-      </div>
+          <!-- CLASSEMENT HEBDO GROUPES -->
+          <div style="margin-top:16px;">
+            <div class="group-lb-title">🏅 Classement Hebdomadaire des Groupes</div>
+            <div class="lb-list" id="groupLbList" style="margin-top:14px;"></div>
+          </div>
+
+          <!-- LISTE TOUS LES GROUPES -->
+          <div style="margin-top:16px;">
+            <div class="group-lb-title" style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Tous les groupes</div>
+            <div style="margin-top:10px;" id="allGroupsList"></div>
+          </div>
+        </div>
+
+        <!-- COLONNE DROITE : mon groupe + créer -->
+        <div class="classement-col-side">
+          <!-- MON GROUPE -->
+          <div class="group-section">
+            <h3>Mon groupe</h3>
+            <div class="group-week-info">📅 Score hebdo : Pomels + graines (÷5). Le groupe en tête le lundi gagne <strong>1 000 🪙</strong>/membre !</div>
+            <div class="group-current" id="groupCurrent">Tu n'as rejoint aucun groupe.</div>
+            <div class="group-actions" id="groupActions"></div>
+          </div>
+
+          <!-- CRÉER UN GROUPE -->
+          <div class="group-section" id="createGroupSection">
+            <h3>Créer un groupe</h3>
+            <div class="form-group">
+              <label>Nom du groupe</label>
+              <input type="text" id="newGroupNameInput" placeholder="ex: Les Champions" maxlength="30" />
+            </div>
+            <div id="createGroupAlert" class="alert"></div>
+            <button class="btn-primary" onclick="handleCreateGroup()" style="width:100%;padding:10px 24px;">Créer — 15 000 🪙</button>
+          </div>
+        </div>
+
+      </div><!-- fin classement-layout -->
     </div>
   </div>
 
@@ -1623,9 +1728,16 @@
         <h3>🏆 Le Classement</h3>
         <p>Compare-toi aux autres joueurs sur 3 critères : solde, nombre de tirages, ou total gagné.</p>
         <ul>
-          <li>Rejoins un <strong>groupe</strong> pour participer au classement des groupes</li>
           <li>Clique sur un pseudo pour voir le profil d'un joueur</li>
           <li>Les titres, badges et effets achetés s'affichent dans le classement</li>
+        </ul>
+        <h3 style="margin-top:12px;">🏅 Groupes</h3>
+        <p>Crée ou rejoins un groupe pour participer au classement hebdomadaire !</p>
+        <ul>
+          <li><strong>Créer un groupe</strong> coûte <strong>15 000 Pomels</strong> — le créateur est le seul à pouvoir le supprimer</li>
+          <li><strong>Rejoindre un groupe</strong> coûte <strong>1 000 Pomels</strong> — tu peux quitter gratuitement à tout moment</li>
+          <li>Le classement hebdo est basé sur les <strong>Pomels + graines (÷5) gagnés sur la semaine</strong> par les membres</li>
+          <li>Le lundi à 9h, chaque membre du groupe en tête reçoit <strong>+1 000 Pomels</strong> !</li>
         </ul>
       </div>
 
@@ -1746,7 +1858,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const GROUPS = ['Projet','Team Prod A','Team Prod B','Confo','SSI/Devs','Créa'];
+// Groupes : gérés dynamiquement dans Firebase (cf. /groups/)
 
 const SHOP_TITLES = [
   { id: 'survivant_bug_30mars', name: '🐛 Survivant du bug du 30 mars', price: 0, type: 'title'},
@@ -1792,6 +1904,7 @@ async function dbGetAll(path) {
     const snap = await db.ref(path).once('value');
     if (!snap.exists()) return [];
     const data = snap.val();
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
     return Object.values(data);
   } catch(e) { console.error('dbGetAll error', e); return []; }
 }
@@ -1855,6 +1968,8 @@ function migrateAccount(acc) {
   if (!acc.customTitles) acc.customTitles = {};
   if (!acc.password) acc.password = acc.code;
   if (!acc.streak) acc.streak = { days: 0, lastClaim: null, cycleStart: null };
+  // group = ID Firebase (string) ou null — anciens comptes avec nom de groupe textuel → reset
+  if (acc.group && typeof acc.group === 'string' && !acc.group.startsWith('g')) acc.group = null;
   return acc;
 }
 
@@ -1966,6 +2081,7 @@ function launchApp() {
   // Vérifier si les récompenses du jardin sont à distribuer (lundi après 12h)
   // S'exécute en arrière-plan sans bloquer le chargement
   checkJardinReset().catch(() => {});
+  checkGroupWeeklyReward().catch(() => {});
   // Initialiser les pastilles de notification
   checkNotifUpdates();
   setInterval(checkNotifUpdates, 60000);
@@ -2122,7 +2238,7 @@ function _onPageLoad(id) {
   if (id === 'banque') renderHistory();
   if (id === 'monprofil') renderMonProfil();
   if (id === 'settings') { renderProfile(); renderTitlesSettings(); } // legacy
-  if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
+  if (id === 'classement') { renderLeaderboard('balance'); renderGroupsOnPage(); }
   if (id === 'paris') { renderBets(); markPageSeen('paris'); }
   if (id === 'boutique') renderShop();
   if (id === 'hotel') { renderHotel(); markPageSeen('hotel'); }
@@ -2313,7 +2429,7 @@ async function renderLeaderboard(mode) {
     else display = val.toLocaleString('fr-FR') + ' 🪙';
     const item = document.createElement('div');
     item.className = 'lb-item' + (isMe ? ' me' : '');
-    const groupBadge = acc.group ? `<span class="lb-group-badge">${acc.group}</span>` : '';
+    const groupBadge = acc.group ? `<span class="lb-group-badge" data-gid="${acc.group}">…</span>` : '';
     // Active titles badges
     const titlesHTML = (acc.activeTitles || []).map(tid => {
       const t = resolveAnyTitleDef(tid, acc);
@@ -2337,9 +2453,9 @@ async function renderLeaderboard(mode) {
     `;
     list.appendChild(item);
   });
+  // Résoudre les noms de groupes en async
+  resolveGroupBadges();
 }
-
-// ── PROFILE MODAL ───────────────────────────────
 async function openProfileModal(code) {
   const acc = await getAccount(code);
   if (!acc) return;
@@ -2351,6 +2467,7 @@ async function openProfileModal(code) {
   }).join('') || '<span style="color:var(--muted);font-size:.85rem;">Aucun titre</span>';
   const nameClass = getNameColorClass(migrated.activeColor);
   const badgeEmoji = migrated.activeBadge ? (resolveAnyTitleDef(migrated.activeBadge, migrated) || {}).emoji || '' : '';
+  const groupName = migrated.group ? (await resolveGroupName(migrated.group) || '?') : 'Aucun';
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -2362,7 +2479,7 @@ async function openProfileModal(code) {
       <div class="profile-info">
         <div class="pi-row"><span class="pi-label">Pomels</span><span class="pi-val" style="color:var(--primary)">${migrated.balance.toLocaleString('fr-FR')} 🪙</span></div>
         <div class="pi-row"><span class="pi-label">Titres</span><span class="pi-val">${titlesHTML}</span></div>
-        <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${migrated.group || 'Aucun'}</span></div>
+        <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${groupName}</span></div>
         <div class="pi-row"><span class="pi-label">Membre depuis</span><span class="pi-val">${joined}</span></div>
       </div>
     </div>
@@ -2370,66 +2487,298 @@ async function openProfileModal(code) {
   document.body.appendChild(overlay);
 }
 
-// ── GROUPS ───────────────────────────────────────
-function renderGroupSelect() {
-  const container = document.getElementById('groupSelect');
-  const current = document.getElementById('groupCurrent');
-  container.innerHTML = '';
-  if (state.group) {
-    current.innerHTML = `Tu es dans le groupe <strong>${state.group}</strong>.`;
-  } else {
-    current.textContent = 'Tu n\'as rejoint aucun groupe.';
+// ── GROUP NAME RESOLVER ──────────────────────────
+let _groupCache = null;
+async function getGroupsCache() {
+  if (!_groupCache) {
+    _groupCache = await getAllGroups();
+    setTimeout(() => { _groupCache = null; }, 30000);
   }
-  GROUPS.forEach(g => {
-    const chip = document.createElement('button');
-    chip.className = 'group-chip' + (state.group === g ? ' joined' : '');
-    chip.textContent = g;
-    if (state.group !== g) {
-      chip.onclick = () => joinGroup(g);
-    }
-    container.appendChild(chip);
-  });
+  return _groupCache;
+}
+async function resolveGroupName(groupId) {
+  if (!groupId) return null;
+  const groups = await getGroupsCache();
+  const g = (groups || []).find(g => g.id === groupId);
+  return g ? g.name : null;
+}
+async function resolveGroupBadges() {
+  const badges = document.querySelectorAll('[data-gid]');
+  for (const el of badges) {
+    const name = await resolveGroupName(el.dataset.gid);
+    el.textContent = name || '?';
+  }
 }
 
-async function joinGroup(group) {
-  state.group = group;
+// ── GROUPS (DYNAMIQUES) ──────────────────────────
+// Firebase : /groups/{groupId} = { id, name, creatorCode, creatorName, members: [code,...], createdAt, weekScore: { [weekKey]: { pomels, seeds } } }
+
+async function getAllGroups() { return dbGetAll('groups'); }
+async function getGroup(id)   { return dbGet('groups/' + id); }
+async function saveGroup(g)   { await dbSet('groups/' + g.id, g); }
+async function deleteGroup(id){ await dbDelete('groups/' + id); }
+
+function getGroupWeekKey() {
+  // Lundi de la semaine courante
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const mon = new Date(now);
+  mon.setDate(now.getDate() + diff);
+  return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+}
+
+// Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine par ses membres + graines / 5
+async function computeGroupWeekScore(group, allAccounts, allClicker) {
+  const weekKey = getGroupWeekKey();
+  const weekStart = new Date(weekKey);
+  let pomels = 0, seeds = 0;
+  for (const code of (group.members || [])) {
+    const acc = allAccounts.find(a => a.code === code);
+    if (acc) {
+      // Pomels gagnés cette semaine = somme des entrées positives dans l'historique depuis weekStart
+      (acc.history || []).forEach(h => {
+        if (h.amount > 0 && new Date(h.date) >= weekStart) pomels += h.amount;
+      });
+    }
+    // Graines actuelles du membre
+    const clicker = allClicker[code];
+    if (clicker) seeds += Math.floor(clicker.seeds || 0);
+  }
+  return Math.round(pomels + seeds / 5);
+}
+
+async function renderGroupsOnPage() {
+  const [groups, allAccounts, clickerSnap] = await Promise.all([
+    getAllGroups(),
+    getAllAccounts(),
+    dbGet('clicker'),
+  ]);
+  const allClicker = clickerSnap || {};
+
+  // Mon groupe actuel
+  const myGroup = groups.find(g => (g.members || []).includes(state.code));
+  const currentEl = document.getElementById('groupCurrent');
+  const actionsEl = document.getElementById('groupActions');
+  const createSection = document.getElementById('createGroupSection');
+
+  if (myGroup) {
+    currentEl.innerHTML = `Tu es dans le groupe <strong>${myGroup.name}</strong> (${myGroup.members.length} membre${myGroup.members.length > 1 ? 's' : ''}).`;
+    actionsEl.innerHTML = '';
+    const leaveBtn = document.createElement('button');
+    leaveBtn.className = 'btn-group leave';
+    leaveBtn.textContent = '🚪 Quitter le groupe';
+    leaveBtn.onclick = () => leaveGroup(myGroup.id);
+    actionsEl.appendChild(leaveBtn);
+    if (myGroup.creatorCode === state.code) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-group delete';
+      delBtn.textContent = '🗑️ Supprimer le groupe';
+      delBtn.onclick = () => handleDeleteGroup(myGroup.id);
+      actionsEl.appendChild(delBtn);
+    }
+    if (createSection) createSection.style.display = 'none';
+  } else {
+    currentEl.textContent = "Tu n'as rejoint aucun groupe.";
+    actionsEl.innerHTML = '';
+    if (createSection) createSection.style.display = '';
+  }
+
+  // Classement hebdomadaire des groupes
+  const weekScores = await Promise.all(groups.map(async g => ({
+    ...g,
+    weekScore: await computeGroupWeekScore(g, allAccounts, allClicker),
+  })));
+  weekScores.sort((a, b) => b.weekScore - a.weekScore);
+
+  const lbList = document.getElementById('groupLbList');
+  lbList.innerHTML = '';
+  if (!weekScores.length) {
+    lbList.innerHTML = '<div class="history-empty">Aucun groupe cette semaine.</div>';
+  } else {
+    const medals = ['🥇','🥈','🥉'];
+    weekScores.forEach((g, i) => {
+      const rank = i + 1;
+      const isMyG = (g.members || []).includes(state.code);
+      const rankClass = rank <= 3 ? `top${rank}` : '';
+      const item = document.createElement('div');
+      item.className = 'lb-item' + (isMyG ? ' me' : '');
+      item.innerHTML = `
+        <span class="lb-rank ${rankClass}">${medals[i] || rank}</span>
+        <span class="lb-medal">${medals[i] || ''}</span>
+        <div class="lb-info">
+          <span class="lb-name" style="cursor:default">${g.name}</span>
+          <span class="lb-group-badge">${g.members.length} membre${g.members.length > 1 ? 's' : ''}</span>
+          ${isMyG ? '<span class="lb-you-badge">Mon groupe</span>' : ''}
+          ${rank === 1 ? '<span style="font-size:.65rem;color:var(--yellow);font-weight:700;background:rgba(240,192,64,0.1);border:1px solid rgba(240,192,64,0.3);border-radius:4px;padding:2px 6px;">👑 En tête</span>' : ''}
+        </div>
+        <span class="group-item-score">${g.weekScore.toLocaleString('fr-FR')} pts</span>
+      `;
+      lbList.appendChild(item);
+    });
+  }
+
+  // Tous les groupes (liste pour rejoindre)
+  const allGroupsEl = document.getElementById('allGroupsList');
+  allGroupsEl.innerHTML = '';
+  if (!groups.length) {
+    allGroupsEl.innerHTML = '<div class="history-empty">Aucun groupe existant — crée le premier !</div>';
+  } else {
+    groups.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    groups.forEach(g => {
+      const isMine = (g.members || []).includes(state.code);
+      const isCreator = g.creatorCode === state.code;
+      const item = document.createElement('div');
+      item.className = 'group-item' + (isMine ? ' mine' : '');
+      const weekScore = (weekScores.find(w => w.id === g.id) || {}).weekScore || 0;
+      item.innerHTML = `
+        <div style="flex:1;min-width:0;">
+          <div class="group-item-name">${g.name}${isCreator ? ' <span style="font-size:.65rem;color:var(--muted);">(Créateur)</span>' : ''}</div>
+          <div class="group-item-meta">
+            <span>${(g.members || []).length} membre${(g.members||[]).length>1?'s':''}</span>
+            <span>Score semaine : <strong style="color:var(--yellow)">${weekScore.toLocaleString('fr-FR')} pts</strong></span>
+          </div>
+        </div>
+        <div class="group-actions">
+          ${!myGroup && !isMine
+            ? `<button class="btn-group join" onclick="joinGroup('${g.id}')">Rejoindre — 1 000 🪙</button>`
+            : isMine
+              ? `<span style="font-size:.78rem;color:var(--green);font-weight:700;">✅ Ton groupe</span>`
+              : `<span style="font-size:.78rem;color:var(--muted);">Déjà dans un groupe</span>`
+          }
+        </div>
+      `;
+      allGroupsEl.appendChild(item);
+    });
+  }
+}
+
+async function handleCreateGroup() {
+  const name = document.getElementById('newGroupNameInput').value.trim();
+  if (!name) { setAlert('createGroupAlert', 'Donne un nom à ton groupe !', 'error'); return; }
+  if (state.balance < 15000) { setAlert('createGroupAlert', 'Il te faut 15 000 Pomels pour créer un groupe !', 'error'); return; }
+
+  // Vérif : déjà dans un groupe ?
+  const groups = await getAllGroups();
+  if (groups.find(g => (g.members || []).includes(state.code))) {
+    setAlert('createGroupAlert', 'Quitte ton groupe actuel avant d\'en créer un !', 'error'); return;
+  }
+  // Nom unique
+  if (groups.find(g => g.name.toLowerCase() === name.toLowerCase())) {
+    setAlert('createGroupAlert', 'Ce nom de groupe est déjà pris !', 'error'); return;
+  }
+
+  state.balance -= 15000;
+  state.history.unshift({ type: 'group', desc: `Groupe créé : "${name}"`, amount: -15000, date: new Date().toISOString() });
   await saveAccount(state);
-  renderGroupSelect();
-  renderGroupLeaderboard();
+
+  const id = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  await saveGroup({ id, name, creatorCode: state.code, creatorName: state.name, members: [state.code], createdAt: new Date().toISOString() });
+  state.group = id;
+
+  refreshUI();
+  document.getElementById('newGroupNameInput').value = '';
+  setAlert('createGroupAlert', `✅ Groupe "${name}" créé !`, 'success');
+  setTimeout(() => { const el = document.getElementById('createGroupAlert'); if (el) el.className = 'alert'; }, 3000);
+  renderGroupsOnPage();
 }
 
-async function renderGroupLeaderboard() {
-  const all = await getAllAccounts();
-  const list = document.getElementById('groupLbList');
-  list.innerHTML = '';
-  const groupTotals = {};
-  GROUPS.forEach(g => { groupTotals[g] = { name: g, total: 0, members: 0 }; });
-  all.forEach(acc => {
-    if (acc.group && groupTotals[acc.group]) {
-      groupTotals[acc.group].total += acc.balance;
-      groupTotals[acc.group].members++;
+async function joinGroup(groupId) {
+  if (state.balance < 1000) { alert('Il te faut 1 000 Pomels pour rejoindre un groupe !'); return; }
+  const groups = await getAllGroups();
+  if (groups.find(g => (g.members || []).includes(state.code))) { alert('Quitte ton groupe actuel avant d\'en rejoindre un autre !'); return; }
+  const group = await getGroup(groupId);
+  if (!group) { alert('Groupe introuvable.'); return; }
+
+  state.balance -= 1000;
+  state.history.unshift({ type: 'group', desc: `Groupe rejoint : "${group.name}"`, amount: -1000, date: new Date().toISOString() });
+  state.group = groupId;
+  await saveAccount(state);
+
+  group.members = [...(group.members || []), state.code];
+  await saveGroup(group);
+
+  refreshUI();
+  renderGroupsOnPage();
+}
+
+async function leaveGroup(groupId) {
+  const group = await getGroup(groupId);
+  if (!group) return;
+  showConfirm('Quitter ce groupe ? Tu devras repayer 1 000 Pomels pour le rejoindre à nouveau.', async () => {
+    group.members = (group.members || []).filter(c => c !== state.code);
+    // Si plus de membres et pas le créateur → supprimer le groupe
+    if (group.members.length === 0) {
+      await deleteGroup(groupId);
+    } else {
+      await saveGroup(group);
     }
+    state.group = null;
+    await saveAccount(state);
+    closeConfirm();
+    refreshUI();
+    renderGroupsOnPage();
   });
-  const sorted = Object.values(groupTotals).filter(g => g.members > 0).sort((a, b) => b.total - a.total);
-  if (!sorted.length) { list.innerHTML = '<div class="history-empty">Aucun groupe actif.</div>'; return; }
-  sorted.forEach((g, i) => {
-    const rank = i + 1;
-    const medals = ['🥇', '🥈', '🥉'];
-    const medal = rank <= 3 ? medals[rank - 1] : '';
-    const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
-    const isMyGroup = state.group === g.name;
-    const item = document.createElement('div');
-    item.className = 'lb-item' + (isMyGroup ? ' me' : '');
-    item.innerHTML = `
-      <span class="lb-rank ${rankClass}">${rank}</span>
-      <span class="lb-medal">${medal}</span>
-      <span class="lb-name" style="cursor:default">${g.name}</span>
-      <span class="lb-group-badge">${g.members} membre${g.members > 1 ? 's' : ''}</span>
-      ${isMyGroup ? '<span class="lb-you-badge">Mon groupe</span>' : ''}
-      <span class="lb-val">${g.total.toLocaleString('fr-FR')} 🪙</span>
-    `;
-    list.appendChild(item);
+}
+
+async function handleDeleteGroup(groupId) {
+  const group = await getGroup(groupId);
+  if (!group || group.creatorCode !== state.code) return;
+  showConfirm(`Supprimer le groupe "${group.name}" ? Tous les membres seront expulsés.`, async () => {
+    // Retirer le groupe de tous les membres
+    const allAccounts = await getAllAccounts();
+    for (const code of (group.members || [])) {
+      const acc = allAccounts.find(a => a.code === code);
+      if (acc) { acc.group = null; await saveAccount(acc); }
+      if (code === state.code) { state.group = null; }
+    }
+    await deleteGroup(groupId);
+    closeConfirm();
+    refreshUI();
+    renderGroupsOnPage();
   });
+}
+
+// Vérification hebdo : distribuer les 1 000 Pomels au groupe leader
+// Déclenché le lundi à 9h (même pattern que jardin/snake)
+async function checkGroupWeeklyReward() {
+  const now = new Date();
+  if (now.getDay() !== 1 || now.getHours() < 9) return;
+
+  // Semaine précédente
+  const prevMon = new Date(now);
+  prevMon.setDate(now.getDate() - 7);
+  const prevKey = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
+
+  const distributed = await dbGet('group_weekly_distributed/' + prevKey);
+  if (distributed) return;
+  await dbSet('group_weekly_distributed/' + prevKey, true);
+
+  const groups = await getAllGroups();
+  if (!groups.length) return;
+  const allAccounts = await getAllAccounts();
+  const allClicker = (await dbGet('clicker')) || {};
+
+  // Calculer les scores de la semaine précédente
+  // (On recalcule sur les données actuelles — approximation acceptable)
+  const scored = await Promise.all(groups.map(async g => ({
+    ...g,
+    score: await computeGroupWeekScore(g, allAccounts, allClicker),
+  })));
+  scored.sort((a, b) => b.score - a.score);
+  const winner = scored[0];
+  if (!winner || winner.score === 0) return;
+
+  for (const code of (winner.members || [])) {
+    const acc = allAccounts.find(a => a.code === code);
+    if (acc) {
+      acc.balance += 1000;
+      acc.history = acc.history || [];
+      acc.history.unshift({ type: 'group', desc: `🏅 Groupe "${winner.name}" — victoire hebdo !`, amount: 1000, date: new Date().toISOString() });
+      await saveAccount(acc);
+      if (code === state.code) { state = migrateAccount(acc); refreshUI(); }
+    }
+  }
 }
 
 // ── BOUTIQUE / SHOP ─────────────────────────────
@@ -3730,7 +4079,7 @@ async function gameOverSnake() {
     refreshUI();
   }
 
-  // Save leaderboard entry
+  // Save leaderboard entries — await pour s'assurer que l'écriture est terminée avant le render
   await saveSnakeScore(finalScore);
   await saveSnakeWeeklyScore(finalScore);
 
@@ -3745,8 +4094,10 @@ async function gameOverSnake() {
 
   snakeState = null;
   updateSnakeScoreUI();
-  renderSnakeLb();
-  renderSnakeWeeklyLb();
+
+  // Render après que les sauvegardes soient terminées
+  await renderSnakeLb();
+  await renderSnakeWeeklyLb();
 }
 
 // ── SNAKE LEADERBOARD (Firebase) ─────────────────
@@ -3792,76 +4143,69 @@ const SNAKE_WEEKLY_CONSOLATION = 500;
 function getSnakeWeekKey() {
   const now = new Date();
   const day = now.getDay(); // 0=dim, 1=lun…
-  const diff = (day === 0 ? -6 : 1 - day); // décalage pour aller au lundi
+  const diff = (day === 0 ? -6 : 1 - day);
   const mon = new Date(now);
   mon.setDate(now.getDate() + diff);
   return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
 }
 
+// Même logique que saveSnakeScore mais sur snake_weekly_lb/
 async function saveSnakeWeeklyScore(score) {
   if (score === 0) return;
-  const weekKey = getSnakeWeekKey();
-  const path = `snake_weekly/${weekKey}/${state.code}`;
+  // Sanitise la clé (caractères interdits Firebase)
+  const safeCode = state.code.replace(/[.#$[\]/]/g, '_');
+  const path = 'snake_weekly_lb/' + safeCode;
   const existing = await dbGet(path);
   if (!existing || score > existing.score) {
     await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
   }
 }
 
+// Même logique que renderSnakeLb mais sur snake_weekly_lb/ + récompenses
 async function renderSnakeWeeklyLb() {
   const list = document.getElementById('snakeWeeklyLbList');
   if (!list) return;
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
-  const weekKey = getSnakeWeekKey();
-  const snap = await dbGet('snake_weekly/' + weekKey);
-
+  const snap = await dbGet('snake_weekly_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
-
   list.innerHTML = '';
-  const medals = ['🥇','🥈','🥉'];
   entries.forEach((e, i) => {
     const rank = i + 1;
     const isMe = e.code === state.code;
-    const prize = i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION;
     const rankClass = rank <= 3 ? `top${rank}` : '';
-    const medal = rank <= 3 ? medals[i] : '';
+    const medal = rank <= 3 ? ['🥇','🥈','🥉'][i] : '';
     const div = document.createElement('div');
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
       <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score} 🍎</span>
-      <span class="snake-lb-pomels">→ ${prize.toLocaleString('fr-FR')} 🪙</span>
     `;
     list.appendChild(div);
   });
 }
 
+// Reset + distribution des récompenses le lundi à 9h
 async function checkSnakeWeeklyReset() {
-  // Distribuer les récompenses le lundi à partir de 9h pour la semaine précédente
   const now = new Date();
   if (now.getDay() !== 1 || now.getHours() < 9) return;
 
-  // Semaine précédente = lundi d'il y a 7 jours
-  const prevMon = new Date(now);
-  prevMon.setDate(now.getDate() - 7);
-  const prevKey = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
+  const weekKey = getSnakeWeekKey();
 
-  // Vérifier si déjà distribué
-  const distributed = await dbGet('snake_weekly_distributed/' + prevKey);
+  // Vérifier si déjà distribué cette semaine
+  const distributed = await dbGet('snake_weekly_distributed/' + weekKey);
   if (distributed) return;
 
-  const snap = await dbGet('snake_weekly/' + prevKey);
-  if (!snap) {
-    await dbSet('snake_weekly_distributed/' + prevKey, true);
-    return;
-  }
+  // Marquer immédiatement (anti-race condition)
+  await dbSet('snake_weekly_distributed/' + weekKey, true);
 
-  // Anti-race condition : marquer immédiatement
-  await dbSet('snake_weekly_distributed/' + prevKey, true);
-
+  // Lire le classement actuel (même logique que renderSnakeWeeklyLb)
+  const snap = await dbGet('snake_weekly_lb');
+  if (!snap) return;
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+
+  // Distribuer les récompenses
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
     const prize = i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION;
@@ -3874,6 +4218,9 @@ async function checkSnakeWeeklyReset() {
       if (e.code === state.code) { state = migrateAccount(acc); refreshUI(); }
     }
   }
+
+  // Reset du classement hebdo (le général snake_lb n'est PAS touché)
+  await dbDelete('snake_weekly_lb');
 }
 
 // ── SNAKE CONTROLS ───────────────────────────────
@@ -5163,7 +5510,7 @@ function renderProfile() {
     <div class="pi-row"><span class="pi-label">Titres actifs</span><span class="pi-val">${titlesHTML}</span></div>
     <div class="pi-row"><span class="pi-label">Couleur pseudo</span><span class="pi-val">${colorLabel}</span></div>
     <div class="pi-row"><span class="pi-label">Badge actif</span><span class="pi-val">${badgeEmoji || 'Aucun'}</span></div>
-    <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${state.group || 'Aucun'}</span></div>
+    <div class="pi-row"><span class="pi-label">Groupe</span><span class="pi-val">${state.group ? `<span data-gid="${state.group}">…</span>` : 'Aucun'}</span></div>
     <div class="pi-row"><span class="pi-label">Solde</span><span class="pi-val" style="color:var(--primary)">${state.balance.toLocaleString('fr-FR')} Pomels</span></div>
     <div class="pi-row"><span class="pi-label">Tirages effectués</span><span class="pi-val">${spins}</span></div>
     <div class="pi-row"><span class="pi-label">Total gagné</span><span class="pi-val">${earned.toLocaleString('fr-FR')} Pomels</span></div>
@@ -5191,7 +5538,7 @@ function renderMonProfil() {
       <div class="profil-me-avatar">${me.name.charAt(0).toUpperCase()}</div>
       <div>
         <div class="profil-me-name"><span class="${nameClass}">${me.name}${badge ? ' ' + badge : ''}</span></div>
-        <div class="profil-me-since">Membre depuis ${joined}${me.group ? ' · ' + me.group : ''}</div>
+        <div class="profil-me-since">Membre depuis ${joined}${me.group ? ` · <span data-gid="${me.group}">…</span>` : ''}</div>
       </div>
     </div>
     <div class="profil-me-stats">
@@ -5220,6 +5567,7 @@ function renderMonProfil() {
   `;
 
   renderDotsMenu();
+  resolveGroupBadges();
 
   // Fermer le menu si on clique ailleurs
   document.addEventListener('click', closeProfilMenuOutside, { once: false });
@@ -5345,7 +5693,7 @@ async function renderProfils() {
       <div class="profil-card-name">
         <span class="${nameClass}">${migrated.name}${badge ? ' ' + badge : ''}</span>
       </div>
-      ${migrated.group ? `<div class="profil-card-group">📍 ${migrated.group}</div>` : ''}
+      ${migrated.group ? `<div class="profil-card-group">📍 <span data-gid="${migrated.group}">…</span></div>` : ''}
       <div class="profil-card-stats">
         <span>${migrated.balance.toLocaleString('fr-FR')} 🪙</span>
         <span>${spins} 🎰</span>
@@ -5355,6 +5703,7 @@ async function renderProfils() {
     `;
     grid.appendChild(card);
   });
+  resolveGroupBadges();
 }
 
 // ── EXPORT ───────────────────────────────────────
@@ -5513,15 +5862,23 @@ function renderStreakWidget() {
   const widget = document.getElementById('streakWidget');
   const daysEl = document.getElementById('streakDays');
   const label  = document.getElementById('streakLabel');
+  const fire   = document.getElementById('streakFire');
   if (!widget || !daysEl || !label) return;
 
-  const claimed = s.lastClaim === today;
-  const doneDays = claimed ? s.days : streakDayIndex(); // jours déjà faits (incluant aujourd'hui si claimé)
-  const todayIdx = claimed ? -1 : doneDays; // index du jour à réclamer aujourd'hui (0-based)
-  const ready = canClaimStreak();
+  const claimed  = s.lastClaim === today;
+  const doneDays = claimed ? s.days : streakDayIndex();
+  const todayIdx = claimed ? -1 : doneDays; // index (0-based) du jour à réclamer
+  const ready    = canClaimStreak();
 
+  // Points + séparateurs
   daysEl.innerHTML = '';
   for (let i = 0; i < 5; i++) {
+    // Séparateur entre les points
+    if (i > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'streak-sep' + (i <= doneDays ? ' done' : '');
+      daysEl.appendChild(sep);
+    }
     const dot = document.createElement('div');
     const isFinal = i === 4;
     dot.className = 'streak-day' + (isFinal ? ' final' : '');
@@ -5538,20 +5895,26 @@ function renderStreakWidget() {
   }
 
   if (claimed) {
+    // Déjà réclamé aujourd'hui
     const nextReward = s.days < 5 ? STREAK_REWARDS[s.days] : STREAK_REWARDS[0];
-    label.textContent = `🔥 ${s.days}/5`;
+    label.textContent = `${s.days}/5`;
     label.className = 'streak-label';
+    if (fire) { fire.textContent = '🔥'; fire.className = 'streak-fire'; }
     widget.classList.remove('ready');
     widget.title = `Série : ${s.days}/5 — Reviens demain pour +${nextReward.toLocaleString('fr-FR')} 🪙`;
   } else if (ready) {
+    // Disponible — état très visible
     const reward = STREAK_REWARDS[todayIdx] || 500;
     label.textContent = `+${reward.toLocaleString('fr-FR')} 🪙`;
     label.className = 'streak-label ready';
+    if (fire) { fire.textContent = '🔥'; fire.className = 'streak-fire ready'; }
     widget.classList.add('ready');
     widget.title = `Clique pour réclamer +${reward.toLocaleString('fr-FR')} Pomels !`;
   } else {
-    label.textContent = `🔥 0/5`;
+    // Pas encore de streak
+    label.textContent = '0/5';
     label.className = 'streak-label';
+    if (fire) { fire.textContent = '🔥'; fire.className = 'streak-fire'; }
     widget.classList.remove('ready');
     widget.title = 'Série quotidienne — reviens demain !';
   }
