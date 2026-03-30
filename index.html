@@ -985,6 +985,24 @@
           <button class="btn-buy" id="btnAutoSpeed" onclick="buyUpgrade('autoSpeed')">Acheter</button>
         </div>
 
+        <div class="clicker-upgrade-card" id="upgradeSuperSpeed">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">🚀 Hyper Auto-Clicker</div>
+            <div class="clicker-upgrade-desc">L'auto-clicker passe à 2 graines / 1 sec par fruit — production doublée encore</div>
+            <div class="clicker-upgrade-price">10 000 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnSuperSpeed" onclick="buyUpgrade('superSpeed')">Acheter</button>
+        </div>
+
+        <div class="clicker-upgrade-card" id="upgradeUltraSpeed">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">☄️ Ultra Auto-Clicker</div>
+            <div class="clicker-upgrade-desc">L'auto-clicker passe à 5 graines / 1 sec par fruit — production maximale</div>
+            <div class="clicker-upgrade-price">100 000 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnUltraSpeed" onclick="buyUpgrade('ultraSpeed')">Acheter</button>
+        </div>
+
         <div class="clicker-upgrade-card" id="upgradeStockExt">
           <div class="clicker-upgrade-info">
             <div class="clicker-upgrade-name">🗄️ Extension de stock</div>
@@ -992,6 +1010,24 @@
             <div class="clicker-upgrade-price">2 000 🌱</div>
           </div>
           <button class="btn-buy" id="btnStockExt" onclick="buyUpgrade('stockExt')">Acheter</button>
+        </div>
+
+        <div class="clicker-upgrade-card" id="upgradeStockExt2">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">🗄️🗄️ Grand Entrepôt</div>
+            <div class="clicker-upgrade-desc">Augmente la capacité du stock auto à 5 000 graines</div>
+            <div class="clicker-upgrade-price">5 000 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnStockExt2" onclick="buyUpgrade('stockExt2')">Acheter</button>
+        </div>
+
+        <div class="clicker-upgrade-card" id="upgradeStockExt3">
+          <div class="clicker-upgrade-info">
+            <div class="clicker-upgrade-name">🏭 Méga Entrepôt</div>
+            <div class="clicker-upgrade-desc">Capacité du stock auto portée à 10 000 graines — stockage maximal</div>
+            <div class="clicker-upgrade-price">100 000 🌱</div>
+          </div>
+          <button class="btn-buy" id="btnStockExt3" onclick="buyUpgrade('stockExt3')">Acheter</button>
         </div>
 
         <div class="clicker-upgrade-card" id="upgradeSecondFruit">
@@ -2724,7 +2760,9 @@ async function renderHomeClicker() {
   }
   // Compute max stock from saved upgrades
   let maxStock = 1000;
-  if (saved.upgrades.stockExt) maxStock += 1000;
+  if (saved.upgrades.stockExt)  maxStock = Math.max(maxStock, 2000);
+  if (saved.upgrades.stockExt2) maxStock = Math.max(maxStock, 5000);
+  if (saved.upgrades.stockExt3) maxStock = Math.max(maxStock, 10000);
   if (saved.upgrades.secondFruit) maxStock += 1000;
   const autoStock = Math.floor(saved.autoStock || 0);
 
@@ -3008,7 +3046,7 @@ async function renderHomeBets() {
 let clickerData = {
   seeds: 0,
   autoStock: 0,
-  upgrades: { autoClicker: false, autoSpeed: false, stockExt: false, secondFruit: false },
+  upgrades: { autoClicker: false, autoSpeed: false, superSpeed: false, ultraSpeed: false, stockExt: false, stockExt2: false, stockExt3: false, secondFruit: false },
   lastSaved: null,
   loaded: false,
 };
@@ -3017,20 +3055,26 @@ let clickerActive = false;
 
 function clickerMaxStock() {
   let max = clickerData.upgrades.autoClicker ? 1000 : 0;
-  if (clickerData.upgrades.stockExt) max += 1000;
+  if (clickerData.upgrades.stockExt)  max = Math.max(max, 2000);
+  if (clickerData.upgrades.stockExt2) max = Math.max(max, 5000);
+  if (clickerData.upgrades.stockExt3) max = Math.max(max, 10000);
   if (clickerData.upgrades.secondFruit) max += 1000;
   return max;
 }
 
 function clickerAutoRate() {
-  // graines par tick (chaque tick = 1 intervalle)
   if (!clickerData.upgrades.autoClicker) return 0;
   const fruitsUnlocked = clickerData.upgrades.secondFruit ? 2 : 1;
-  return fruitsUnlocked; // 1 par fruit débloqué
+  // Graines par tick par fruit selon la vitesse
+  let ratePerFruit = 1;
+  if (clickerData.upgrades.superSpeed) ratePerFruit = 2;
+  if (clickerData.upgrades.ultraSpeed) ratePerFruit = 5;
+  return fruitsUnlocked * ratePerFruit;
 }
 
 function clickerIntervalMs() {
-  return clickerData.upgrades.autoSpeed ? 1000 : 2000;
+  // Toutes les vitesses au-delà de l'auto de base utilisent 1 sec
+  return (clickerData.upgrades.autoSpeed || clickerData.upgrades.superSpeed || clickerData.upgrades.ultraSpeed) ? 1000 : 2000;
 }
 
 async function loadClickerData() {
@@ -3039,7 +3083,7 @@ async function loadClickerData() {
     clickerData = {
       seeds: saved.seeds || 0,
       autoStock: saved.autoStock || 0,
-      upgrades: Object.assign({ autoClicker: false, autoSpeed: false, stockExt: false, secondFruit: false }, saved.upgrades || {}),
+      upgrades: Object.assign({ autoClicker: false, autoSpeed: false, superSpeed: false, ultraSpeed: false, stockExt: false, stockExt2: false, stockExt3: false, secondFruit: false }, saved.upgrades || {}),
       lastSaved: saved.lastSaved || null,
       loaded: true,
     };
@@ -3136,33 +3180,43 @@ function updateClickerUI() {
 
   // Helper to set upgrade button state
   const setUpgradeBtn = (btnId, cardId, owned, canAfford) => {
-    const btn = document.getElementById(btnId);
+    const btn  = document.getElementById(btnId);
     const card = document.getElementById(cardId);
     if (!btn || !card) return;
     if (owned) {
-      btn.textContent = '✅ Acheté'; btn.disabled = true; btn.className = 'btn-buy owned-btn';
-      card.classList.add('owned');
+      // Masquer complètement les upgrades déjà achetées
+      card.style.display = 'none';
     } else {
+      card.style.display = '';
       btn.textContent = canAfford ? 'Acheter' : 'Pas assez';
       btn.disabled = !canAfford;
       btn.className = 'btn-buy';
-      card.classList.remove('owned');
     }
   };
 
-  setUpgradeBtn('btnAutoClicker', 'upgradeAutoClicker', clickerData.upgrades.autoClicker, clickerData.seeds >= 200);
-  setUpgradeBtn('btnAutoSpeed',   'upgradeAutoSpeed',   clickerData.upgrades.autoSpeed,
-    clickerData.upgrades.autoClicker && clickerData.seeds >= 1000 && !clickerData.upgrades.autoSpeed);
-  setUpgradeBtn('btnStockExt',    'upgradeStockExt',    clickerData.upgrades.stockExt,
-    clickerData.upgrades.autoClicker && clickerData.seeds >= 2000 && !clickerData.upgrades.stockExt);
-  setUpgradeBtn('btnSecondFruit', 'upgradeSecondFruit', clickerData.upgrades.secondFruit, clickerData.seeds >= 10000);
+  const u = clickerData.upgrades;
+  const s = clickerData.seeds;
 
-  // Grey out upgrades requiring autoClicker first
-  ['upgradeAutoSpeed', 'upgradeStockExt'].forEach(id => {
-    const card = document.getElementById(id);
-    if (card && !clickerData.upgrades.autoClicker) card.style.opacity = '.4';
-    else if (card) card.style.opacity = '';
-  });
+  setUpgradeBtn('btnAutoClicker', 'upgradeAutoClicker', u.autoClicker,   s >= 200);
+  setUpgradeBtn('btnAutoSpeed',   'upgradeAutoSpeed',   u.autoSpeed,     u.autoClicker && !u.autoSpeed && s >= 1000);
+  setUpgradeBtn('btnSuperSpeed',  'upgradeSuperSpeed',  u.superSpeed,    u.autoSpeed && !u.superSpeed && s >= 10000);
+  setUpgradeBtn('btnUltraSpeed',  'upgradeUltraSpeed',  u.ultraSpeed,    u.superSpeed && !u.ultraSpeed && s >= 100000);
+  setUpgradeBtn('btnStockExt',    'upgradeStockExt',    u.stockExt,      u.autoClicker && !u.stockExt && s >= 2000);
+  setUpgradeBtn('btnStockExt2',   'upgradeStockExt2',   u.stockExt2,     u.stockExt && !u.stockExt2 && s >= 5000);
+  setUpgradeBtn('btnStockExt3',   'upgradeStockExt3',   u.stockExt3,     u.stockExt2 && !u.stockExt3 && s >= 100000);
+  setUpgradeBtn('btnSecondFruit', 'upgradeSecondFruit', u.secondFruit,   u.autoClicker && !u.secondFruit && s >= 10000);
+
+  // Griser les upgrades dont le prérequis n'est pas rempli (mais pas encore achetées)
+  const greyIfLocked = (cardId, locked) => {
+    const card = document.getElementById(cardId);
+    if (card && card.style.display !== 'none') card.style.opacity = locked ? '.4' : '';
+  };
+  greyIfLocked('upgradeAutoSpeed',  !u.autoClicker);
+  greyIfLocked('upgradeSuperSpeed', !u.autoSpeed);
+  greyIfLocked('upgradeUltraSpeed', !u.superSpeed);
+  greyIfLocked('upgradeStockExt',   !u.autoClicker);
+  greyIfLocked('upgradeStockExt2',  !u.stockExt);
+  greyIfLocked('upgradeStockExt3',  !u.stockExt2);
 
   updateExchangePrice();
 }
@@ -3201,19 +3255,28 @@ function collectAutoStock() {
 }
 
 function buyUpgrade(id) {
-  const costs = { autoClicker: 200, autoSpeed: 1000, stockExt: 2000, secondFruit: 10000 };
+  const costs = {
+    autoClicker: 200, autoSpeed: 1000, superSpeed: 10000, ultraSpeed: 100000,
+    stockExt: 2000, stockExt2: 5000, stockExt3: 100000,
+    secondFruit: 10000
+  };
   const cost = costs[id];
   if (!cost || clickerData.upgrades[id] || clickerData.seeds < cost) return;
 
-  // Prerequisites
-  if ((id === 'autoSpeed' || id === 'stockExt') && !clickerData.upgrades.autoClicker) return;
+  // Prérequis : tout nécessite l'auto-clicker de base
+  if (id !== 'autoClicker' && !clickerData.upgrades.autoClicker) return;
+  // Vitesses : ordre obligatoire
+  if (id === 'superSpeed' && !clickerData.upgrades.autoSpeed) return;
+  if (id === 'ultraSpeed' && !clickerData.upgrades.superSpeed) return;
+  // Stocks : ordre obligatoire
+  if (id === 'stockExt2' && !clickerData.upgrades.stockExt) return;
+  if (id === 'stockExt3' && !clickerData.upgrades.stockExt2) return;
 
   clickerData.seeds -= cost;
   clickerData.upgrades[id] = true;
 
-  // Second fruit: add 1000 to current autoStock cap (already handled by clickerMaxStock)
-  // Also restart auto-clicker to apply new rate/interval
-  if (id === 'autoClicker' || id === 'autoSpeed' || id === 'secondFruit') {
+  // Redémarrer l'auto-clicker si la vitesse ou le taux change
+  if (['autoClicker', 'autoSpeed', 'superSpeed', 'ultraSpeed', 'secondFruit'].includes(id)) {
     startAutoClicker();
   }
 
