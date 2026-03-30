@@ -603,6 +603,34 @@
     pointer-events: none;
   }
 
+  /* MENU ⋯ PROFIL */
+  .profil-dots-btn {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 4px 10px; font-size: 1.1rem;
+    color: var(--muted); cursor: pointer; transition: all .15s; z-index: 2;
+    line-height: 1;
+  }
+  .profil-dots-btn:hover { background: var(--border); color: var(--text); }
+  .profil-dots-menu {
+    position: absolute; top: 46px; right: 14px; left: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25); z-index: 10;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .profil-dots-section-title {
+    font-size: .68rem; font-weight: 700; color: var(--muted);
+    letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .profil-dots-divider { height: 1px; background: var(--border); margin: 2px 0; }
+  .profil-dots-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; padding: 4px 0;
+  }
+  .profil-dots-name { font-size: .88rem; font-weight: 600; color: var(--text); }
+  .profil-dots-empty { font-size: .82rem; color: var(--muted); font-style: italic; padding: 2px 0; }
+
   /* RAINBOW EFFECT */
   @keyframes rainbow { 0%{color:#EB5846} 16%{color:#f0c040} 33%{color:#3ecf6e} 50%{color:#5b8def} 66%{color:#b05bef} 83%{color:#ef5bb0} 100%{color:#EB5846} }
   .rainbow-text { animation: rainbow 2s linear infinite; font-weight: 700; }
@@ -686,7 +714,6 @@
       <span class="user-badge-arrow">▾</span>
       <div class="user-menu" onclick="event.stopPropagation()">
         <button class="user-menu-item" onclick="goToFromUser('infos')">ℹ️ Informations</button>
-        <button class="user-menu-item" onclick="goToFromUser('settings')">⚙️ Paramètres</button>
         <hr style="border:none;border-top:1px solid var(--border);margin:4px 0;">
         <button class="user-menu-item danger" onclick="logout()">🚪 Déconnexion</button>
       </div>
@@ -724,11 +751,19 @@
     <div class="nav-dropdown" id="dropdown-social">
       <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('social')">💬 Social ▾</button>
       <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('compteur','social',this)">💸 Compteur</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('profils','social',this)">👥 Profils</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('live','social',this)">📡 Live</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('quetes','social',this)">⚔️ Quêtes</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('profils','social',this)">👥 Profils</button>
+      </div>
+    </div>
+
+    <!-- Dropdown : Profil -->
+    <div class="nav-dropdown" id="dropdown-profil">
+      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('profil')">👤 Profil ▾</button>
+      <div class="nav-dropdown-menu">
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('monprofil','profil',this)">🙋 Mon Profil</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('banque','profil',this)">🏦 Banque</button>
       </div>
     </div>
   </nav>
@@ -1125,10 +1160,10 @@
   </div>
 
   <!-- COMPTEUR -->
-  <div class="page" id="page-compteur">
+  <div class="page" id="page-banque">
     <div class="compteur-wrap">
       <div>
-        <div class="section-title">Compteur de Pomels</div>
+        <div class="section-title">🏦 Banque</div>
         <div class="section-sub">Envoie des Pomels à un autre joueur en déduisant de ton solde.</div>
       </div>
       <div class="transfer-card">
@@ -1160,31 +1195,29 @@
     </div>
   </div>
 
-  <!-- PARAMÈTRES -->
-  <div class="page" id="page-settings">
+  <!-- MON PROFIL -->
+  <div class="page" id="page-monprofil">
     <div class="settings-wrap">
-      <div class="settings-card">
-        <h3>Mon profil</h3>
-        <div class="profile-info" id="profileInfo"></div>
-      </div>
-      <div class="settings-card">
-        <h3>Mes titres</h3>
-        <div class="title-toggle-list" id="titlesSettings">
-          <div style="color:var(--muted);font-size:.85rem;">Tu n'as aucun titre. Rends-toi à la boutique !</div>
+
+      <!-- Carte profil avec bouton ⋯ -->
+      <div class="profil-me-card" id="monProfilCard" style="position:relative;">
+        <button class="profil-dots-btn" onclick="toggleProfilMenu(event)" title="Personnaliser">⋯</button>
+        <div id="monProfilCardContent"></div>
+
+        <!-- Menu déroulant ⋯ -->
+        <div class="profil-dots-menu" id="profilDotsMenu" style="display:none;">
+          <div class="profil-dots-section-title">🏷️ Titres actifs</div>
+          <div id="dotsMenuTitles"></div>
+          <div class="profil-dots-divider"></div>
+          <div class="profil-dots-section-title">🎨 Couleur du pseudo</div>
+          <div id="dotsMenuColors"></div>
+          <div class="profil-dots-divider"></div>
+          <div class="profil-dots-section-title">🏅 Badge</div>
+          <div id="dotsMenuBadges"></div>
         </div>
       </div>
-      <div class="settings-card">
-        <h3>Couleur du pseudo</h3>
-        <div class="title-toggle-list" id="colorSettings">
-          <div style="color:var(--muted);font-size:.85rem;">Tu n'as aucun effet. Rends-toi à la boutique !</div>
-        </div>
-      </div>
-      <div class="settings-card">
-        <h3>Badge</h3>
-        <div class="title-toggle-list" id="badgeSettings">
-          <div style="color:var(--muted);font-size:.85rem;">Tu n'as aucun badge. Rends-toi à la boutique !</div>
-        </div>
-      </div>
+
+      <!-- Données du compte -->
       <div class="settings-card">
         <h3>Données du compte</h3>
         <div class="settings-row">
@@ -1197,6 +1230,8 @@
           <button class="btn-outline" id="copyBtn" onclick="copyExport()">Copier 📋</button>
         </div>
       </div>
+
+      <!-- Danger -->
       <div class="settings-card">
         <h3>Danger</h3>
         <div class="settings-row">
@@ -1208,6 +1243,7 @@
           <button class="btn-danger" onclick="confirmDeleteAccount()">Supprimer ⚠️</button>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -1403,14 +1439,17 @@
 
       <div class="info-card">
         <h3>🏠 Page d'accueil</h3>
-        <p>Clique sur le logo <strong>Pomel.</strong> en haut à gauche pour revenir à l'accueil. Tu y trouveras en un coup d'œil :</p>
+        <p>Clique sur le logo <strong>Pomel.</strong> en haut à gauche pour revenir à l'accueil. La page s'adapte à ta largeur d'écran et affiche en priorité ce qui te concerne :</p>
         <ul>
-          <li>Le statut de ta roulette du jour (disponible ou non)</li>
-          <li>Tes quêtes en attente ou en cours</li>
-          <li>Le top 3 des joueurs et du Serpent</li>
-          <li>Le proverbe du jour, le post Live le plus liké et le plus récent</li>
-          <li>Les paris en cours</li>
+          <li>🌱 Alerte si ton stock auto-clicker est plein</li>
+          <li>⚔️ Tes quêtes reçues ou créées en attente</li>
+          <li>🎰 Le statut de ta roulette du jour</li>
+          <li>📜 Le proverbe du jour</li>
+          <li>🏨 Les derniers titres en vente à l'Hôtel des Ventes</li>
+          <li>🌸 Les résultats du Jardin de la semaine (si disponibles)</li>
+          <li>🎲 Les paris en cours, le Pomel'Live et bien plus</li>
         </ul>
+        <p style="margin-top:8px;font-size:.85rem;color:var(--muted);">Une <strong>pastille rouge</strong> apparaît sur les onglets de navigation quand du nouveau contenu t'attend (nouveau titre à l'hôtel, nouveau pari, nouveau proverbe ou post Live). Elle disparaît dès que tu ouvres la page concernée.</p>
       </div>
 
       <div class="info-divider"></div>
@@ -1421,7 +1460,6 @@
         <ul>
           <li>Les gains vont de <strong>10 à 1 000 Pomels</strong> selon la chance</li>
           <li>Le tirage se réinitialise chaque jour à minuit</li>
-          <li>Plus t'es chanceux, plus tu montes dans le classement</li>
         </ul>
       </div>
 
@@ -1476,6 +1514,7 @@
           <li>Quand quelqu'un achète ton titre, les Pomels te sont directement versés</li>
           <li>Les titres achetés restent dans ton inventaire <strong>sans limite de temps</strong></li>
           <li>Active-les dans Paramètres → section Titres</li>
+          <li>Les derniers titres en vente sont visibles directement sur la <strong>page d'accueil</strong></li>
         </ul>
       </div>
 
@@ -1508,6 +1547,18 @@
       <div class="info-divider"></div>
 
       <div class="info-card">
+        <h3>👥 Profils</h3>
+        <p>Retrouve tous les joueurs de la communauté en un seul endroit, dans l'onglet <strong>Social → Profils</strong>.</p>
+        <ul>
+          <li>Ton profil est mis en avant en haut de page avec tes stats complètes</li>
+          <li>Tous les autres joueurs sont affichés en grille, triés par solde</li>
+          <li>Clique sur un joueur pour voir son profil détaillé</li>
+        </ul>
+      </div>
+
+      <div class="info-divider"></div>
+
+      <div class="info-card">
         <h3>💸 Le Compteur</h3>
         <p>Envoie des Pomels à n'importe quel joueur directement, en saisissant son pseudo et le montant. L'historique complet de tes transactions est conservé ici.</p>
       </div>
@@ -1520,6 +1571,7 @@
         <ul>
           <li>Si c'est ton tour, un champ s'affiche pour écrire ta phrase</li>
           <li>Les <strong>10 derniers proverbes</strong> sont conservés en grisé</li>
+          <li>Le proverbe du jour est affiché directement sur la <strong>page d'accueil</strong></li>
         </ul>
       </div>
 
@@ -1540,15 +1592,17 @@
 
       <div class="info-card">
         <h3>🌸 Jardin de Pomel'Land</h3>
-        <p>Un jardin communautaire partagé par tous les joueurs. Le jardin <strong>ferme le dimanche à 12h</strong> pour empêcher toute plantation avant l'annonce. Les résultats sont annoncés le <strong>lundi à 12h</strong> (événement), et le jardin <strong>rouvre à 12h30</strong>.</p>
+        <p>Un jardin communautaire partagé par tous les joueurs. Le jardin <strong>ferme le dimanche à 12h</strong> pour empêcher toute plantation avant l'annonce des résultats.</p>
         <ul>
-          <li>Plante une fleur pour <strong>10 000 graines de Pomels</strong> (monnaie du Clicker)</li>
+          <li>Plante une fleur pour <strong>10 000 graines</strong> (monnaie du Clicker)</li>
           <li>Chaque fleur a une forme et une couleur unique générée à partir de ton pseudo</li>
-          <li>À chaque reset hebdomadaire, les récompenses sont distribuées automatiquement</li>
+          <li>Le classement de la semaine est visible directement dans le jardin</li>
           <li>🥇 Le plus de fleurs : <strong>2 000 Pomels</strong></li>
           <li>🥈 Deuxième : <strong>1 500 Pomels</strong></li>
           <li>🥉 Troisième : <strong>1 000 Pomels</strong></li>
           <li>Tous les autres participants : <strong>500 Pomels</strong> de consolation</li>
+          <li>Les récompenses sont distribuées automatiquement le <strong>lundi à 12h</strong></li>
+          <li>Le jardin <strong>rouvre le lundi à 12h30</strong></li>
         </ul>
       </div>
 
@@ -1562,14 +1616,16 @@
           <li>Les graines servent à acheter des améliorations et à planter des fleurs dans le Jardin</li>
           <li>Échange tes graines contre des Pomels : <strong>100 graines = 1 Pomel</strong></li>
         </ul>
-        <p style="margin-top:8px;font-size:.85rem;color:var(--muted);font-weight:600;">Améliorations disponibles :</p>
+        <p style="margin-top:8px;font-size:.85rem;color:var(--muted);font-weight:600;">Améliorations disponibles (les achetées disparaissent de la liste) :</p>
         <ul>
-          <li><strong>🤖 Auto-Clicker (200 🌱)</strong> — génère 1 graine / 2 sec automatiquement, stockées jusqu'à la capacité max</li>
+          <li><strong>🤖 Auto-Clicker (200 🌱)</strong> — génère des graines automatiquement, stockées jusqu'à la capacité max</li>
           <li><strong>⚡ Turbo Auto-Clicker (1 000 🌱)</strong> — passe à 1 graine / 1 sec</li>
-          <li><strong>🗄️ Extension de stock (2 000 🌱)</strong> — augmente le stock auto de 1 000 à 2 000</li>
-          <li><strong>🍎 Second Fruit (10 000 🌱)</strong> — 2e fruit cliquable, l'auto-clicker génère 1 graine par fruit, stock auto +1 000</li>
-          <li>Stock max possible : <strong>3 000 graines</strong> (avec toutes les améliorations)</li>
-          <li>Le stock auto doit être récupéré manuellement via le bouton <em>Récupérer</em></li>
+          <li><strong>🚀 Hyper Auto-Clicker (10 000 🌱)</strong> — passe à 2 graines / 1 sec par fruit</li>
+          <li><strong>☄️ Ultra Auto-Clicker (100 000 🌱)</strong> — passe à 5 graines / 1 sec par fruit</li>
+          <li><strong>🗄️ Extension de stock (2 000 🌱)</strong> — stock auto porté à 2 000 graines</li>
+          <li><strong>🗄️🗄️ Grand Entrepôt (5 000 🌱)</strong> — stock auto porté à 5 000 graines</li>
+          <li><strong>🏭 Méga Entrepôt (100 000 🌱)</strong> — stock auto porté à 10 000 graines</li>
+          <li><strong>🍎 Second Fruit (10 000 🌱)</strong> — 2e fruit cliquable, l'auto-clicker génère des graines sur chaque fruit, stock auto +1 000</li>
           <li>Quand ton stock est plein, un raccourci apparaît sur la <strong>page d'accueil</strong></li>
         </ul>
       </div>
@@ -1860,7 +1916,8 @@ function executeConfirm() {
 // Pages that belong to a dropdown group
 const DROPDOWN_MAP = {
   roulette: 'gagne', paris: 'gagne',
-  compteur: 'social', proverbe: 'social', live: 'social'
+  banque: 'profil', monprofil: 'profil',
+  proverbe: 'social', live: 'social', profils: 'social'
 };
 // Standalone nav button ids
 const STANDALONE_PAGES = ['boutique', 'classement'];
@@ -1943,8 +2000,9 @@ function _onPageLoad(id) {
   // Stop clicker if navigating away
   if (id !== 'jardin' && jardinTimerInterval) { clearInterval(jardinTimerInterval); jardinTimerInterval = null; }
   if (id !== 'clicker') stopClickerPage();
-  if (id === 'compteur') renderHistory();
-  if (id === 'settings') { renderProfile(); renderTitlesSettings(); }
+  if (id === 'banque') renderHistory();
+  if (id === 'monprofil') renderMonProfil();
+  if (id === 'settings') { renderProfile(); renderTitlesSettings(); } // legacy
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
   if (id === 'paris') { renderBets(); markPageSeen('paris'); }
   if (id === 'boutique') renderShop();
@@ -4727,6 +4785,144 @@ function renderProfile() {
     <div class="pi-row"><span class="pi-label">Total dépensé</span><span class="pi-val">${sent.toLocaleString('fr-FR')} Pomels</span></div>
     <div class="pi-row"><span class="pi-label">Compte créé le</span><span class="pi-val">${joined}</span></div>
   `;
+}
+
+// ── MON PROFIL ───────────────────────────────────
+function renderMonProfil() {
+  const me = state;
+  const spins   = (me.history || []).filter(h => h.type === 'roulette').length;
+  const earned  = (me.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+  const spent   = (me.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
+  const joined  = new Date(me.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const nameClass = me.activeColor === 'rainbow' ? 'rainbow-text' : '';
+  const badge = me.activeBadge ? (resolveTitleDef(me.activeBadge) || {}).emoji || '' : '';
+  const titlesHTML = (me.activeTitles || []).map(tid => {
+    const t = resolveTitleDef(tid);
+    return t ? `<span class="title-badge">${t.name}</span>` : '';
+  }).join('') || '<span style="color:var(--muted);font-size:.82rem;">Aucun titre actif</span>';
+
+  document.getElementById('monProfilCardContent').innerHTML = `
+    <div class="profil-me-header">
+      <div class="profil-me-avatar">${me.name.charAt(0).toUpperCase()}</div>
+      <div>
+        <div class="profil-me-name"><span class="${nameClass}">${me.name}${badge ? ' ' + badge : ''}</span></div>
+        <div class="profil-me-since">Membre depuis ${joined}${me.group ? ' · ' + me.group : ''}</div>
+      </div>
+    </div>
+    <div class="profil-me-stats">
+      <div class="profil-stat">
+        <span class="profil-stat-val">${me.balance.toLocaleString('fr-FR')}</span>
+        <span class="profil-stat-label">🪙 Pomels</span>
+      </div>
+      <div class="profil-stat">
+        <span class="profil-stat-val">${earned.toLocaleString('fr-FR')}</span>
+        <span class="profil-stat-label">📈 Total gagné</span>
+      </div>
+      <div class="profil-stat">
+        <span class="profil-stat-val">${spent.toLocaleString('fr-FR')}</span>
+        <span class="profil-stat-label">📉 Total dépensé</span>
+      </div>
+      <div class="profil-stat">
+        <span class="profil-stat-val">${spins}</span>
+        <span class="profil-stat-label">🎰 Tirages</span>
+      </div>
+      <div class="profil-stat">
+        <span class="profil-stat-val">${(me.ownedTitles || []).length}</span>
+        <span class="profil-stat-label">🏷️ Titres possédés</span>
+      </div>
+    </div>
+    <div class="profil-me-titles" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">${titlesHTML}</div>
+  `;
+
+  renderDotsMenu();
+
+  // Fermer le menu si on clique ailleurs
+  document.addEventListener('click', closeProfilMenuOutside, { once: false });
+}
+
+function toggleProfilMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('profilDotsMenu');
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'flex';
+}
+
+function closeProfilMenuOutside(e) {
+  const menu = document.getElementById('profilDotsMenu');
+  if (!menu) return;
+  if (!menu.contains(e.target) && !e.target.classList.contains('profil-dots-btn')) {
+    menu.style.display = 'none';
+  }
+}
+
+function renderDotsMenu() {
+  const owned = state.ownedTitles || [];
+
+  // Titres
+  const titlesEl = document.getElementById('dotsMenuTitles');
+  const ownedTitles = owned.filter(tid => { const t = resolveTitleDef(tid); return t && t.type === 'title'; });
+  if (!ownedTitles.length) {
+    titlesEl.innerHTML = '<div class="profil-dots-empty">Aucun titre — va à la Boutique !</div>';
+  } else {
+    titlesEl.innerHTML = '';
+    ownedTitles.forEach(tid => {
+      const t = resolveTitleDef(tid); if (!t) return;
+      const isActive = (state.activeTitles || []).includes(tid);
+      const row = document.createElement('div');
+      row.className = 'profil-dots-row';
+      row.innerHTML = `
+        <span class="profil-dots-name">${t.name}${tid.startsWith('custom_') ? ' <span style="font-size:.65rem;color:var(--muted);">(Hôtel)</span>' : ''}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleTitle('${tid}', this.checked); renderMonProfil();" />
+          <span class="toggle-slider"></span>
+        </label>`;
+      titlesEl.appendChild(row);
+    });
+  }
+
+  // Couleurs
+  const colorsEl = document.getElementById('dotsMenuColors');
+  const ownedColors = owned.filter(tid => { const t = SHOP_TITLES.find(x => x.id === tid); return t && t.type === 'color'; });
+  if (!ownedColors.length) {
+    colorsEl.innerHTML = '<div class="profil-dots-empty">Aucun effet — va à la Boutique !</div>';
+  } else {
+    colorsEl.innerHTML = '';
+    ownedColors.forEach(tid => {
+      const t = SHOP_TITLES.find(x => x.id === tid); if (!t) return;
+      const isActive = state.activeColor === tid;
+      const row = document.createElement('div');
+      row.className = 'profil-dots-row';
+      row.innerHTML = `
+        <span class="profil-dots-name">${t.name}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleColor('${tid}', this.checked); renderMonProfil();" />
+          <span class="toggle-slider"></span>
+        </label>`;
+      colorsEl.appendChild(row);
+    });
+  }
+
+  // Badges
+  const badgesEl = document.getElementById('dotsMenuBadges');
+  const ownedBadges = owned.filter(tid => { const t = SHOP_TITLES.find(x => x.id === tid); return t && t.type === 'badge'; });
+  if (!ownedBadges.length) {
+    badgesEl.innerHTML = '<div class="profil-dots-empty">Aucun badge — va à la Boutique !</div>';
+  } else {
+    badgesEl.innerHTML = '';
+    ownedBadges.forEach(tid => {
+      const t = SHOP_TITLES.find(x => x.id === tid); if (!t) return;
+      const isActive = state.activeBadge === tid;
+      const row = document.createElement('div');
+      row.className = 'profil-dots-row';
+      row.innerHTML = `
+        <span class="profil-dots-name">${t.name}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleBadge('${tid}', this.checked); renderMonProfil();" />
+          <span class="toggle-slider"></span>
+        </label>`;
+      badgesEl.appendChild(row);
+    });
+  }
 }
 
 // ── PROFILS ──────────────────────────────────────
