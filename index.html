@@ -5099,15 +5099,7 @@ setInterval(verifyStateIntegrity, 8000);
 // ── PROTECTION CONSOLE / DEVTOOLS ────────────────
 
 // 1. Bloquer la console
-(function() {
-  const noop = () => {};
-  ['log','warn','info','debug','table','dir','dirxml','group','groupEnd','groupCollapsed','count','countReset','time','timeEnd','timeLog','trace','clear','assert'].forEach(k => {
-    try { console[k] = noop; } catch(e) {}
-  });
-  try {
-    Object.defineProperty(window, 'console', { get: () => ({ log: noop, warn: noop, error: noop, info: noop, debug: noop }), set: () => {} });
-  } catch(e) {}
-})();
+
 
 // 2. Bloquer le clic droit
 document.addEventListener('contextmenu', e => e.preventDefault());
