@@ -1649,19 +1649,6 @@
 // POMEL — MULTIPLAYER WITH FIREBASE REALTIME DATABASE
 // ══════════════════════════════════════════════════
 
-// ── VERSION / CACHE BUSTING ──────────────────────
-const APP_VERSION = '2026-03-30-v2';
-if (localStorage.getItem('pomel_version') !== APP_VERSION) {
-  // Nouvelle version détectée — vider les caches locaux (pas les données Firebase)
-  const keysToKeep = [];
-  Object.keys(localStorage).forEach(k => {
-    if (k.startsWith('notif_') || k === 'pomel_session') keysToKeep.push([k, localStorage.getItem(k)]);
-  });
-  localStorage.clear();
-  keysToKeep.forEach(([k, v]) => localStorage.setItem(k, v));
-  localStorage.setItem('pomel_version', APP_VERSION);
-}
-
 // ── FIREBASE CONFIG ─────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyBWc4QHeEcajmWUprfp0IacO_K6bYSgMYw",
@@ -1750,7 +1737,7 @@ function getSession() {
   try { const r = localStorage.getItem('pomel_session'); return r ? JSON.parse(r) : null; } catch { return null; }
 }
 function setSession(code) {
-  localStorage.setItem('pomel_session', JSON.stringify({ code }));
+  localStorage.setItem('pomel_session', JSON.stringify({ code, name: state ? state.name : '' }));
 }
 function clearSession() {
   localStorage.removeItem('pomel_session');
@@ -1776,27 +1763,36 @@ function migrateAccount(acc) {
 
 // ── INIT ─────────────────────────────────────────
 async function init() {
-  // Timeout de sécurité : si Firebase ne répond pas en 8 secondes, afficher le login
-  const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
-
-  try {
-    const session = getSession();
-    if (session && session.code) {
-      const acc = await Promise.race([getAccount(session.code), timeout]);
-      if (acc) {
-        state = migrateAccount(acc);
-        launchApp();
-        hideLoading();
-        return;
-      }
-    }
-  } catch(e) {
-    // Timeout ou erreur Firebase — on affiche quand même le login
-    console.warn('Firebase timeout ou erreur:', e.message);
+  const session = getSession();
+  if (!session || !session.code) {
+    hideLoading();
+    document.getElementById('loginScreen').classList.remove('hidden');
+    return;
   }
 
+  // Lancer l'app immédiatement avec un état minimal basé sur la session
+  // pour ne pas faire attendre l'utilisateur
+  state = { code: session.code, name: session.name || '…', balance: 0, history: [], ownedTitles: [], activeTitles: [], group: null, createdAt: new Date().toISOString() };
+  launchApp();
   hideLoading();
-  document.getElementById('loginScreen').classList.remove('hidden');
+
+  // Puis synchroniser avec Firebase en arrière-plan
+  try {
+    const acc = await getAccount(session.code);
+    if (acc) {
+      state = migrateAccount(acc);
+      refreshUI();
+      renderHome();
+    } else {
+      // Compte introuvable — déconnecter
+      clearSession();
+      state = null;
+      document.getElementById('app').classList.remove('visible');
+      document.getElementById('loginScreen').classList.remove('hidden');
+    }
+  } catch(e) {
+    // Firebase indisponible — l'app reste ouverte avec les données minimales
+  }
 }
 
 function hideLoading() {
@@ -4787,6 +4783,7 @@ function renderHistory() {
 // ── PROFILE ──────────────────────────────────────
 function renderProfile() {
   const el = document.getElementById('profileInfo');
+  if (!el) return;
   const spins = (state.history || []).filter(h => h.type === 'roulette').length;
   const earned = (state.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
   const sent = (state.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
