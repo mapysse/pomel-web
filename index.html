@@ -2332,19 +2332,23 @@ function renderShop() {
   ];
 
   sections.forEach(sec => {
-    const items = SHOP_TITLES.filter(t => sec.types.includes(t.type));
+    const now = Date.now();
+    const items = SHOP_TITLES.filter(t => {
+      if (!sec.types.includes(t.type)) return false;
+      const owned = (state.ownedTitles || []).includes(t.id);
+      // Exclure si expiré ET non possédé
+      if (t.expiresAt && now > t.expiresAt && !owned) return false;
+      return true;
+    });
     if (!items.length) return;
+
     const secTitle = document.createElement('div');
     secTitle.style.cssText = 'font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:12px 0 4px;';
     secTitle.textContent = sec.label;
     grid.appendChild(secTitle);
-    let sectionHasItems = false;
+
     items.forEach(title => {
       const owned = (state.ownedTitles || []).includes(title.id);
-      const now = Date.now();
-      // Masquer si expiré ET non possédé
-      if (title.expiresAt && now > title.expiresAt && !owned) return;
-      sectionHasItems = true;
       const canAfford = state.balance >= title.price;
       const item = document.createElement('div');
       item.className = 'shop-item' + (owned ? ' owned' : '');
@@ -2375,8 +2379,6 @@ function renderShop() {
       `;
       grid.appendChild(item);
     });
-    // Retirer le titre de section si aucun item visible
-    if (!sectionHasItems) grid.removeChild(secTitle);
   });
   startShopCountdown();
 }
@@ -2405,7 +2407,9 @@ async function buyTitle(titleId) {
   state.balance -= title.price;
   if (!state.ownedTitles) state.ownedTitles = [];
   state.ownedTitles.push(titleId);
-  state.history.unshift({ type: 'shop', desc: `Titre acheté : "${title.name}"`, amount: -title.price, date: new Date().toISOString() });
+  if (title.price > 0) {
+    state.history.unshift({ type: 'shop', desc: `Titre acheté : "${title.name}"`, amount: -title.price, date: new Date().toISOString() });
+  }
   await saveAccount(state);
   refreshUI();
   renderShop();
