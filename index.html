@@ -558,6 +558,51 @@
   .info-card ul li::before { content: '→'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
   .info-divider { height: 1px; background: var(--border); }
 
+  /* PROFILS */
+  .profils-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .profil-me-card { background: var(--surface); border: 2px solid var(--primary); border-radius: var(--radius); padding: 24px; box-shadow: 0 0 20px var(--primary-glow); }
+  .profil-me-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .profil-me-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--primary-glow); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+  .profil-me-name { font-size: 1.3rem; font-weight: 800; letter-spacing: -.5px; }
+  .profil-me-since { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+  .profil-me-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .profil-stat { background: var(--surface2); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+  .profil-stat-val { font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+  .profil-stat-label { font-size: .68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .profil-me-titles { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .profils-section-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .profils-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .profil-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; cursor: pointer; transition: border-color .2s, box-shadow .2s; display: flex; flex-direction: column; gap: 8px; }
+  .profil-card:hover { border-color: var(--primary); box-shadow: 0 0 14px var(--primary-glow); }
+  .profil-card-name { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .profil-card-group { font-size: .72rem; color: var(--muted); font-weight: 600; }
+  .profil-card-stats { display: flex; gap: 10px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
+  .profil-card-stats span { display: flex; align-items: center; gap: 3px; }
+  .profil-card-titles { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+  @media (max-width: 600px) {
+    .profil-me-stats { grid-template-columns: repeat(2, 1fr); }
+    .profils-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* NOTIFICATION BADGES */
+  .notif-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 8px; height: 8px; border-radius: 50%;
+    background: var(--primary); border: 2px solid var(--bg);
+    position: absolute; top: 2px; right: 2px;
+    pointer-events: none;
+  }
+  .nav-dropdown { position: relative; }
+  .nav-btn { position: relative; }
+  .nav-dropdown-item { position: relative; }
+  .notif-badge-item {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 7px; height: 7px; border-radius: 50%;
+    background: var(--primary);
+    position: absolute; top: 6px; right: 8px;
+    pointer-events: none;
+  }
+
   /* RAINBOW EFFECT */
   @keyframes rainbow { 0%{color:#EB5846} 16%{color:#f0c040} 33%{color:#3ecf6e} 50%{color:#5b8def} 66%{color:#b05bef} 83%{color:#ef5bb0} 100%{color:#EB5846} }
   .rainbow-text { animation: rainbow 2s linear infinite; font-weight: 700; }
@@ -683,6 +728,7 @@
         <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('live','social',this)">📡 Live</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('quetes','social',this)">⚔️ Quêtes</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('profils','social',this)">👥 Profils</button>
       </div>
     </div>
   </nav>
@@ -719,34 +765,34 @@
           <div id="homeRouletteStatus"></div>
         </div>
 
-        <!-- 5. Hôtel des Ventes — span 2 (plus large car liste) -->
+        <!-- 5. Proverbe du jour — 1 colonne, sous la roulette -->
+        <div class="home-card">
+          <div class="home-card-title">📜 Proverbe du Jour</div>
+          <div id="homeProverbe" class="home-proverbe-zone"></div>
+        </div>
+
+        <!-- 6. Hôtel des Ventes — span 2 -->
         <div class="home-card home-card-span2" id="homeHotelCard" style="cursor:pointer;" onclick="goToFromDropdown('hotel','commerce', document.querySelector('#dropdown-commerce .nav-dropdown-item'))">
           <div class="home-card-title">🏨 Hôtel des Ventes</div>
           <div id="homeHotelList" class="home-bets-zone"></div>
         </div>
 
-        <!-- 6. Résultats Jardin (hebdo, conditionnel) — 1 colonne -->
+        <!-- 7. Résultats Jardin (hebdo, conditionnel) — 1 colonne -->
         <div class="home-card" id="homeJardinWinnersCard" style="display:none;">
           <div class="home-card-title">🌸 Résultats du Jardin</div>
           <div id="homeJardinWinners" class="home-bets-zone"></div>
         </div>
 
-        <!-- 7. Paris en cours — span 2 -->
+        <!-- 8. Paris en cours — span 2 -->
         <div class="home-card home-card-span2">
           <div class="home-card-title">🎲 Paris en cours</div>
           <div id="homeBets" class="home-bets-zone"></div>
         </div>
 
-        <!-- 8. Pomel'Live du jour — 1 colonne -->
+        <!-- 9. Pomel'Live du jour — 1 colonne -->
         <div class="home-card">
           <div class="home-card-title">📡 Pomel'Live</div>
           <div id="homeLivePost" class="home-live-zone"></div>
-        </div>
-
-        <!-- 9. Proverbe du jour — 1 colonne -->
-        <div class="home-card">
-          <div class="home-card-title">📜 Proverbe du Jour</div>
-          <div id="homeProverbe" class="home-proverbe-zone"></div>
         </div>
 
       </div>
@@ -1233,6 +1279,25 @@
     </div>
   </div>
 
+  <!-- PROFILS -->
+  <div class="page" id="page-profils">
+    <div class="profils-wrap">
+      <div>
+        <div class="section-title">👥 Profils</div>
+        <div class="section-sub">Ton profil et ceux de la communauté.</div>
+      </div>
+
+      <!-- Mon profil -->
+      <div class="profil-me-card" id="profilMeCard"></div>
+
+      <!-- Tous les joueurs -->
+      <div>
+        <div class="profils-section-title" style="margin-bottom:12px;">Tous les joueurs</div>
+        <div class="profils-grid" id="profilsGrid"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- PROVERBE DU JOUR -->
   <div class="page" id="page-proverbe">
     <div class="proverbe-wrap">
@@ -1691,6 +1756,9 @@ function launchApp() {
   // Vérifier si les récompenses du jardin sont à distribuer (lundi après 12h)
   // S'exécute en arrière-plan sans bloquer le chargement
   checkJardinReset().catch(() => {});
+  // Initialiser les pastilles de notification
+  checkNotifUpdates();
+  setInterval(checkNotifUpdates, 60000);
 }
 
 function refreshUI() {
@@ -1842,15 +1910,16 @@ function _onPageLoad(id) {
   if (id === 'compteur') renderHistory();
   if (id === 'settings') { renderProfile(); renderTitlesSettings(); }
   if (id === 'classement') { renderLeaderboard('balance'); renderGroupSelect(); renderGroupLeaderboard(); }
-  if (id === 'paris') renderBets();
+  if (id === 'paris') { renderBets(); markPageSeen('paris'); }
   if (id === 'boutique') renderShop();
-  if (id === 'hotel') renderHotel();
-  if (id === 'proverbe') renderProverbe();
-  if (id === 'live') renderLive();
+  if (id === 'hotel') { renderHotel(); markPageSeen('hotel'); }
+  if (id === 'proverbe') { renderProverbe(); markPageSeen('proverbe'); }
+  if (id === 'live') { renderLive(); markPageSeen('live'); }
   if (id === 'quetes') renderQuetes();
   if (id === 'snake') renderSnakePage();
   if (id === 'clicker') renderClickerPage();
   if (id === 'jardin') renderJardin();
+  if (id === 'profils') renderProfils();
 }
 
 // ── PRIZES ───────────────────────────────────────
@@ -2345,6 +2414,7 @@ async function handleCreateBet() {
   document.getElementById('betOption2Input').value = '';
   setAlert('betCreateAlert', '✅ Pari créé avec succès !', 'success');
   setTimeout(() => { document.getElementById('betCreateAlert').className = 'alert'; }, 3000);
+  checkNotifUpdates();
   renderBets();
 }
 
@@ -3526,6 +3596,7 @@ async function handleCreateHotelListing() {
   document.getElementById('hotelPriceInput').value = '';
   setAlert('hotelCreateAlert', '✅ Titre mis en vente pour 24h !', 'success');
   setTimeout(() => { document.getElementById('hotelCreateAlert').className = 'alert'; }, 3000);
+  checkNotifUpdates();
   renderHotel();
 }
 
@@ -4370,6 +4441,7 @@ async function submitProverbe() {
   const history = [entry, ...(data.history || [])].slice(0, 10);
   await saveProverbeData({ today: entry, history });
   document.getElementById('provInput').value = '';
+  checkNotifUpdates();
   renderProverbe();
 }
 
@@ -4474,6 +4546,7 @@ async function submitLivePost() {
   await saveLivePosts(cleaned);
   document.getElementById('liveInput').value = '';
   document.getElementById('liveCharCount').textContent = '0 / 150';
+  checkNotifUpdates();
   renderLive();
 }
 
@@ -4593,6 +4666,93 @@ function renderProfile() {
   `;
 }
 
+// ── PROFILS ──────────────────────────────────────
+async function renderProfils() {
+  // ── Mon profil ──
+  const me = state;
+  const meCard = document.getElementById('profilMeCard');
+  const meSpins   = (me.history || []).filter(h => h.type === 'roulette').length;
+  const meEarned  = (me.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+  const meFlowers = 0; // calculé dynamiquement si besoin
+  const meJoined  = new Date(me.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const meNameClass = me.activeColor === 'rainbow' ? 'rainbow-text' : '';
+  const meBadge = me.activeBadge ? (resolveTitleDef(me.activeBadge) || {}).emoji || '' : '';
+  const meTitlesHTML = (me.activeTitles || []).map(tid => {
+    const t = resolveTitleDef(tid);
+    return t ? `<span class="title-badge">${t.name}</span>` : '';
+  }).join('') || '<span style="color:var(--muted);font-size:.82rem;">Aucun titre actif</span>';
+  const meInitial = me.name.charAt(0).toUpperCase();
+
+  meCard.innerHTML = `
+    <div class="profil-me-header">
+      <div class="profil-me-avatar">${meInitial}</div>
+      <div>
+        <div class="profil-me-name"><span class="${meNameClass}">${me.name}${meBadge ? ' ' + meBadge : ''}</span></div>
+        <div class="profil-me-since">Membre depuis ${meJoined}${me.group ? ' · ' + me.group : ''}</div>
+      </div>
+    </div>
+    <div class="profil-me-stats">
+      <div class="profil-stat">
+        <span class="profil-stat-val">${me.balance.toLocaleString('fr-FR')}</span>
+        <span class="profil-stat-label">🪙 Pomels</span>
+      </div>
+      <div class="profil-stat">
+        <span class="profil-stat-val">${meEarned.toLocaleString('fr-FR')}</span>
+        <span class="profil-stat-label">📈 Total gagné</span>
+      </div>
+      <div class="profil-stat">
+        <span class="profil-stat-val">${meSpins}</span>
+        <span class="profil-stat-label">🎰 Tirages</span>
+      </div>
+    </div>
+    <div class="profil-me-titles">${meTitlesHTML}</div>
+  `;
+
+  // ── Grille des joueurs ──
+  const grid = document.getElementById('profilsGrid');
+  grid.innerHTML = '<div style="color:var(--muted);font-size:.88rem;">Chargement…</div>';
+  const all = await getAllAccounts();
+  // Exclure soi-même, trier par solde
+  const others = all
+    .filter(a => a.code !== me.code)
+    .sort((a, b) => b.balance - a.balance);
+
+  if (!others.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:.88rem;font-style:italic;">Aucun autre joueur pour l\'instant.</div>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  others.forEach(acc => {
+    const migrated = migrateAccount(acc);
+    const nameClass = migrated.activeColor === 'rainbow' ? 'rainbow-text' : '';
+    const badge = migrated.activeBadge ? (resolveAnyTitleDef(migrated.activeBadge, migrated) || {}).emoji || '' : '';
+    const spins = (migrated.history || []).filter(h => h.type === 'roulette').length;
+    const earned = (migrated.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+    const titlesHTML = (migrated.activeTitles || []).map(tid => {
+      const t = resolveAnyTitleDef(tid, migrated);
+      return t ? `<span class="title-badge" style="font-size:.6rem;">${t.name}</span>` : '';
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = 'profil-card';
+    card.onclick = () => openProfileModal(acc.code);
+    card.innerHTML = `
+      <div class="profil-card-name">
+        <span class="${nameClass}">${migrated.name}${badge ? ' ' + badge : ''}</span>
+      </div>
+      ${migrated.group ? `<div class="profil-card-group">📍 ${migrated.group}</div>` : ''}
+      <div class="profil-card-stats">
+        <span>${migrated.balance.toLocaleString('fr-FR')} 🪙</span>
+        <span>${spins} 🎰</span>
+        <span>${earned.toLocaleString('fr-FR')} gagné</span>
+      </div>
+      ${titlesHTML ? `<div class="profil-card-titles">${titlesHTML}</div>` : ''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
 // ── EXPORT ───────────────────────────────────────
 function exportData() {
   const area = document.getElementById('exportArea');
@@ -4705,6 +4865,121 @@ document.addEventListener('keydown', e => {
     return false;
   }
 });
+
+// ── NOTIFICATIONS / PASTILLES ────────────────────
+// Stockage local : timestamps de la dernière visite par page
+// + timestamps du dernier contenu connu (depuis Firebase)
+
+const NOTIF_PAGES = {
+  hotel:    { dropdown: 'commerce', item: 1 },  // item index dans le dropdown commerce
+  paris:    { dropdown: 'gagne',    item: 1 },
+  proverbe: { dropdown: 'social',   item: 1 },
+  live:     { dropdown: 'social',   item: 2 },
+};
+
+function notifKey(page) { return 'notif_seen_' + page; }
+function notifLatestKey(page) { return 'notif_latest_' + page; }
+
+// Marque la page comme vue maintenant
+function markPageSeen(page) {
+  localStorage.setItem(notifKey(page), Date.now().toString());
+  refreshAllBadges();
+}
+
+// Enregistre le timestamp du contenu le plus récent connu
+function setLatestContent(page, ts) {
+  const stored = localStorage.getItem(notifLatestKey(page));
+  const storedTs = stored ? parseInt(stored) : 0;
+  const newTs = new Date(ts).getTime();
+  if (newTs > storedTs) {
+    localStorage.setItem(notifLatestKey(page), newTs.toString());
+  }
+}
+
+// Retourne true si la page a du nouveau contenu non vu
+function hasUnread(page) {
+  const seen  = parseInt(localStorage.getItem(notifKey(page)) || '0');
+  const latest = parseInt(localStorage.getItem(notifLatestKey(page)) || '0');
+  return latest > seen && latest > 0;
+}
+
+// Injecte ou retire une pastille sur un élément
+function setBadge(el, show) {
+  if (!el) return;
+  let badge = el.querySelector('.notif-badge, .notif-badge-item');
+  if (show && !badge) {
+    badge = document.createElement('span');
+    badge.className = el.classList.contains('nav-dropdown-item') ? 'notif-badge-item' : 'notif-badge';
+    el.appendChild(badge);
+  } else if (!show && badge) {
+    badge.remove();
+  }
+}
+
+// Refresh toutes les pastilles nav
+function refreshAllBadges() {
+  // hotel → item Hôtel des Ventes + trigger Commerce
+  const hotelItem     = document.querySelector('#dropdown-commerce .nav-dropdown-item:nth-child(2)');
+  const commerceTrigger = document.querySelector('#dropdown-commerce .nav-dropdown-trigger');
+  const hotelUnread   = hasUnread('hotel');
+  setBadge(hotelItem, hotelUnread);
+  // Paris → item Paris + trigger Gagne
+  const parisItem     = document.querySelector('#dropdown-gagne .nav-dropdown-item:nth-child(2)');
+  const gagneTrigger  = document.querySelector('#dropdown-gagne .nav-dropdown-trigger');
+  const parisUnread   = hasUnread('paris');
+  setBadge(parisItem, parisUnread);
+  // Proverbe → item Proverbe + trigger Social
+  const proverbeItem  = document.querySelector('#dropdown-social .nav-dropdown-item:nth-child(2)');
+  const liveItem      = document.querySelector('#dropdown-social .nav-dropdown-item:nth-child(3)');
+  const socialTrigger = document.querySelector('#dropdown-social .nav-dropdown-trigger');
+  const proverbeUnread = hasUnread('proverbe');
+  const liveUnread    = hasUnread('live');
+  setBadge(proverbeItem, proverbeUnread);
+  setBadge(liveItem, liveUnread);
+  // Trigger Commerce = hotel non lu
+  setBadge(commerceTrigger, hotelUnread);
+  // Trigger Gagne = paris non lu
+  setBadge(gagneTrigger, parisUnread);
+  // Trigger Social = proverbe OU live non lu
+  setBadge(socialTrigger, proverbeUnread || liveUnread);
+}
+
+// Vérifie Firebase pour les nouveaux contenus et met à jour les timestamps
+async function checkNotifUpdates() {
+  try {
+    // Hôtel des Ventes
+    const hotelItems = await getAllHotelListings();
+    if (hotelItems && hotelItems.length) {
+      const latest = hotelItems
+        .filter(l => l.creatorCode !== state.code) // pas nos propres annonces
+        .reduce((max, l) => Math.max(max, new Date(l.createdAt).getTime()), 0);
+      if (latest) setLatestContent('hotel', new Date(latest).toISOString());
+    }
+    // Paris ouverts
+    const bets = await getAllBets();
+    if (bets && bets.length) {
+      const latest = bets
+        .filter(b => b.creator !== state.code && b.status === 'open')
+        .reduce((max, b) => Math.max(max, new Date(b.createdAt).getTime()), 0);
+      if (latest) setLatestContent('paris', new Date(latest).toISOString());
+    }
+    // Proverbe du jour
+    const prov = await getProverbeData();
+    if (prov && prov.today && prov.today.authorCode !== state.code) {
+      setLatestContent('proverbe', prov.today.date + 'T12:00:00');
+    }
+    // Posts live du jour
+    const rawPosts = await getLivePosts() || {};
+    const today = getTodayKey();
+    const todayPosts = Object.values(rawPosts)
+      .filter(p => p.date === today && p.authorCode !== state.code);
+    if (todayPosts.length) {
+      const latest = todayPosts.reduce((max, p) => Math.max(max, new Date(p.createdAt).getTime()), 0);
+      setLatestContent('live', new Date(latest).toISOString());
+    }
+  } catch(e) {}
+  refreshAllBadges();
+}
 
 // ── BOOT ─────────────────────────────────────────
 // Sauvegarder le clicker quand on quitte la page
