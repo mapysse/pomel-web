@@ -676,64 +676,58 @@
 
       <div class="home-grid">
 
-        <!-- Clicker stock plein -->
+        <!-- 1. Clicker stock plein (urgent, personnel) -->
         <div class="home-card home-card-full" id="homeClickerCard" style="display:none; border-color:var(--green); box-shadow:0 0 16px rgba(62,207,110,0.2); cursor:pointer;" onclick="goToFromDropdown('clicker','gagne', document.querySelectorAll('#dropdown-gagne .nav-dropdown-item')[3])">
           <div class="home-card-title" style="color:var(--green);">🌱 Clicker — Stock prêt !</div>
           <div id="homeClickerStatus"></div>
         </div>
 
-        <!-- Quêtes reçues -->
+        <!-- 2. Quêtes reçues (urgent, personnel) -->
         <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
           <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes reçues</div>
           <div id="homeQuetesIn" class="home-bets-zone"></div>
         </div>
 
-        <!-- Quêtes créées (suivi) -->
+        <!-- 3. Quêtes créées (suivi personnel) -->
         <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
           <div class="home-card-title" style="color:var(--primary);">🧭 Mes quêtes créées</div>
           <div id="homeQuetesOut" class="home-bets-zone"></div>
         </div>
 
-        <!-- Statut roulette -->
+        <!-- 4. Statut roulette (quotidien) -->
         <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="goToFromDropdown('roulette','gagne', document.querySelector('#dropdown-gagne .nav-dropdown-item'))" style="cursor:pointer;">
           <div class="home-card-title">🎰 Roulette Quotidienne</div>
           <div id="homeRouletteStatus"></div>
         </div>
 
-        <!-- Top 3 classement -->
-        <div class="home-card">
-          <div class="home-card-title">🏆 Top Pomels</div>
-          <div class="home-card-list" id="homeTopBalance"></div>
+        <!-- 5. Hôtel des Ventes — derniers ajouts -->
+        <div class="home-card home-card-full" id="homeHotelCard" style="cursor:pointer;" onclick="goToFromDropdown('hotel','commerce', document.querySelector('#dropdown-commerce .nav-dropdown-item'))">
+          <div class="home-card-title">🏨 Hôtel des Ventes</div>
+          <div id="homeHotelList" class="home-bets-zone"></div>
         </div>
 
-        <!-- Top 3 Serpent -->
-        <div class="home-card">
-          <div class="home-card-title">🐍 Top Serpent</div>
-          <div class="home-card-list" id="homeTopSnake"></div>
-        </div>
-
-        <!-- Proverbe du jour -->
-        <div class="home-card home-card-full">
-          <div class="home-card-title">📜 Proverbe du Jour</div>
-          <div id="homeProverbe" class="home-proverbe-zone"></div>
-        </div>
-
-        <!-- Post le plus liké -->
-        <div class="home-card home-card-full">
-          <div class="home-card-title">📡 Pomel'Live du Jour</div>
-          <div id="homeLivePost" class="home-live-zone"></div>
-        </div>
-
-        <!-- Gagnants du Jardin -->
+        <!-- 6. Résultats Jardin (hebdo, conditionnel) -->
         <div class="home-card home-card-full" id="homeJardinWinnersCard" style="display:none;">
           <div class="home-card-title">🌸 Résultats du Jardin de la semaine passée</div>
           <div id="homeJardinWinners" class="home-bets-zone"></div>
         </div>
 
-        <!-- Paris en cours -->
+        <!-- 7. Paris en cours -->
         <div class="home-card home-card-full">
           <div class="home-card-title">🎲 Paris en cours</div>
           <div id="homeBets" class="home-bets-zone"></div>
+        </div>
+
+        <!-- 8. Pomel'Live du jour -->
+        <div class="home-card home-card-full">
+          <div class="home-card-title">📡 Pomel'Live du Jour</div>
+          <div id="homeLivePost" class="home-live-zone"></div>
+        </div>
+
+        <!-- 9. Proverbe du jour -->
+        <div class="home-card home-card-full">
+          <div class="home-card-title">📜 Proverbe du Jour</div>
+          <div id="homeProverbe" class="home-proverbe-zone"></div>
         </div>
 
       </div>
@@ -2585,8 +2579,7 @@ async function renderHome() {
     renderHomeJardinWinners(),
     renderHomeQuetes(),
     renderHomeRoulette(),
-    renderHomeTopBalance(),
-    renderHomeTopSnake(),
+    renderHomeHotel(),
     renderHomeProverbe(),
     renderHomeLivePost(),
     renderHomeBets(),
@@ -2785,50 +2778,48 @@ async function renderHomeRoulette() {
   }
 }
 
-async function renderHomeTopBalance() {
-  const el = document.getElementById('homeTopBalance');
+async function renderHomeHotel() {
+  const el = document.getElementById('homeHotelList');
+  if (!el) return;
   el.innerHTML = '<div class="home-empty">Chargement…</div>';
-  const all = await getAllAccounts();
-  if (!all.length) { el.innerHTML = '<div class="home-empty">Aucun joueur.</div>'; return; }
-  const sorted = [...all].sort((a, b) => {
-    const ea = (a.history||[]).filter(h=>h.amount>0).reduce((s,h)=>s+h.amount,0);
-    const eb = (b.history||[]).filter(h=>h.amount>0).reduce((s,h)=>s+h.amount,0);
-    return eb - ea;
-  }).slice(0, 3);
-  const medals = ['🥇','🥈','🥉'];
+  const all = await getAllHotelListings();
+  // Nettoyer les expirés
+  const now = Date.now();
+  const active = all.filter(l => now - new Date(l.createdAt).getTime() < 24 * 3600 * 1000);
+  if (!active.length) {
+    el.innerHTML = '<div class="home-empty">Aucun titre en vente pour le moment.</div>';
+    return;
+  }
+  // Les 4 plus récents
+  const recent = [...active].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
   el.innerHTML = '';
-  sorted.forEach((acc, i) => {
-    const earned = (acc.history||[]).filter(h=>h.amount>0).reduce((s,h)=>s+h.amount,0);
-    const rankClass = `top${i+1}`;
+  recent.forEach(item => {
+    const owned = (state.ownedTitles || []).includes('custom_' + item.id);
+    const isMine = item.creatorCode === state.code;
+    const canAfford = state.balance >= item.price;
     const div = document.createElement('div');
-    div.className = 'home-rank-row';
+    div.className = 'home-bet-row';
     div.innerHTML = `
-      <span class="home-rank-num ${rankClass}">${medals[i]}</span>
-      <span class="home-rank-name">${acc.name}</span>
-      <span class="home-rank-val">${earned.toLocaleString('fr-FR')} 🪙</span>
+      <div class="home-bet-desc">
+        <span class="title-badge">${item.titleName}</span>
+        ${isMine ? ' <span style="font-size:.7rem;color:var(--muted);">(mon titre)</span>' : ''}
+        ${owned && !isMine ? ' <span style="font-size:.7rem;color:var(--green);">✅ Possédé</span>' : ''}
+      </div>
+      <div class="home-bet-meta">
+        <span>Par <strong>${item.creatorName}</strong></span>
+        <span style="color:var(--primary);font-weight:700;">${item.price.toLocaleString('fr-FR')} 🪙</span>
+        <span>${timeLeft(item.createdAt)}</span>
+        ${!isMine && !owned ? `<span style="color:${canAfford ? 'var(--green)' : 'var(--muted)'};font-size:.78rem;font-weight:600;">${canAfford ? '✓ Tu peux acheter' : '✗ Solde insuffisant'}</span>` : ''}
+      </div>
     `;
     el.appendChild(div);
   });
-}
-
-async function renderHomeTopSnake() {
-  const el = document.getElementById('homeTopSnake');
-  el.innerHTML = '<div class="home-empty">Chargement…</div>';
-  const snap = await dbGet('snake_lb');
-  if (!snap) { el.innerHTML = '<div class="home-empty">Aucun score.</div>'; return; }
-  const entries = Object.values(snap).sort((a,b)=>b.score-a.score).slice(0,3);
-  const medals = ['🥇','🥈','🥉'];
-  el.innerHTML = '';
-  entries.forEach((e, i) => {
-    const div = document.createElement('div');
-    div.className = 'home-rank-row';
-    div.innerHTML = `
-      <span class="home-rank-num top${i+1}">${medals[i]}</span>
-      <span class="home-rank-name">${e.name}</span>
-      <span class="home-rank-val">${e.score} 🍎</span>
-    `;
-    el.appendChild(div);
-  });
+  if (active.length > 4) {
+    const more = document.createElement('div');
+    more.style.cssText = 'font-size:.78rem;color:var(--muted);text-align:center;padding:6px 0;';
+    more.textContent = `+ ${active.length - 4} autre${active.length - 4 > 1 ? 's' : ''} titre${active.length - 4 > 1 ? 's' : ''} en vente…`;
+    el.appendChild(more);
+  }
 }
 
 async function renderHomeProverbe() {
