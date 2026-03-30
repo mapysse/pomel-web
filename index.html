@@ -1362,9 +1362,6 @@
         <div class="section-sub">Ton profil et ceux de la communauté.</div>
       </div>
 
-      <!-- Mon profil -->
-      <div class="profil-me-card" id="profilMeCard"></div>
-
       <!-- Tous les joueurs -->
       <div>
         <div class="profils-section-title" style="margin-bottom:12px;">Tous les joueurs</div>
@@ -4578,7 +4575,7 @@ async function submitProverbe() {
   const data = await getProverbeData() || { history: [], today: null };
   if (data.today && data.today.date === today) { setAlert('provAlert', 'Proverbe déjà soumis aujourd\'hui !', 'error'); return; }
 
-  const entry = { date: today, text, authorCode: state.code, authorName: state.name };
+  const entry = { date: today, text, authorCode: state.code, authorName: state.name, createdAt: new Date().toISOString() };
   // Prepend to history
   const history = [entry, ...(data.history || [])].slice(0, 10);
   await saveProverbeData({ today: entry, history });
@@ -4949,46 +4946,6 @@ function renderDotsMenu() {
 
 // ── PROFILS ──────────────────────────────────────
 async function renderProfils() {
-  // ── Mon profil ──
-  const me = state;
-  const meCard = document.getElementById('profilMeCard');
-  const meSpins   = (me.history || []).filter(h => h.type === 'roulette').length;
-  const meEarned  = (me.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
-  const meFlowers = 0; // calculé dynamiquement si besoin
-  const meJoined  = new Date(me.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const meNameClass = me.activeColor === 'rainbow' ? 'rainbow-text' : '';
-  const meBadge = me.activeBadge ? (resolveTitleDef(me.activeBadge) || {}).emoji || '' : '';
-  const meTitlesHTML = (me.activeTitles || []).map(tid => {
-    const t = resolveTitleDef(tid);
-    return t ? `<span class="title-badge">${t.name}</span>` : '';
-  }).join('') || '<span style="color:var(--muted);font-size:.82rem;">Aucun titre actif</span>';
-  const meInitial = me.name.charAt(0).toUpperCase();
-
-  meCard.innerHTML = `
-    <div class="profil-me-header">
-      <div class="profil-me-avatar">${meInitial}</div>
-      <div>
-        <div class="profil-me-name"><span class="${meNameClass}">${me.name}${meBadge ? ' ' + meBadge : ''}</span></div>
-        <div class="profil-me-since">Membre depuis ${meJoined}${me.group ? ' · ' + me.group : ''}</div>
-      </div>
-    </div>
-    <div class="profil-me-stats">
-      <div class="profil-stat">
-        <span class="profil-stat-val">${me.balance.toLocaleString('fr-FR')}</span>
-        <span class="profil-stat-label">🪙 Pomels</span>
-      </div>
-      <div class="profil-stat">
-        <span class="profil-stat-val">${meEarned.toLocaleString('fr-FR')}</span>
-        <span class="profil-stat-label">📈 Total gagné</span>
-      </div>
-      <div class="profil-stat">
-        <span class="profil-stat-val">${meSpins}</span>
-        <span class="profil-stat-label">🎰 Tirages</span>
-      </div>
-    </div>
-    <div class="profil-me-titles">${meTitlesHTML}</div>
-  `;
-
   // ── Grille des joueurs ──
   const grid = document.getElementById('profilsGrid');
   grid.innerHTML = '<div style="color:var(--muted);font-size:.88rem;">Chargement…</div>';
@@ -5247,7 +5204,7 @@ async function checkNotifUpdates() {
     // Proverbe du jour
     const prov = await getProverbeData();
     if (prov && prov.today && prov.today.authorCode !== state.code) {
-      setLatestContent('proverbe', prov.today.date + 'T12:00:00');
+      setLatestContent('proverbe', prov.today.createdAt || prov.today.date + 'T12:00:00');
     }
     // Posts live du jour
     const rawPosts = await getLivePosts() || {};
