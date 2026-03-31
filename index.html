@@ -2827,8 +2827,9 @@ function renderShop() {
     const now = Date.now();
     const items = SHOP_TITLES.filter(t => {
       if (!sec.types.includes(t.type)) return false;
-      const owned = (state.ownedTitles || []).includes(t.id);
-      // Exclure si expiré ET non possédé
+      if (t.hidden) return false;  // ← ajoute cette ligne
+    const owned = (state.ownedTitles || []).includes(t.id);
+  // Exclure si expiré ET non possédé
       if (t.expiresAt && now > t.expiresAt && !owned) return false;
       return true;
     });
