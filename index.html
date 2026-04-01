@@ -956,6 +956,16 @@
       <div class="home-greeting" id="homeGreeting">Bonjour ! 👋</div>
       <div class="home-sub">Voici ce qui se passe sur Pomel. aujourd'hui</div>
 
+      <!-- Widget groupe -->
+      <div id="homeGroupWidget" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;cursor:pointer;transition:border-color .2s;" onclick="goToClassement('groupes', document.querySelector('#dropdown-classement .nav-dropdown-item:nth-child(2)'))">
+        <span style="font-size:1.1rem;">🏅</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Mon groupe</div>
+          <div id="homeGroupName" style="font-weight:700;font-size:.92rem;margin-top:2px;">Chargement…</div>
+        </div>
+        <span style="font-size:.75rem;color:var(--muted);">▸</span>
+      </div>
+
       <div class="home-grid">
 
         <!-- 1. Clicker stock plein (urgent, personnel) — full width -->
@@ -1349,7 +1359,7 @@
           <!-- MON GROUPE -->
           <div class="group-section">
             <h3>Mon groupe</h3>
-            <div class="group-week-info">📅 Chaque fin de semaine, chaque membre des <strong>3 premiers groupes</strong> gagne <strong>1 000 🪙</strong>. Les groupes 4e et 5e sont <strong>dissous</strong>. Tous les groupes sont remis à zéro chaque mois.</div>
+            <div class="group-week-info">📅 Chaque fin de semaine, chaque membre des <strong>3 premiers groupes</strong> gagne <strong>2 000 🪙</strong>. Les groupes 4e et 5e sont <strong>dissous</strong>. Tous les groupes sont remis à zéro chaque mois.</div>
             <div class="group-current" id="groupCurrent">Tu n'as rejoint aucun groupe.</div>
             <div class="group-actions" id="groupActions"></div>
           </div>
@@ -1764,7 +1774,7 @@
           <li><strong>Créer un groupe</strong> coûte <strong>15 000 Pomels</strong> — le créateur est le seul à pouvoir le supprimer</li>
           <li><strong>Rejoindre un groupe</strong> coûte <strong>1 000 Pomels</strong> — tu peux quitter gratuitement à tout moment</li>
           <li>Le classement hebdo est basé sur les <strong>Pomels + graines (÷5) gagnés sur la semaine</strong> par les membres</li>
-          <li>Le lundi à 9h, chaque membre du groupe en tête reçoit <strong>+1 000 Pomels</strong> !</li>
+          <li>Le lundi à 9h, chaque membre du groupe en tête reçoit <strong>+2 000 Pomels</strong> !</li>
         </ul>
       </div>
 
@@ -2798,15 +2808,23 @@ async function renderGroupsOnPage() {
       const item = document.createElement('div');
       item.className = 'group-item' + (isMine ? ' mine' : '');
       const weekScore = (weekScores.find(w => w.id === g.id) || {}).weekScore || 0;
+      // Liste des pseudos des membres
+      const memberNames = (g.members || []).map(code => {
+        const acc = allAccounts.find(a => a.code === code);
+        const name = acc ? acc.name : code;
+        const isOwner = code === g.creatorCode;
+        return `<span style="font-size:.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;white-space:nowrap;">${isOwner ? '👑 ' : ''}${name}</span>`;
+      }).join('');
       item.innerHTML = `
         <div style="flex:1;min-width:0;">
           <div class="group-item-name">${g.name}${isCreator ? ' <span style="font-size:.65rem;color:var(--muted);">(Créateur)</span>' : ''}</div>
-          <div class="group-item-meta">
+          <div class="group-item-meta" style="margin-bottom:6px;">
             <span>${(g.members || []).length}/5 membre${(g.members||[]).length>1?'s':''}</span>
             <span>Score semaine : <strong style="color:var(--yellow)">${weekScore.toLocaleString('fr-FR')} pts</strong></span>
           </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">${memberNames}</div>
         </div>
-        <div class="group-actions">
+        <div class="group-actions" style="margin-left:12px;flex-shrink:0;">
           ${!myGroup && !isMine && !isFull
             ? `<button class="btn-group join" onclick="joinGroup('${g.id}')">Rejoindre — 3 000 🪙</button>`
             : !myGroup && !isMine && isFull
@@ -2864,10 +2882,22 @@ async function joinGroup(groupId) {
   if (!group) { alert('Groupe introuvable.'); return; }
   if ((group.members || []).length >= 5) { alert('Ce groupe est complet (5 membres max) !'); return; }
 
+  // Débiter le nouveau membre
   state.balance -= 3000;
   state.history.unshift({ type: 'group', desc: `Groupe rejoint : "${group.name}"`, amount: -3000, date: new Date().toISOString() });
   state.group = groupId;
   await saveAccount(state);
+
+  // Créditer le créateur du groupe
+  if (group.creatorCode && group.creatorCode !== state.code) {
+    const creator = await getAccount(group.creatorCode);
+    if (creator) {
+      creator.balance += 3000;
+      creator.history = creator.history || [];
+      creator.history.unshift({ type: 'group', desc: `🏅 "${state.name}" a rejoint ton groupe "${group.name}"`, amount: 3000, date: new Date().toISOString() });
+      await saveAccount(creator);
+    }
+  }
 
   group.members = [...(group.members || []), state.code];
   await saveGroup(group);
@@ -2880,7 +2910,7 @@ async function joinGroup(groupId) {
 async function leaveGroup(groupId) {
   const group = await getGroup(groupId);
   if (!group) return;
-  showConfirm('Quitter ce groupe ? Tu devras repayer 1 000 Pomels pour le rejoindre à nouveau.', async () => {
+  showConfirm('Quitter ce groupe ? Tu devras repayer 3 000 Pomels pour le rejoindre à nouveau.', async () => {
     group.members = (group.members || []).filter(c => c !== state.code);
     // Si plus de membres et pas le créateur → supprimer le groupe
     if (group.members.length === 0) {
@@ -2916,7 +2946,7 @@ async function handleDeleteGroup(groupId) {
   });
 }
 
-// Vérification hebdo : distribuer les 1 000 Pomels aux membres des 3 premiers groupes,
+// Vérification hebdo : distribuer les 2 000 Pomels aux membres des 3 premiers groupes,
 // dissoudre les groupes 4e et 5e, et dissoudre tous les groupes en fin de mois.
 async function checkGroupWeeklyReward() {
   const now = new Date();
@@ -2971,15 +3001,15 @@ async function checkGroupWeeklyReward() {
   })));
   scored.sort((a, b) => b.score - a.score);
 
-  // Top 3 → chaque membre gagne 1 000 Pomels
+  // Top 3 → chaque membre gagne 2 000 Pomels
   for (let i = 0; i < Math.min(3, scored.length); i++) {
     const g = scored[i];
     for (const code of (g.members || [])) {
       const acc = allAccounts.find(a => a.code === code);
       if (acc) {
-        acc.balance += 1000;
+        acc.balance += 2000;
         acc.history = acc.history || [];
-        acc.history.unshift({ type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo !`, amount: 1000, date: now.toISOString() });
+        acc.history.unshift({ type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo !`, amount: 2000, date: now.toISOString() });
         await saveAccount(acc);
         if (code === state.code) { state = migrateAccount(acc); refreshUI(); }
       }
@@ -3429,6 +3459,7 @@ async function renderHome() {
 
   // Run all sections in parallel
   await Promise.all([
+    renderHomeGroup(),
     renderHomeClicker(),
     renderHomeQuetes(),
     renderHomeRoulette(),
@@ -3437,6 +3468,31 @@ async function renderHome() {
     renderHomeLivePost(),
     renderHomeBets(),
   ]);
+}
+
+async function renderHomeGroup() {
+  const widget = document.getElementById('homeGroupWidget');
+  const nameEl = document.getElementById('homeGroupName');
+  if (!widget || !nameEl) return;
+  if (state.group) {
+    const groupName = await resolveGroupName(state.group);
+    if (groupName) {
+      nameEl.textContent = groupName;
+      nameEl.style.color = 'var(--primary)';
+      widget.style.borderColor = 'var(--primary)';
+      widget.style.boxShadow = '0 0 12px var(--primary-glow)';
+    } else {
+      nameEl.textContent = 'Groupe introuvable';
+      nameEl.style.color = 'var(--muted)';
+      widget.style.borderColor = '';
+      widget.style.boxShadow = '';
+    }
+  } else {
+    nameEl.textContent = 'Aucun groupe';
+    nameEl.style.color = 'var(--muted)';
+    widget.style.borderColor = '';
+    widget.style.boxShadow = '';
+  }
 }
 
 async function renderHomeClicker() {
@@ -5640,7 +5696,7 @@ function renderHistory() {
 }
 
 // ── MON PROFIL ───────────────────────────────────
-function renderMonProfil() {
+async function renderMonProfil() {
   const me = state;
   const spins      = (me.history || []).filter(h => h.type === 'roulette').length;
   const snakeGames = (me.history || []).filter(h => h.type === 'snake').length;
@@ -5653,13 +5709,18 @@ function renderMonProfil() {
     const t = resolveTitleDef(tid);
     return t ? `<span class="title-badge">${t.name}</span>` : '';
   }).join('') || '<span style="color:var(--muted);font-size:.82rem;">Aucun titre actif</span>';
+  // Résolution immédiate du nom de groupe
+  const myGroupName = me.group ? (await resolveGroupName(me.group) || null) : null;
+  const groupDisplay = myGroupName
+    ? ` · <span style="color:var(--primary);font-weight:700;">🏅 ${myGroupName}</span>`
+    : ` · <span style="color:var(--muted);">Aucun groupe</span>`;
 
   document.getElementById('monProfilCardContent').innerHTML = `
     <div class="profil-me-header">
       <div class="profil-me-avatar">${me.name.charAt(0).toUpperCase()}</div>
       <div>
         <div class="profil-me-name"><span class="${nameClass}">${me.name}${badge ? ' ' + badge : ''}</span></div>
-        <div class="profil-me-since">Membre depuis ${joined}${me.group ? ` · <span data-gid="${me.group}">…</span>` : ''}</div>
+        <div class="profil-me-since">Membre depuis ${joined}${groupDisplay}</div>
       </div>
     </div>
     <div class="profil-me-stats">
@@ -5692,7 +5753,6 @@ function renderMonProfil() {
   `;
 
   renderDotsMenu();
-  resolveGroupBadges();
 
   // Fermer le menu si on clique ailleurs
   document.addEventListener('click', closeProfilMenuOutside, { once: false });
@@ -5788,7 +5848,11 @@ async function renderProfils() {
   // ── Grille des joueurs ──
   const grid = document.getElementById('profilsGrid');
   grid.innerHTML = '<div style="color:var(--muted);font-size:.88rem;">Chargement…</div>';
-  const all = await getAllAccounts();
+  const [all, groups] = await Promise.all([getAllAccounts(), getAllGroups()]);
+  // Map groupId → groupName pour résolution instantanée
+  const groupMap = {};
+  (groups || []).forEach(g => { groupMap[g.id] = g.name; });
+
   // Exclure soi-même, trier par solde
   const others = all
     .filter(a => a.code !== state.code)
@@ -5814,6 +5878,8 @@ async function renderProfils() {
       const t = resolveAnyTitleDef(tid, migrated);
       return t ? `<span class="title-badge" style="font-size:.6rem;">${t.name}</span>` : '';
     }).join('');
+    // Résolution immédiate du groupe grâce au map pré-chargé
+    const groupName = migrated.group ? (groupMap[migrated.group] || null) : null;
 
     const card = document.createElement('div');
     card.className = 'profil-card';
@@ -5822,7 +5888,7 @@ async function renderProfils() {
       <div class="profil-card-name">
         <span class="${nameClass}">${migrated.name}${badgeHTMLCard}${streakHTMLCard}</span>
       </div>
-      ${migrated.group ? `<div class="profil-card-group">🏅 <span data-gid="${migrated.group}">…</span></div>` : ''}
+      ${groupName ? `<div class="profil-card-group">🏅 ${groupName}</div>` : ''}
       <div class="profil-card-stats">
         <span>${migrated.balance.toLocaleString('fr-FR')} 🪙</span>
         <span>${spins} 🎰</span>
@@ -5832,7 +5898,6 @@ async function renderProfils() {
     `;
     grid.appendChild(card);
   });
-  resolveGroupBadges();
 }
 
 // ── EXPORT ───────────────────────────────────────
@@ -6105,6 +6170,12 @@ function markPageSeen(page) {
   localStorage.setItem(notifKey(page), now);
   // Forcer latest <= seen pour éviter toute race condition avec checkNotifUpdates
   localStorage.setItem(notifLatestKey(page), now);
+  // Cas spécial proverbe : stocker la date vue ET effacer latest pour être sûr
+  if (page === 'proverbe') {
+    const d = getTodayKey();
+    localStorage.setItem('notif_seen_proverbe_date', d);
+    localStorage.setItem('notif_latest_proverbe_date', d); // seen == latest → hasUnread = false
+  }
   refreshAllBadges();
 }
 
@@ -6120,7 +6191,13 @@ function setLatestContent(page, ts) {
 
 // Retourne true si la page a du nouveau contenu non vu
 function hasUnread(page) {
-  const seen  = parseInt(localStorage.getItem(notifKey(page)) || '0');
+  // Cas spécial proverbe : comparaison par date du jour
+  if (page === 'proverbe') {
+    const seenDate = localStorage.getItem('notif_seen_proverbe_date') || '';
+    const latestDate = localStorage.getItem('notif_latest_proverbe_date') || '';
+    return latestDate !== '' && latestDate !== seenDate;
+  }
+  const seen   = parseInt(localStorage.getItem(notifKey(page)) || '0');
   const latest = parseInt(localStorage.getItem(notifLatestKey(page)) || '0');
   return latest > seen && latest > 0;
 }
@@ -6185,27 +6262,18 @@ async function checkNotifUpdates() {
         .reduce((max, b) => Math.max(max, new Date(b.createdAt).getTime()), 0);
       if (latest) setLatestContent('paris', new Date(latest).toISOString());
     }
-    // Proverbe du jour
+    // Proverbe du jour — comparaison par date, pas par timestamp
     const prov = await getProverbeData();
-    if (prov && prov.today && prov.today.authorCode !== state.code) {
-      const seenTs  = parseInt(localStorage.getItem(notifKey('proverbe')) || '0');
-      const provTs  = new Date(prov.today.date + 'T12:00:00').getTime();
-      // Ne marquer comme nouveau que si le proverbe est plus récent que la dernière visite
-      if (provTs > seenTs) {
-        setLatestContent('proverbe', prov.today.date + 'T12:00:00');
-      } else {
-        // L'utilisateur a déjà vu ce proverbe — on s'assure que latest <= seen
-        // pour que hasUnread() retourne false même si latest existe déjà
-        const latestStored = parseInt(localStorage.getItem(notifLatestKey('proverbe')) || '0');
-        if (latestStored > seenTs) {
-          // Remettre latest à une valeur <= seen pour effacer la pastille
-          localStorage.setItem(notifLatestKey('proverbe'), seenTs.toString());
-        }
-      }
+    const today = getTodayKey();
+    if (prov && prov.today && prov.today.date === today && prov.today.authorCode !== state.code) {
+      // Il y a un proverbe aujourd'hui, posté par quelqu'un d'autre
+      localStorage.setItem('notif_latest_proverbe_date', today);
+    } else {
+      // Pas de proverbe aujourd'hui ou c'est le nôtre → effacer la pastille
+      localStorage.removeItem('notif_latest_proverbe_date');
     }
     // Posts live du jour
     const rawPosts = await getLivePosts() || {};
-    const today = getTodayKey();
     const todayPosts = Object.values(rawPosts)
       .filter(p => p.date === today && p.authorCode !== state.code);
     if (todayPosts.length) {
