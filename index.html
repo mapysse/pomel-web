@@ -2007,7 +2007,8 @@ function migrateAccount(acc) {
   if (!acc.password) acc.password = acc.code;
   if (!acc.streak) acc.streak = { days: 0, lastClaim: null, cycleStart: null };
   // group = ID Firebase (string) ou null — anciens comptes avec nom de groupe textuel → reset
-  if (acc.group && typeof acc.group === 'string' && !acc.group.startsWith('g')) acc.group = null;
+  // Les vrais IDs font toujours >= 8 chars (préfixe 'g' + base36 timestamp + random)
+  if (acc.group && typeof acc.group === 'string' && acc.group.length < 8) acc.group = null;
   return acc;
 }
 
@@ -2859,12 +2860,13 @@ async function handleCreateGroup() {
 
   state.balance -= 5000;
   state.history.unshift({ type: 'group', desc: `Groupe créé : "${name}"`, amount: -5000, date: new Date().toISOString() });
-  await saveAccount(state);
 
   const id = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   const now = new Date();
+  state.group = id; // Affecter AVANT saveAccount pour que le group ID soit bien persisté
+  await saveAccount(state);
+
   await saveGroup({ id, name, creatorCode: state.code, creatorName: state.name, members: [state.code], createdAt: now.toISOString(), monthKey: getGroupMonthKey() });
-  state.group = id;
 
   refreshUI();
   document.getElementById('newGroupNameInput').value = '';
