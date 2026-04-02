@@ -92,12 +92,21 @@
   .user-menu-item.danger { color: var(--red); }
   .user-menu-item.danger:hover { background: rgba(235,88,70,0.1); }
 
-  nav { width: 100%; display: flex; justify-content: center; padding: 20px 32px 0; gap: 4px; flex-wrap: wrap; align-items: center; }
-  .nav-btn { background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 10px 18px; font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
-  .nav-btn:hover { color: var(--text); border-color: var(--border); }
+  nav { width: 100%; display: flex; justify-content: center; padding: 16px 32px 0; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .nav-btn { background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 9px 16px; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; position: relative; }
+  .nav-btn:hover { color: var(--text); border-color: var(--border); background: var(--surface2); }
   .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-  /* Chat button — highlighted */
-  .nav-btn-chat { background: rgba(235,88,70,0.1); border-color: rgba(235,88,70,0.3) !important; color: var(--primary) !important; font-weight: 700; position: relative; }
+
+  /* Séparateur visuel entre groupes nav */
+  .nav-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; opacity: .6; align-self: center; }
+
+  /* Roulette standalone — doré */
+  .nav-btn-roulette { background: rgba(240,192,64,0.12); border-color: rgba(240,192,64,0.4) !important; color: var(--yellow) !important; font-weight: 700; }
+  .nav-btn-roulette:hover { background: rgba(240,192,64,0.2); border-color: var(--yellow) !important; }
+  .nav-btn-roulette.active { background: var(--yellow); color: #1a1200 !important; border-color: var(--yellow) !important; }
+
+  /* Chat standalone — rouge primaire */
+  .nav-btn-chat { background: rgba(235,88,70,0.1); border-color: rgba(235,88,70,0.3) !important; color: var(--primary) !important; font-weight: 700; }
   .nav-btn-chat:hover { background: rgba(235,88,70,0.18); border-color: var(--primary) !important; }
   .nav-btn-chat.active { background: var(--primary); color: #fff !important; border-color: var(--primary) !important; }
 
@@ -105,16 +114,18 @@
   .nav-dropdown { position: relative; }
   .nav-dropdown-trigger { white-space: nowrap; }
   .nav-dropdown-trigger.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 6px; flex-direction: column; gap: 2px; min-width: 180px; box-shadow: var(--shadow); z-index: 100; }
+  .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 8px; flex-direction: column; gap: 2px; min-width: 200px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); z-index: 100; }
   .nav-dropdown-menu.open { display: flex; }
-  .nav-dropdown-menu::before { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(45deg); width: 12px; height: 12px; background: var(--surface); border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
-  .nav-dropdown-item { background: transparent; border: none; border-radius: 8px; padding: 10px 16px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .87rem; font-weight: 600; cursor: pointer; text-align: left; transition: background .15s; white-space: nowrap; }
+  .nav-dropdown-menu::before { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(45deg); width: 10px; height: 10px; background: var(--surface); border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
+  .nav-dropdown-item { background: transparent; border: none; border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; text-align: left; transition: background .15s; white-space: nowrap; display: flex; align-items: center; gap: 10px; }
   .nav-dropdown-item:hover { background: var(--surface2); color: var(--primary); }
-  .nav-dropdown-item.active { background: rgba(235,88,70,0.1); color: var(--primary); }
+  .nav-dropdown-item.active { background: rgba(235,88,70,0.08); color: var(--primary); }
+  .nav-dropdown-sep { height: 1px; background: var(--border); margin: 4px 8px; opacity: .7; }
   .page { display: none; width: 100%; max-width: 700px; padding: 40px 24px 80px; }
   .page.active { display: block; }
   #page-home { max-width: 1100px; }
   #page-classement { max-width: 1100px; }
+  #page-boutique { max-width: 960px; }
   .home-wrap { display: flex; flex-direction: column; gap: 24px; }
   .home-grid {
     display: grid;
@@ -170,16 +181,37 @@
 
   /* BOUTIQUE */
   .boutique-wrap { display: flex; flex-direction: column; gap: 24px; }
+  .boutique-header { display: flex; flex-direction: column; gap: 4px; }
   .shop-section-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; }
-  .shop-section-sub { font-size: .85rem; color: var(--muted); margin-top: 4px; }
-  .shop-grid { display: flex; flex-direction: column; gap: 14px; }
-  .shop-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; transition: border-color .2s; }
-  .shop-item:hover { border-color: var(--primary); }
-  .shop-item.owned { border-color: var(--green); opacity: .7; }
-  .shop-item-info { display: flex; flex-direction: column; gap: 4px; }
-  .shop-item-name { font-weight: 700; font-size: 1rem; }
-  .shop-item-price { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--primary); font-weight: 700; }
-  .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .shop-section-sub { font-size: .85rem; color: var(--muted); }
+
+  /* Grille 3 colonnes */
+  .shop-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 750px) { .shop-cols { grid-template-columns: 1fr; } }
+
+  .shop-col { display: flex; flex-direction: column; gap: 8px; }
+  .shop-col-title {
+    font-size: .7rem; font-weight: 700; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+  }
+
+  /* Carte produit compacte */
+  .shop-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .shop-item:hover { border-color: var(--primary); box-shadow: 0 0 12px var(--primary-glow); }
+  .shop-item.owned { border-color: var(--green); opacity: .75; }
+  .shop-item-name { font-weight: 700; font-size: .92rem; line-height: 1.3; }
+  .shop-item-desc { font-size: .75rem; color: var(--muted); line-height: 1.4; }
+  .shop-item-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+  .shop-item-price { font-family: 'Space Mono', monospace; font-size: .82rem; color: var(--primary); font-weight: 700; }
+  .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; flex-shrink: 0; }
   .btn-buy:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
   .btn-buy:disabled { opacity: .4; cursor: not-allowed; }
   .btn-buy.owned-btn { background: var(--green); }
@@ -544,6 +576,38 @@
   .snake-lb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 700px) { .snake-lb-row { grid-template-columns: 1fr; } }
 
+  /* 2048 */
+  .g2048-wrap { display: flex; flex-direction: column; gap: 20px; }
+  .g2048-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .g2048-score-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; text-align: center; min-width: 110px; flex-shrink: 0; }
+  .g2048-score-label { font-size: .65rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .g2048-score-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+  .g2048-board-outer { position: relative; width: 400px; max-width: 100%; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px solid var(--border); box-shadow: 0 0 30px var(--primary-glow); }
+  .g2048-board { background: #2a2a35; padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; aspect-ratio: 1; }
+  .g2048-tile { border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1.8rem; transition: background .1s; animation: tile-appear .12s ease; }
+  @keyframes tile-appear { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .g2048-tile.merged { animation: tile-merge .18s ease; }
+  @keyframes tile-merge { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
+  .g2048-tile.empty { background: rgba(255,255,255,0.07); }
+  .t2    { background:#eee4da; color:#776e65; }
+  .t4    { background:#ede0c8; color:#776e65; }
+  .t8    { background:#f2b179; color:#f9f6f2; }
+  .t16   { background:#f59563; color:#f9f6f2; }
+  .t32   { background:#f67c5f; color:#f9f6f2; }
+  .t64   { background:#f65e3b; color:#f9f6f2; }
+  .t128  { background:#edcf72; color:#f9f6f2; font-size:1.5rem; }
+  .t256  { background:#edcc61; color:#f9f6f2; font-size:1.5rem; }
+  .t512  { background:#edc850; color:#f9f6f2; font-size:1.5rem; }
+  .t1024 { background:#edc53f; color:#f9f6f2; font-size:1.1rem; }
+  .t2048 { background:#edc22e; color:#f9f6f2; font-size:1.1rem; box-shadow:inset 0 0 20px rgba(255,220,80,0.3); }
+  .t4096 { background:#EB5846; color:#f9f6f2; font-size:1rem; }
+  .t8192 { background:#c03c2c; color:#f9f6f2; font-size:.9rem; }
+  .g2048-overlay { position: absolute; inset: 0; background: rgba(13,13,15,0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(4px); }
+  .g2048-overlay.hidden { display: none; }
+  .g2048-overlay-title { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+  .g2048-overlay-sub { font-size: .88rem; color: var(--muted); text-align: center; padding: 0 24px; line-height: 1.5; }
+  .g2048-controls-hint { display: flex; justify-content: center; gap: 24px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
+
   /* PROVERBE DU JOUR */
   .proverbe-wrap { display: flex; flex-direction: column; gap: 24px; }
   .proverbe-today-card { background: var(--surface); border: 2px solid var(--primary); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 30px var(--primary-glow); }
@@ -833,6 +897,7 @@
     header { padding: 12px 16px; }
     nav { padding: 12px 16px 0; gap: 4px; }
     .nav-btn { padding: 8px 10px; font-size: .78rem; }
+    .nav-sep { display: none; }
     .nav-dropdown-menu { left: 0; transform: none; }
     .nav-dropdown-menu::before { left: 24px; transform: rotate(45deg); }
     .page { padding: 24px 16px 60px; }
@@ -918,17 +983,23 @@
   </header>
 
   <nav>
-    <!-- Chat standalone — en évidence -->
+    <!-- Roulette standalone — dorée -->
+    <button class="nav-btn nav-btn-roulette" id="navbtn-roulette" onclick="goTo('roulette',this)">🎰 Roulette</button>
+
+    <!-- Chat standalone — rouge -->
     <button class="nav-btn nav-btn-chat" id="navbtn-chat" onclick="goTo('discussion',this)">💬 Chat</button>
 
-    <!-- Dropdown : Gagne des Pomels -->
-    <div class="nav-dropdown" id="dropdown-gagne">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('gagne')">🎰 Gagne des Pomels ! ▾</button>
+    <div class="nav-sep"></div>
+
+    <!-- Dropdown : Jeux -->
+    <div class="nav-dropdown" id="dropdown-games">
+      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('games')">🎮 Jeux ▾</button>
       <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('roulette','gagne',this)">🎰 Roulette</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('paris','gagne',this)">🎲 Paris</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('snake','gagne',this)">🐍 Serpent</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('clicker','gagne',this)">🌱 Clicker</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('snake','games',this)">🐍 Serpent</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('g2048','games',this)">🔢 2048</button>
+        <div class="nav-dropdown-sep"></div>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('clicker','games',this)">🌱 Clicker</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('jardin','games',this)">🌸 Jardin</button>
       </div>
     </div>
 
@@ -945,31 +1016,32 @@
     <div class="nav-dropdown" id="dropdown-classement">
       <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('classement')">🏆 Classement ▾</button>
       <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToClassement('general',this)">🏆 Classement général</button>
-        <button class="nav-dropdown-item" onclick="goToClassement('groupes',this)">🏅 Classement des groupes</button>
+        <button class="nav-dropdown-item" onclick="goToClassement('general',this)">🏆 Général</button>
+        <button class="nav-dropdown-item" onclick="goToClassement('groupes',this)">🏅 Groupes</button>
       </div>
     </div>
 
-    <!-- Jardin standalone -->
-    <button class="nav-btn" id="navbtn-jardin" onclick="goTo('jardin',this)">🌸 Jardin</button>
+    <div class="nav-sep"></div>
 
-    <!-- Dropdown : Social -->
+    <!-- Dropdown : Communauté -->
     <div class="nav-dropdown" id="dropdown-social">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('social')">💬 Social ▾</button>
+      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('social')">👥 Communauté ▾</button>
       <div class="nav-dropdown-menu">
         <button class="nav-dropdown-item" onclick="goToFromDropdown('profils','social',this)">👥 Profils</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('live','social',this)">📡 Live</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('quetes','social',this)">⚔️ Quêtes</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('paris','social',this)">🎲 Paris</button>
+        <div class="nav-dropdown-sep"></div>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe du jour</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('live','social',this)">📡 Pomel'Live</button>
       </div>
     </div>
 
-    <!-- Dropdown : Profil -->
+    <!-- Dropdown : Mon compte -->
     <div class="nav-dropdown" id="dropdown-profil">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('profil')">👤 Profil ▾</button>
+      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('profil')">👤 Mon compte ▾</button>
       <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('monprofil','profil',this)">🙋 Mon Profil</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('banque','profil',this)">🏦 Banque</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('monprofil','profil',this)">🙋 Mon profil</button>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('banque','profil',this)">🏦 Banque &amp; historique</button>
       </div>
     </div>
   </nav>
@@ -981,7 +1053,7 @@
       <div class="home-sub">Voici ce qui se passe sur Pomel. aujourd'hui</div>
 
       <!-- Widget groupe -->
-      <div id="homeGroupWidget" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;cursor:pointer;transition:border-color .2s;" onclick="goToClassement('groupes', document.querySelector('#dropdown-classement .nav-dropdown-item:nth-child(2)'))">
+      <div id="homeGroupWidget" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;cursor:pointer;transition:border-color .2s;" onclick="goToClassement('groupes', document.querySelector('#dropdown-classement .nav-dropdown-item[onclick*=\'groupes\']'))">
         <span style="font-size:1.1rem;">🏅</span>
         <div style="flex:1;min-width:0;">
           <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Mon groupe</div>
@@ -993,25 +1065,25 @@
       <div class="home-grid">
 
         <!-- 1. Clicker stock plein (urgent, personnel) — full width -->
-        <div class="home-card home-card-full" id="homeClickerCard" style="display:none; border-color:var(--green); box-shadow:0 0 16px rgba(62,207,110,0.2); cursor:pointer;" onclick="goToFromDropdown('clicker','gagne', document.querySelectorAll('#dropdown-gagne .nav-dropdown-item')[3])">
+        <div class="home-card home-card-full" id="homeClickerCard" style="display:none; border-color:var(--green); box-shadow:0 0 16px rgba(62,207,110,0.2); cursor:pointer;" onclick="goToFromDropdown('clicker','games', document.querySelector('#dropdown-games .nav-dropdown-item[onclick*=\'clicker\']'))">
           <div class="home-card-title" style="color:var(--green);">🌱 Clicker — Stock prêt !</div>
           <div id="homeClickerStatus"></div>
         </div>
 
         <!-- 2. Quêtes reçues (urgent, personnel) — full width -->
-        <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
+        <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item[onclick*=\'quetes\']'))">
           <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes reçues</div>
           <div id="homeQuetesIn" class="home-bets-zone"></div>
         </div>
 
         <!-- 3. Quêtes créées (suivi personnel) — full width -->
-        <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item:last-child'))">
+        <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item[onclick*=\'quetes\']'))">
           <div class="home-card-title" style="color:var(--primary);">🧭 Mes quêtes créées</div>
           <div id="homeQuetesOut" class="home-bets-zone"></div>
         </div>
 
         <!-- 4. Roulette (quotidien) — pleine largeur pour le CTA -->
-        <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="goToFromDropdown('roulette','gagne', document.querySelector('#dropdown-gagne .nav-dropdown-item'))" style="cursor:pointer;">
+        <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="goTo('roulette', document.getElementById('navbtn-roulette'))" style="cursor:pointer;">
           <div class="home-card-title">🎰 Roulette Quotidienne</div>
           <div id="homeRouletteStatus"></div>
         </div>
@@ -1023,7 +1095,7 @@
         </div>
 
         <!-- 6. Hôtel des Ventes — span 2 -->
-        <div class="home-card home-card-span2" id="homeHotelCard" style="cursor:pointer;" onclick="goToFromDropdown('hotel','commerce', document.querySelector('#dropdown-commerce .nav-dropdown-item'))">
+        <div class="home-card home-card-span2" id="homeHotelCard" style="cursor:pointer;" onclick="goToFromDropdown('hotel','commerce', document.querySelector('#dropdown-commerce .nav-dropdown-item[onclick*=\'hotel\']'))">
           <div class="home-card-title">🏨 Hôtel des Ventes</div>
           <div id="homeHotelList" class="home-bets-zone"></div>
         </div>
@@ -1072,12 +1144,12 @@
   <!-- BOUTIQUE -->
   <div class="page" id="page-boutique">
     <div class="boutique-wrap">
-      <div>
+      <div class="boutique-header">
         <div class="shop-section-title">🛒 Boutique</div>
-        <div class="shop-section-sub">Achète des titres pour personnaliser ton profil !</div>
+        <div class="shop-section-sub">Personnalise ton profil avec des titres, couleurs et badges !</div>
       </div>
       <div id="shopAlert" class="alert"></div>
-      <div class="shop-grid" id="shopGrid"></div>
+      <div class="shop-cols" id="shopGrid"></div>
     </div>
   </div>
 
@@ -1295,6 +1367,15 @@
           </div>
           <button class="btn-buy" id="btnExchange" onclick="exchangeSeeds()" style="align-self:flex-end;">Échanger</button>
         </div>
+
+        <!-- Raccourci Jardin -->
+        <div style="background:rgba(62,207,110,0.07);border:1px solid rgba(62,207,110,0.25);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:700;font-size:.95rem;">🌸 Jardin de Pomel'Land</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:3px;">Dépense tes graines pour planter des fleurs et gagner des Pomels !</div>
+          </div>
+          <button class="btn-buy" style="background:var(--green);white-space:nowrap;" onclick="goToFromDropdown('jardin','games', document.querySelector('#dropdown-games .nav-dropdown-item[onclick*=\'jardin\']'))">Aller au Jardin 🌸</button>
+        </div>
       </div>
 
     </div>
@@ -1345,6 +1426,54 @@
           <div class="history-empty">Chargement…</div>
         </div>
       </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2048 -->
+  <div class="page" id="page-g2048">
+    <div class="g2048-wrap">
+      <div class="g2048-header">
+        <div>
+          <div class="section-title">🔢 2048</div>
+          <div class="section-sub">Fusionne les tuiles pour atteindre 2048 — 1 Pomel tous les 10 points !</div>
+        </div>
+        <div class="g2048-score-box">
+          <div class="g2048-score-label">Score</div>
+          <div class="g2048-score-val" id="g2048Score">0</div>
+          <div class="g2048-score-label" style="margin-top:4px;">Gains</div>
+          <div class="g2048-score-val" id="g2048Earned" style="color:var(--green);">+0 🪙</div>
+        </div>
+      </div>
+
+      <div class="g2048-board-outer">
+        <div class="g2048-board" id="g2048Board"></div>
+        <div class="g2048-overlay" id="g2048Overlay">
+          <div class="g2048-overlay-title" id="g2048OverlayTitle">🔢 2048</div>
+          <div class="g2048-overlay-sub" id="g2048OverlaySub">Fusionne les tuiles identiques pour atteindre 2048 !</div>
+          <button class="btn-primary" id="g2048StartBtn" onclick="start2048()" style="margin-top:16px;width:auto;padding:12px 36px;">Jouer !</button>
+        </div>
+      </div>
+
+      <div class="g2048-controls-hint">
+        <span>⬆⬇⬅➡ ou Z Q S D pour glisser</span>
+        <span>Swipe sur mobile</span>
+      </div>
+
+      <div class="snake-lb-row">
+        <div class="snake-lb-card">
+          <div class="snake-lb-title">🏆 Meilleurs scores</div>
+          <div class="snake-lb-list" id="g2048LbList">
+            <div class="history-empty">Aucun score enregistré.</div>
+          </div>
+        </div>
+        <div class="snake-lb-card">
+          <div class="snake-lb-title">📅 Leaderboard Hebdo</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">🥇 2 000 🪙 · 🥈 1 500 🪙 · 🥉 1 000 🪙 · autres 500 🪙 — récompenses versées le lundi à 9h</div>
+          <div class="snake-lb-list" id="g2048WeeklyLbList">
+            <div class="history-empty">Chargement…</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1747,15 +1876,13 @@
       <div class="info-divider"></div>
 
       <div class="info-card">
-        <h3>🐍 Le Serpent</h3>
-        <p>Un jeu Snake classique intégré directement dans Pomel. Mange des fruits pour gagner des Pomels réels !</p>
+        <h3>🎮 Pomel'Games</h3>
+        <p>Un espace dédié aux mini-jeux accessibles via le menu <strong>Pomel'Games</strong>. Deux jeux disponibles :</p>
         <ul>
-          <li><strong>+5 Pomels</strong> par fruit mangé, crédités à la fin de la partie</li>
-          <li>Le serpent grandit à chaque fruit et la vitesse augmente tous les 5 fruits</li>
-          <li>Contrôles : flèches ⬆⬇⬅➡, ZQSD ou swipe sur mobile</li>
-          <li>Espace pour mettre en pause</li>
-          <li>Un <strong>leaderboard</strong> conserve ton meilleur score</li>
-          <li><strong>Classement hebdomadaire</strong> — le lundi à 9h : 🥇 2 000 🪙 · 🥈 1 500 🪙 · 🥉 1 000 🪙 · autres 500 🪙</li>
+          <li><strong>🐍 Serpent</strong> — +5 Pomels par fruit mangé, crédités à la fin de la partie. Le serpent grandit et accélère tous les 5 fruits. Espace pour mettre en pause.</li>
+          <li><strong>🔢 2048</strong> — Fusionne les tuiles identiques pour atteindre 2048. <strong>1 Pomel tous les 10 points</strong> gagnés (une bonne partie = ~500–2 000 🪙). Tu peux continuer après le 2048 pour un meilleur score.</li>
+          <li>Les deux jeux ont un <strong>leaderboard général</strong> (meilleur score all-time) et un <strong>classement hebdomadaire</strong> avec récompenses le lundi à 9h : 🥇 2 000 · 🥈 1 500 · 🥉 1 000 · autres 500 🪙</li>
+          <li>Contrôles : flèches ⬆⬇⬅➡, Z Q S D ou swipe sur mobile</li>
         </ul>
       </div>
 
@@ -2244,13 +2371,15 @@ function executeConfirm() {
 // ── NAVIGATION ───────────────────────────────────
 // Pages that belong to a dropdown group
 const DROPDOWN_MAP = {
-  roulette: 'gagne', paris: 'gagne',
-  banque: 'profil', monprofil: 'profil',
-  proverbe: 'social', live: 'social', profils: 'social', quetes: 'social',
+  // roulette est standalone — pas de dropdown trigger à mettre en surbrillance
+  snake: 'games', g2048: 'games', clicker: 'games', jardin: 'games',
+  boutique: 'commerce', hotel: 'commerce',
   classement: 'classement',
+  profils: 'social', quetes: 'social', paris: 'social', proverbe: 'social', live: 'social',
+  monprofil: 'profil', banque: 'profil',
 };
 // Standalone nav button ids
-const STANDALONE_PAGES = ['boutique', 'classement'];
+const STANDALONE_PAGES = [];
 
 function toggleUserMenu(e) {
   e.stopPropagation();
@@ -2357,6 +2486,9 @@ function _onPageLoad(id) {
     snakeLoop = null;
     snakeState = null;
   }
+  // Stop 2048 if navigating away
+  if (id !== 'g2048') g2048Running = false;
+
   // Stop clicker if navigating away
   if (id !== 'jardin' && jardinTimerInterval) { clearInterval(jardinTimerInterval); jardinTimerInterval = null; }
   if (id !== 'clicker') stopClickerPage();
@@ -2389,6 +2521,7 @@ function _onPageLoad(id) {
   if (id === 'live') { renderLive(); markPageSeen('live'); }
   if (id === 'quetes') renderQuetes();
   if (id === 'snake') renderSnakePage();
+  if (id === 'g2048') render2048Page();
   if (id === 'clicker') renderClickerPage();
   if (id === 'jardin') renderJardin();
   if (id === 'profils') renderProfils();
@@ -3125,35 +3258,52 @@ function renderShop() {
   grid.innerHTML = '';
 
   const sections = [
-    { label: '🏷️ Titres', types: ['title'] },
-    { label: '🎨 Couleur du pseudo', types: ['color'] },
-    { label: '🏅 Badges', types: ['badge'] },
+    { label: '🏷️ Titres', types: ['title'], emptyMsg: 'Aucun titre disponible.' },
+    { label: '🎨 Couleurs', types: ['color'], emptyMsg: 'Aucune couleur disponible.' },
+    { label: '🏅 Badges',  types: ['badge'], emptyMsg: 'Aucun badge disponible.' },
   ];
 
+  const now = Date.now();
+
   sections.forEach(sec => {
-    const now = Date.now();
     const items = SHOP_TITLES.filter(t => {
       if (!sec.types.includes(t.type)) return false;
-      if (t.hidden) return false;  // ← ajoute cette ligne
-    const owned = (state.ownedTitles || []).includes(t.id);
-  // Exclure si expiré ET non possédé
+      if (t.hidden) return false;
+      const owned = (state.ownedTitles || []).includes(t.id);
       if (t.expiresAt && now > t.expiresAt && !owned) return false;
       return true;
     });
-    if (!items.length) return;
 
-    const secTitle = document.createElement('div');
-    secTitle.style.cssText = 'font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:12px 0 4px;';
-    secTitle.textContent = sec.label;
-    grid.appendChild(secTitle);
+    // Colonne
+    const col = document.createElement('div');
+    col.className = 'shop-col';
+
+    // Titre de colonne
+    const colTitle = document.createElement('div');
+    colTitle.className = 'shop-col-title';
+    colTitle.textContent = sec.label;
+    col.appendChild(colTitle);
+
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'font-size:.82rem;color:var(--muted);padding:10px 14px;';
+      empty.textContent = sec.emptyMsg;
+      col.appendChild(empty);
+      grid.appendChild(col);
+      return;
+    }
 
     items.forEach(title => {
-      const owned = (state.ownedTitles || []).includes(title.id);
+      const owned    = (state.ownedTitles || []).includes(title.id);
       const canAfford = state.balance >= title.price;
+
       const item = document.createElement('div');
       item.className = 'shop-item' + (owned ? ' owned' : '');
-      const descHtml = title.desc ? `<div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${title.desc}</div>` : '';
-      const nameEffectClass = title.id === 'rainbow' ? 'rainbow-text' : title.id === 'sparkle' ? 'sparkle-text' : '';
+
+      // Effet visuel sur le nom
+      const nameClass = title.id === 'rainbow' ? 'rainbow-text' : title.id === 'sparkle' ? 'sparkle-text' : '';
+
+      // Countdown si item limité
       let countdownHtml = '';
       if (title.expiresAt && now <= title.expiresAt && !owned) {
         const rem = title.expiresAt - now;
@@ -3161,26 +3311,36 @@ function renderShop() {
         const m = Math.floor((rem % 3600000) / 60000);
         const s = Math.floor((rem % 60000) / 1000);
         const pad = n => String(n).padStart(2, '0');
-        countdownHtml = `<div style="font-size:.72rem;color:var(--yellow,#f0c040);font-weight:700;margin-top:3px;">⏳ Expire dans ${pad(h)}h${pad(m)}m${pad(s)}s</div>`;
+        countdownHtml = `<div style="font-size:.7rem;color:var(--yellow);font-weight:700;">⏳ ${pad(h)}h${pad(m)}m${pad(s)}s</div>`;
       }
+
       const priceHtml = title.price === 0
         ? '<span style="color:var(--green);font-weight:700;">Gratuit !</span>'
         : title.price.toLocaleString('fr-FR') + ' 🪙';
+
+      const descHtml = title.desc
+        ? `<div class="shop-item-desc">${title.desc}</div>`
+        : '';
+
+      const btnHtml = owned
+        ? '<button class="btn-buy owned-btn" disabled>✅</button>'
+        : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Manque'}</button>`;
+
       item.innerHTML = `
-        <div class="shop-item-info">
-          <div class="shop-item-name ${nameEffectClass}">${title.name}</div>
-          ${descHtml}
-          ${countdownHtml}
+        <div class="shop-item-name ${nameClass}">${title.name}</div>
+        ${descHtml}
+        ${countdownHtml}
+        <div class="shop-item-footer">
           <div class="shop-item-price">${priceHtml}</div>
+          ${btnHtml}
         </div>
-        ${owned
-          ? '<button class="btn-buy owned-btn" disabled>✅ Possédé</button>'
-          : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Pas assez'}</button>`
-        }
       `;
-      grid.appendChild(item);
+      col.appendChild(item);
     });
+
+    grid.appendChild(col);
   });
+
   startShopCountdown();
 }
 
@@ -4507,54 +4667,7 @@ async function checkSnakeWeeklyReset() {
   await dbDelete('snake_weekly_lb');
 }
 
-// ── SNAKE CONTROLS ───────────────────────────────
-document.addEventListener('keydown', e => {
-  if (!snakeState) return;
-
-  if (e.code === 'Space') {
-    e.preventDefault();
-    snakePaused = !snakePaused;
-    if (!snakePaused) scheduleSnakeTick();
-    return;
-  }
-
-  const dirs = {
-    ArrowUp:    { x: 0, y: -1 }, KeyZ: { x: 0, y: -1 },
-    ArrowDown:  { x: 0, y:  1 }, KeyS: { x: 0, y:  1 },
-    ArrowLeft:  { x:-1, y:  0 }, KeyQ: { x:-1, y:  0 },
-    ArrowRight: { x: 1, y:  0 }, KeyD: { x: 1, y:  0 },
-  };
-  const newDir = dirs[e.code];
-  if (!newDir) return;
-  e.preventDefault();
-
-  const cur = snakeState.dir;
-  // Prevent 180° reversal
-  if (newDir.x === -cur.x && newDir.y === -cur.y) return;
-  snakeState.nextDir = newDir;
-});
-
-// Touch controls for mobile
-let touchStart = null;
-document.addEventListener('touchstart', e => {
-  if (!snakeState) return;
-  touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-}, { passive: true });
-document.addEventListener('touchend', e => {
-  if (!snakeState || !touchStart) return;
-  const dx = e.changedTouches[0].clientX - touchStart.x;
-  const dy = e.changedTouches[0].clientY - touchStart.y;
-  const cur = snakeState.dir;
-  let newDir;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    newDir = dx > 0 ? { x:1,y:0 } : { x:-1,y:0 };
-  } else {
-    newDir = dy > 0 ? { x:0,y:1 } : { x:0,y:-1 };
-  }
-  if (newDir.x === -cur.x && newDir.y === -cur.y) return;
-  snakeState.nextDir = newDir;
-  touchStart = null;
-}, { passive: true });
+// (contrôles clavier et tactile gérés dans les handlers unifiés ci-dessus)
 
 function renderSnakePage() {
   // Draw idle canvas
@@ -4579,6 +4692,345 @@ function renderSnakePage() {
   renderSnakeWeeklyLb();
   checkSnakeWeeklyReset().catch(() => {});
 }
+
+// ── 2048 GAME ENGINE ─────────────────────────────
+let g2048Grid = [];
+let g2048Score = 0;
+let g2048Running = false;
+let g2048Won = false;
+let g2048TouchStart = null;
+const G2048_POMEL_RATE = 10; // 1 Pomel par 10 points
+
+function g2048NewGrid() {
+  return Array.from({ length: 4 }, () => [0, 0, 0, 0]);
+}
+
+function g2048AddTile() {
+  const empties = [];
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++)
+      if (g2048Grid[r][c] === 0) empties.push([r, c]);
+  if (!empties.length) return;
+  const [r, c] = empties[Math.floor(Math.random() * empties.length)];
+  g2048Grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+}
+
+// Slide + merge a single row left; returns { row, gained }
+function g2048SlideRow(row) {
+  let arr = row.filter(v => v !== 0);
+  let gained = 0;
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] === arr[i + 1]) {
+      arr[i] *= 2;
+      gained += arr[i];
+      arr.splice(i + 1, 1);
+    }
+  }
+  while (arr.length < 4) arr.push(0);
+  return { row: arr, gained };
+}
+
+// Rotate grid 90° clockwise
+function g2048Rotate(grid) {
+  const n = 4;
+  return Array.from({ length: n }, (_, r) =>
+    Array.from({ length: n }, (_, c) => grid[n - 1 - c][r])
+  );
+}
+
+// Move in direction; returns true if board changed
+function g2048Move(dir) {
+  const rotations = { left: 0, up: 3, right: 2, down: 1 };
+  let rots = rotations[dir];
+  let grid = JSON.parse(JSON.stringify(g2048Grid));
+  for (let i = 0; i < rots; i++) grid = g2048Rotate(grid);
+
+  let changed = false;
+  let gained = 0;
+  for (let r = 0; r < 4; r++) {
+    const res = g2048SlideRow(grid[r]);
+    if (res.row.some((v, i) => v !== grid[r][i])) changed = true;
+    grid[r] = res.row;
+    gained += res.gained;
+  }
+
+  let back = (4 - rots) % 4;
+  for (let i = 0; i < back; i++) grid = g2048Rotate(grid);
+
+  if (changed) {
+    g2048Grid = grid;
+    g2048Score += gained;
+    g2048AddTile();
+    g2048Render();
+    g2048UpdateUI();
+  }
+  return changed;
+}
+
+function g2048Render() {
+  const board = document.getElementById('g2048Board');
+  if (!board) return;
+  board.innerHTML = '';
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      const val = g2048Grid[r][c];
+      const cell = document.createElement('div');
+      if (val === 0) {
+        cell.className = 'g2048-tile empty';
+      } else {
+        const cls = val <= 8192 ? 't' + val : 't8192';
+        cell.className = 'g2048-tile ' + cls;
+        cell.textContent = val.toLocaleString('fr-FR');
+      }
+      board.appendChild(cell);
+    }
+  }
+}
+
+function g2048UpdateUI() {
+  const scoreEl = document.getElementById('g2048Score');
+  const earnedEl = document.getElementById('g2048Earned');
+  if (scoreEl) scoreEl.textContent = g2048Score.toLocaleString('fr-FR');
+  if (earnedEl) earnedEl.textContent = '+' + Math.floor(g2048Score / G2048_POMEL_RATE).toLocaleString('fr-FR') + ' 🪙';
+}
+
+function g2048IsOver() {
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++) {
+      if (g2048Grid[r][c] === 0) return false;
+      if (c < 3 && g2048Grid[r][c] === g2048Grid[r][c + 1]) return false;
+      if (r < 3 && g2048Grid[r][c] === g2048Grid[r + 1][c]) return false;
+    }
+  return true;
+}
+
+function g2048Has2048() {
+  return g2048Grid.some(row => row.some(v => v >= 2048));
+}
+
+function start2048() {
+  g2048Grid = g2048NewGrid();
+  g2048Score = 0;
+  g2048Won = false;
+  g2048Running = true;
+  document.getElementById('g2048Overlay').classList.add('hidden');
+  g2048AddTile();
+  g2048AddTile();
+  g2048Render();
+  g2048UpdateUI();
+}
+
+async function g2048GameOver() {
+  g2048Running = false;
+  const finalScore = g2048Score;
+  const pomels = Math.floor(finalScore / G2048_POMEL_RATE);
+
+  if (pomels > 0) {
+    state.balance += pomels;
+    state.history.unshift({ type: '2048', desc: `🔢 2048 — ${finalScore.toLocaleString('fr-FR')} pts`, amount: pomels, date: new Date().toISOString() });
+    await saveAccount(state);
+    refreshUI();
+  }
+
+  await g2048SaveScore(finalScore);
+  await g2048SaveWeeklyScore(finalScore);
+
+  const overlay = document.getElementById('g2048Overlay');
+  document.getElementById('g2048OverlayTitle').textContent = g2048Won ? '🎉 Bravo !' : '💀 Game Over !';
+  document.getElementById('g2048OverlaySub').innerHTML =
+    `Score : <strong>${finalScore.toLocaleString('fr-FR')}</strong><br>` +
+    `Tu gagnes <strong style="color:var(--green)">+${pomels.toLocaleString('fr-FR')} 🪙</strong>`;
+  document.getElementById('g2048StartBtn').textContent = '🔄 Rejouer';
+  overlay.classList.remove('hidden');
+
+  await g2048RenderLb();
+  await g2048RenderWeeklyLb();
+}
+
+function render2048Page() {
+  g2048Running = false;
+  g2048Grid = g2048NewGrid();
+  g2048Score = 0;
+  document.getElementById('g2048Score').textContent = '0';
+  document.getElementById('g2048Earned').textContent = '+0 🪙';
+  document.getElementById('g2048OverlayTitle').textContent = '🔢 2048';
+  document.getElementById('g2048OverlaySub').textContent = 'Fusionne les tuiles identiques pour atteindre 2048 !';
+  document.getElementById('g2048StartBtn').textContent = 'Jouer !';
+  document.getElementById('g2048Overlay').classList.remove('hidden');
+  g2048Render();
+  g2048RenderLb();
+  g2048RenderWeeklyLb();
+  checkG2048WeeklyReset().catch(() => {});
+}
+
+// ── 2048 LEADERBOARD ─────────────────────────────
+async function g2048SaveScore(score) {
+  if (score === 0) return;
+  const path = 'g2048_lb/' + state.code;
+  const existing = await dbGet(path);
+  if (!existing || score > existing.score) {
+    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
+  }
+}
+
+async function g2048RenderLb() {
+  const list = document.getElementById('g2048LbList');
+  if (!list) return;
+  list.innerHTML = '<div class="history-empty">Chargement…</div>';
+  const snap = await dbGet('g2048_lb');
+  if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score enregistré.</div>'; return; }
+  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  list.innerHTML = '';
+  const medals = ['🥇','🥈','🥉'];
+  entries.forEach((e, i) => {
+    const rank = i + 1;
+    const isMe = e.code === state.code;
+    const rankClass = rank <= 3 ? `top${rank}` : '';
+    const div = document.createElement('div');
+    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    div.innerHTML = `
+      <span class="snake-lb-rank ${rankClass}">${medals[i] || rank}</span>
+      <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
+      <span class="snake-lb-pomels"></span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ── 2048 WEEKLY LEADERBOARD ───────────────────────
+const G2048_WEEKLY_PRIZES = [2000, 1500, 1000];
+const G2048_WEEKLY_CONSOLATION = 500;
+
+async function g2048SaveWeeklyScore(score) {
+  if (score === 0) return;
+  const safeCode = state.code.replace(/[.#$[\]/]/g, '_');
+  const path = 'g2048_weekly_lb/' + safeCode;
+  const existing = await dbGet(path);
+  if (!existing || score > existing.score) {
+    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
+  }
+}
+
+async function g2048RenderWeeklyLb() {
+  const list = document.getElementById('g2048WeeklyLbList');
+  if (!list) return;
+  list.innerHTML = '<div class="history-empty">Chargement…</div>';
+  const snap = await dbGet('g2048_weekly_lb');
+  if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
+  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  list.innerHTML = '';
+  entries.forEach((e, i) => {
+    const rank = i + 1;
+    const isMe = e.code === state.code;
+    const rankClass = rank <= 3 ? `top${rank}` : '';
+    const prize = i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION;
+    const div = document.createElement('div');
+    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    div.innerHTML = `
+    <span class="snake-lb-rank ${rankClass}">${['🥇','🥈','🥉'][i] || rank}</span>
+    <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+    <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+async function checkG2048WeeklyReset() {
+  const now = new Date();
+  if (now.getDay() !== 1 || now.getHours() < 9) return;
+  const weekKey = getSnakeWeekKey();
+  const distributed = await dbGet('g2048_weekly_distributed/' + weekKey);
+  if (distributed) return;
+  await dbSet('g2048_weekly_distributed/' + weekKey, true);
+  const snap = await dbGet('g2048_weekly_lb');
+  if (!snap) return;
+  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const prize = i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION;
+    const acc = await getAccount(e.code);
+    if (acc) {
+      acc.balance += prize;
+      acc.history = acc.history || [];
+      acc.history.unshift({ type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: prize, date: new Date().toISOString() });
+      await saveAccount(acc);
+      if (e.code === state.code) { state = migrateAccount(acc); refreshUI(); }
+    }
+  }
+  await dbDelete('g2048_weekly_lb');
+}
+
+// ── CONTRÔLES 2048 (clavier) ─────────────────────
+document.addEventListener('keydown', e => {
+  // Serpent
+  if (snakeState) {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      snakePaused = !snakePaused;
+      if (!snakePaused) scheduleSnakeTick();
+      return;
+    }
+    const dirs = {
+      ArrowUp: {x:0,y:-1}, KeyZ: {x:0,y:-1},
+      ArrowDown: {x:0,y:1}, KeyS: {x:0,y:1},
+      ArrowLeft: {x:-1,y:0}, KeyQ: {x:-1,y:0},
+      ArrowRight: {x:1,y:0}, KeyD: {x:1,y:0},
+    };
+    const newDir = dirs[e.code];
+    if (!newDir) return;
+    e.preventDefault();
+    const cur = snakeState.dir;
+    if (newDir.x === -cur.x && newDir.y === -cur.y) return;
+    snakeState.nextDir = newDir;
+    return;
+  }
+  // 2048
+  if (g2048Running) {
+    const dirMap = {
+      ArrowLeft:'left', KeyQ:'left',
+      ArrowRight:'right', KeyD:'right',
+      ArrowUp:'up', KeyZ:'up',
+      ArrowDown:'down', KeyS:'down',
+    };
+    const dir = dirMap[e.code];
+    if (!dir) return;
+    e.preventDefault();
+    const changed = g2048Move(dir);
+    if (changed) {
+      if (!g2048Won && g2048Has2048()) {
+        g2048Won = true;
+        showWinToast('🎉 2048 atteint ! Continue pour un meilleur score !');
+      }
+      if (g2048IsOver()) g2048GameOver();
+    }
+  }
+});
+
+// ── CONTRÔLES 2048 (tactile) ─────────────────────
+document.addEventListener('touchstart', e => {
+  if (snakeState) {
+    g2048TouchStart = null;
+    return;
+  }
+  if (g2048Running) g2048TouchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  if (!g2048Running || !g2048TouchStart) return;
+  const dx = e.changedTouches[0].clientX - g2048TouchStart.x;
+  const dy = e.changedTouches[0].clientY - g2048TouchStart.y;
+  g2048TouchStart = null;
+  if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+  const dir = Math.abs(dx) > Math.abs(dy)
+    ? (dx > 0 ? 'right' : 'left')
+    : (dy > 0 ? 'down' : 'up');
+  const changed = g2048Move(dir);
+  if (changed) {
+    if (!g2048Won && g2048Has2048()) { g2048Won = true; showWinToast('🎉 2048 atteint !'); }
+    if (g2048IsOver()) g2048GameOver();
+  }
+}, { passive: true });
 
 // ── HOTEL DES VENTES ─────────────────────────────
 async function cleanupHotelListings() {
@@ -6425,34 +6877,32 @@ function setBadge(el, show) {
 
 // Refresh toutes les pastilles nav
 function refreshAllBadges() {
-  // hotel → item Hôtel des Ventes + trigger Commerce
-  const hotelItem     = document.querySelector('#dropdown-commerce .nav-dropdown-item:nth-child(2)');
+  const findItem = (dropdown, pageId) =>
+    document.querySelector(`#dropdown-${dropdown} .nav-dropdown-item[onclick*="'${pageId}'"]`);
+
+  // Hôtel → Commerce
+  const hotelItem       = findItem('commerce', 'hotel');
   const commerceTrigger = document.querySelector('#dropdown-commerce .nav-dropdown-trigger');
-  const hotelUnread   = hasUnread('hotel');
+  const hotelUnread     = hasUnread('hotel');
   setBadge(hotelItem, hotelUnread);
-  // Paris → item Paris + trigger Gagne
-  const parisItem     = document.querySelector('#dropdown-gagne .nav-dropdown-item:nth-child(2)');
-  const gagneTrigger  = document.querySelector('#dropdown-gagne .nav-dropdown-trigger');
-  const parisUnread   = hasUnread('paris');
-  setBadge(parisItem, parisUnread);
-  // Proverbe → item Proverbe + trigger Social
-  const proverbeItem  = document.querySelector('#dropdown-social .nav-dropdown-item:nth-child(2)');
-  const liveItem      = document.querySelector('#dropdown-social .nav-dropdown-item:nth-child(3)');
-  const socialTrigger = document.querySelector('#dropdown-social .nav-dropdown-trigger');
+  setBadge(commerceTrigger, hotelUnread);
+
+  // Paris → Communauté
+  const parisItem      = findItem('social', 'paris');
+  const proverbeItem   = findItem('social', 'proverbe');
+  const liveItem       = findItem('social', 'live');
+  const socialTrigger  = document.querySelector('#dropdown-social .nav-dropdown-trigger');
+  const parisUnread    = hasUnread('paris');
   const proverbeUnread = hasUnread('proverbe');
-  const liveUnread    = hasUnread('live');
+  const liveUnread     = hasUnread('live');
+  setBadge(parisItem, parisUnread);
   setBadge(proverbeItem, proverbeUnread);
   setBadge(liveItem, liveUnread);
-  // Discussion → standalone Chat button
+  setBadge(socialTrigger, parisUnread || proverbeUnread || liveUnread);
+
+  // Discussion → Chat standalone
   const chatBtn = document.getElementById('navbtn-chat');
-  const discussionUnread = hasUnread('discussion');
-  setBadge(chatBtn, discussionUnread);
-  // Trigger Commerce = hotel non lu
-  setBadge(commerceTrigger, hotelUnread);
-  // Trigger Gagne = paris non lu
-  setBadge(gagneTrigger, parisUnread);
-  // Trigger Social = proverbe OU live non lu
-  setBadge(socialTrigger, proverbeUnread || liveUnread);
+  setBadge(chatBtn, hasUnread('discussion'));
 }
 
 // Vérifie Firebase pour les nouveaux contenus et met à jour les timestamps
