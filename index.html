@@ -3324,7 +3324,7 @@ function renderShop() {
 
       const btnHtml = owned
         ? '<button class="btn-buy owned-btn" disabled>✅</button>'
-        : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Manque'}</button>`;
+        : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Pas assez !'}</button>`;
 
       item.innerHTML = `
         <div class="shop-item-name ${nameClass}">${title.name}</div>
