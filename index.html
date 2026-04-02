@@ -1436,7 +1436,7 @@
       <div class="g2048-header">
         <div>
           <div class="section-title">🔢 2048</div>
-          <div class="section-sub">Fusionne les tuiles pour atteindre 2048 — 1 Pomel tous les 7 points !</div>
+          <div class="section-sub">Fusionne les tuiles pour atteindre 2048 — 1 Pomel tous les 10 points !</div>
         </div>
         <div class="g2048-score-box">
           <div class="g2048-score-label">Score</div>
@@ -4699,7 +4699,7 @@ let g2048Score = 0;
 let g2048Running = false;
 let g2048Won = false;
 let g2048TouchStart = null;
-const G2048_POMEL_RATE = 7; // 1 Pomel par 7 points
+const G2048_POMEL_RATE = 10; // 1 Pomel par 7 points
 
 function g2048NewGrid() {
   return Array.from({ length: 4 }, () => [0, 0, 0, 0]);
