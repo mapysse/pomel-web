@@ -185,8 +185,15 @@
   .shop-section-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; }
   .shop-section-sub { font-size: .85rem; color: var(--muted); }
 
-  /* Grille 3 colonnes */
-  .shop-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
+  /* Onglets boutique */
+  .shop-tabs { display: flex; gap: 6px; background: var(--surface2); border-radius: 10px; padding: 4px; width: fit-content; }
+  .shop-tab { background: transparent; border: none; border-radius: 8px; padding: 8px 18px; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .shop-tab.active { background: var(--primary); color: #fff; }
+  .shop-tab:not(.active):hover { background: var(--surface); color: var(--text); }
+
+  /* Grille 4 colonnes */
+  .shop-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .shop-cols { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 750px) { .shop-cols { grid-template-columns: 1fr; } }
 
   .shop-col { display: flex; flex-direction: column; gap: 8px; }
@@ -829,58 +836,79 @@
   @keyframes rainbow { 0%{color:#EB5846} 16%{color:#f0c040} 33%{color:#3ecf6e} 50%{color:#5b8def} 66%{color:#b05bef} 83%{color:#ef5bb0} 100%{color:#EB5846} }
   .rainbow-text { animation: rainbow 2s linear infinite; font-weight: 700; }
 
-  /* SPARKLE EFFECT — scintillement / flares de lumière */
+  /* SPARKLE EFFECT — système de particules riche */
   .sparkle-text {
     position: relative;
     display: inline-block;
     font-weight: 700;
-    color: #f5e6a0;
-    text-shadow:
-      0 0 8px rgba(255,230,120,0.9),
-      0 0 20px rgba(255,200,60,0.5);
-    animation: sparkle-pulse 2.4s ease-in-out infinite;
+    color: #c49000;
+    -webkit-text-fill-color: #c49000;
+    background: linear-gradient(90deg, #b07000, #ffe066, #d4a000, #fff5c0, #c49000);
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: sparkle-shine 2.2s linear infinite;
+    filter: drop-shadow(0 0 3px rgba(220,170,0,0.5));
   }
-  @keyframes sparkle-pulse {
-    0%,100% { text-shadow: 0 0 8px rgba(255,230,120,0.9), 0 0 20px rgba(255,200,60,0.5); color: #f5e6a0; }
-    30%      { text-shadow: 0 0 4px rgba(255,255,255,0.6), 0 0 12px rgba(255,230,120,0.4); color: #fffbe8; }
-    50%      { text-shadow: 0 0 16px rgba(255,255,255,1), 0 0 32px rgba(255,220,80,0.9), 0 0 60px rgba(255,180,0,0.4); color: #ffffff; }
-    70%      { text-shadow: 0 0 4px rgba(255,255,255,0.6), 0 0 12px rgba(255,230,120,0.4); color: #fffbe8; }
+  @keyframes sparkle-shine {
+    0%   { background-position: 0% center; }
+    100% { background-position: 250% center; }
   }
-  /* Flare sweep — un trait lumineux qui traverse le texte */
-  .sparkle-text::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -60%;
-    width: 40%; height: 100%;
-    background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.75) 50%, transparent 70%);
-    animation: sparkle-flare 2.4s ease-in-out infinite;
-    pointer-events: none;
-    border-radius: 2px;
+  @media (prefers-color-scheme: light) {
+    .sparkle-text {
+      background: linear-gradient(90deg, #8a5e00, #d4a000, #6b4800, #ffcc33, #8a5e00);
+      background-size: 250% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 0 rgba(0,0,0,0.2));
+    }
   }
-  @keyframes sparkle-flare {
-    0%   { left: -60%; opacity: 0; }
-    20%  { opacity: 1; }
-    50%  { left: 120%; opacity: 1; }
-    51%  { opacity: 0; }
-    100% { left: 120%; opacity: 0; }
-  }
-  /* Étoile scintillante en haut à droite */
+
+  /* Particules orbitales — 6 étincelles autour du texte */
+  .sparkle-text::before,
   .sparkle-text::after {
-    content: '✦';
+    content: '✦ ✧ ✦';
     position: absolute;
-    top: -5px; right: -12px;
-    font-size: .6em;
-    color: #ffe066;
-    text-shadow: 0 0 6px #fff, 0 0 12px #ffd700;
-    animation: sparkle-star-blink 1.6s ease-in-out infinite;
+    font-size: .45em;
+    letter-spacing: .15em;
     pointer-events: none;
-    -webkit-text-fill-color: #ffe066;
-    background: none;
+    background: linear-gradient(90deg, #ffdd44, #fff0a0, #ffcc00);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
   }
-  @keyframes sparkle-star-blink {
-    0%,100% { opacity: 0.15; transform: scale(0.6) rotate(0deg); }
-    40%     { opacity: 1;    transform: scale(1.3) rotate(20deg); }
-    60%     { opacity: 0.8;  transform: scale(1.1) rotate(-10deg); }
+  /* Rangée du dessus — défile de droite à gauche */
+  .sparkle-text::before {
+    top: -10px; left: 0; right: 0;
+    text-align: center;
+    animation: sparkle-orbit-top 1.8s linear infinite;
+    opacity: 0;
+  }
+  @keyframes sparkle-orbit-top {
+    0%   { opacity: 0;   transform: translateX(8px)  scale(0.6); }
+    20%  { opacity: 1;                                             }
+    50%  { opacity: 0.9; transform: translateX(-4px) scale(1);   }
+    80%  { opacity: 0.5;                                           }
+    100% { opacity: 0;   transform: translateX(-12px) scale(0.5); }
+  }
+  /* Rangée du dessous — défile de gauche à droite, décalée */
+  .sparkle-text::after {
+    bottom: -10px; left: 0; right: 0;
+    text-align: center;
+    content: '✧ ✦ ✧';
+    animation: sparkle-orbit-bot 1.8s linear infinite .9s;
+    opacity: 0;
+    -webkit-text-fill-color: transparent;
+  }
+  @keyframes sparkle-orbit-bot {
+    0%   { opacity: 0;   transform: translateX(-8px) scale(0.5); }
+    20%  { opacity: 0.8;                                          }
+    50%  { opacity: 1;   transform: translateX(4px)  scale(1);   }
+    80%  { opacity: 0.4;                                          }
+    100% { opacity: 0;   transform: translateX(12px)  scale(0.6); }
   }
 
   /* PSEUDO COLOR CLASSES */
@@ -892,6 +920,92 @@
 
   /* BADGES */
   .user-badge-emoji { font-size: 1rem; }
+
+  /* ── BANNIÈRES DE PROFIL ─────────────────────────── */
+  /* Couleurs unies */
+  .banner-red    { background: rgba(235,88,70,0.38)  !important; border-color: rgba(235,88,70,0.5)  !important; }
+  .banner-green  { background: rgba(62,207,110,0.32) !important; border-color: rgba(62,207,110,0.5) !important; }
+  .banner-blue   { background: rgba(91,141,239,0.35) !important; border-color: rgba(91,141,239,0.5) !important; }
+  .banner-orange { background: rgba(240,160,64,0.35) !important; border-color: rgba(240,160,64,0.5) !important; }
+  .banner-purple { background: rgba(176,91,239,0.35) !important; border-color: rgba(176,91,239,0.5) !important; }
+
+  /* Motifs */
+  .banner-damier {
+    background-image: repeating-conic-gradient(rgba(235,88,70,0.18) 0% 25%, transparent 0% 50%) !important;
+    background-size: 14px 14px !important;
+    background-color: var(--surface) !important;
+    border-color: rgba(235,88,70,0.35) !important;
+  }
+  .banner-vagues {
+    background-color: var(--surface) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='22'%3E%3Cpath d='M0 11 Q15 1 30 11 Q45 21 60 11' stroke='rgba(235,88,70,0.55)' stroke-width='2.5' fill='none'/%3E%3C/svg%3E") !important;
+    background-repeat: repeat !important;
+    border-color: rgba(235,88,70,0.4) !important;
+  }
+  .banner-constellation {
+    background-color: var(--surface) !important;
+    background-image:
+      radial-gradient(circle, rgba(255,220,80,0.9) 1.5px, transparent 1.5px),
+      radial-gradient(circle, rgba(235,88,70,0.7) 1px, transparent 1px) !important;
+    background-size: 36px 36px, 20px 20px !important;
+    background-position: 0 0, 10px 10px !important;
+    border-color: rgba(235,88,70,0.4) !important;
+  }
+
+  /* Effets animés */
+  .banner-rainbow {
+    background: linear-gradient(90deg,
+      rgba(235,88,70,0.55), rgba(240,192,64,0.55), rgba(62,207,110,0.55),
+      rgba(91,141,239,0.55), rgba(176,91,239,0.55), rgba(235,88,70,0.55), rgba(240,192,64,0.55)) !important;
+    background-size: 400% 100% !important;
+    border-color: rgba(255,255,255,0.35) !important;
+    animation: banner-rainbow-shift 2.5s linear infinite !important;
+  }
+  @keyframes banner-rainbow-shift {
+    0%   { background-position: 0% 50%;   }
+    100% { background-position: 400% 50%; }
+  }
+  .banner-aurora {
+    background: var(--surface) !important;
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(180,100,230,0.5) !important;
+  }
+  .banner-aurora::before {
+    content: '';
+    position: absolute; inset: -40%; pointer-events: none;
+    width: 180%; height: 180%;
+    background:
+      radial-gradient(ellipse 50% 50% at 30% 50%, rgba(235,88,70,0.75) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 50% at 70% 50%, rgba(91,141,239,0.75) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(176,91,239,0.5) 0%, transparent 60%);
+    animation: banner-aurora-drift 3s ease-in-out infinite alternate;
+  }
+  @keyframes banner-aurora-drift {
+    0%   { transform: translate(-15%, 0) rotate(-5deg); }
+    100% { transform: translate(15%, 0)  rotate(5deg);  }
+  }
+  .banner-plasma {
+    background: var(--surface) !important;
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(235,88,70,0.5) !important;
+  }
+  .banner-plasma::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg,
+      rgba(235,88,70,0.65) 0%,
+      rgba(13,13,15,0.05)  40%,
+      rgba(192,60,44,0.65) 70%,
+      rgba(255,120,80,0.4) 100%);
+    background-size: 200% 200%;
+    animation: banner-plasma-pulse 2s ease-in-out infinite;
+  }
+  @keyframes banner-plasma-pulse {
+    0%,100% { background-position: 0%   50%; opacity: 0.85; }
+    50%      { background-position: 100% 50%; opacity: 1;    }
+  }
 
   @media (max-width: 600px) {
     header { padding: 12px 16px; }
@@ -976,7 +1090,7 @@
       <span class="user-badge-arrow">▾</span>
       <div class="user-menu" onclick="event.stopPropagation()">
         <button class="user-menu-item" onclick="goToFromUser('infos')">ℹ️ Informations</button>
-        <hr style="border:none;border-top:1px solid var(--border);margin:4px 0;">
+        <div class="nav-dropdown-sep"></div>
         <button class="user-menu-item danger" onclick="logout()">🚪 Déconnexion</button>
       </div>
     </div>
@@ -1100,7 +1214,7 @@
           <div id="homeHotelList" class="home-bets-zone"></div>
         </div>
 
-        <!-- 8. Paris en cours — span 2 -->
+        <!-- 7. Paris en cours — span 2 -->
         <div class="home-card home-card-span2">
           <div class="home-card-title">🎲 Paris en cours</div>
           <div id="homeBets" class="home-bets-zone"></div>
@@ -1146,10 +1260,22 @@
     <div class="boutique-wrap">
       <div class="boutique-header">
         <div class="shop-section-title">🛒 Boutique</div>
-        <div class="shop-section-sub">Personnalise ton profil avec des titres, couleurs et badges !</div>
+        <div class="shop-section-sub">Personnalise ton profil avec des titres, couleurs, badges et bannières !</div>
+      </div>
+      <!-- Onglets -->
+      <div class="shop-tabs">
+        <button class="shop-tab active" id="shopTabBuy"      onclick="switchShopTab('buy')">🛒 Acheter</button>
+        <button class="shop-tab"        id="shopTabInventory" onclick="switchShopTab('inventory')">🎒 Mes achats</button>
       </div>
       <div id="shopAlert" class="alert"></div>
-      <div class="shop-cols" id="shopGrid"></div>
+      <!-- Vue Boutique -->
+      <div id="shopViewBuy">
+        <div class="shop-cols" id="shopGrid"></div>
+      </div>
+      <!-- Vue Inventaire -->
+      <div id="shopViewInventory" style="display:none;">
+        <div id="shopInventoryGrid"></div>
+      </div>
     </div>
   </div>
 
@@ -1191,7 +1317,7 @@
     <div class="bets-wrap">
       <div>
         <div class="section-title">🎲 Paris</div>
-        <div class="section-sub">Propose un pari avec 2 choix, mise des Pomels et défie tes amis !</div>
+        <div class="section-sub">Crée un pari, fixe les cotes de départ, et empoche 20% du pot à la fermeture !</div>
       </div>
       <div class="bet-create-card">
         <h3>Créer un pari</h3>
@@ -1205,9 +1331,22 @@
             <input type="text" id="betOption1Input" placeholder="ex: Prod A" maxlength="50" />
           </div>
           <div class="form-group">
+            <label>Cote initiale</label>
+            <input type="number" id="betOdds1Input" placeholder="ex: 1.5" min="1.01" max="3" step="0.01" value="1.50" style="font-family:'Space Mono',monospace;" />
+          </div>
+        </div>
+        <div class="bet-options-row">
+          <div class="form-group">
             <label>Choix 2</label>
             <input type="text" id="betOption2Input" placeholder="ex: Prod B" maxlength="50" />
           </div>
+          <div class="form-group">
+            <label>Cote initiale</label>
+            <input type="number" id="betOdds2Input" placeholder="ex: 2.0" min="1.01" max="3" step="0.01" value="2.00" style="font-family:'Space Mono',monospace;" />
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);background:var(--surface2);border-radius:8px;padding:10px 14px;line-height:1.6;">
+          💡 Les cotes démarrent à ta valeur initiale et s'ajustent automatiquement selon les mises. Tu gagnes <strong style="color:var(--primary);">20% du pot total</strong> à la fermeture.
         </div>
         <div id="betCreateAlert" class="alert"></div>
         <button class="btn-primary" onclick="handleCreateBet()">Lancer le pari 🎲</button>
@@ -1262,8 +1401,8 @@
           <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="30" cy="50" rx="22" ry="20" fill="var(--primary)"/>
             <ellipse cx="52" cy="44" rx="20" ry="18" fill="#c03c2c"/>
-            <circle cx="30" cy="48" rx="20" ry="18" fill="#f07060"/>
-            <circle cx="52" cy="42" rx="18" ry="16" fill="#c84030"/>
+            <ellipse cx="30" cy="48" rx="20" ry="18" fill="#f07060"/>
+            <ellipse cx="52" cy="42" rx="18" ry="16" fill="#c84030"/>
             <path d="M38 18 Q40 8 48 12" stroke="#3ecf6e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
             <ellipse cx="49" cy="11" rx="5" ry="3.5" fill="#3ecf6e" transform="rotate(-15,49,11)"/>
           </svg>
@@ -1596,6 +1735,11 @@
           <div class="profil-dots-divider"></div>
           <div class="profil-dots-section-title">🏅 Badge</div>
           <div id="dotsMenuBadges"></div>
+          <div class="profil-dots-divider"></div>
+          <div class="profil-dots-section-title">🖼️ Bannière de profil</div>
+          <div id="dotsMenuBanners"></div>
+          <div class="profil-dots-divider"></div>
+          <button class="user-menu-item" style="width:100%;text-align:center;font-size:.8rem;" onclick="closeProfilMenuOutside({target:document.body});goToFromDropdown('boutique','commerce',document.querySelector('#dropdown-commerce .nav-dropdown-item[onclick*=\'boutique\']'));switchShopTab('inventory');">🎒 Gérer mes achats</button>
         </div>
       </div>
 
@@ -1864,10 +2008,15 @@
 
       <div class="info-card">
         <h3>🎲 Les Paris</h3>
-        <p>Crée ou rejoins un pari entre amis sur n'importe quel sujet. Mise des Pomels sur l'option de ton choix !</p>
+        <p>Crée un pari avec 2 choix et des <strong>cotes dynamiques</strong>. Plus de monde mise sur une option, plus sa cote baisse — et inversement !</p>
         <ul>
-          <li>Les gagnants récupèrent <strong>2× leur mise</strong> + une part <strong>équitable</strong> des mises perdantes (arrondie au supérieur)</li>
-          <li>Le créateur du pari peut le supprimer à tout moment (les mises sont remboursées)</li>
+          <li>À la création, tu fixes une <strong>cote initiale</strong> pour chaque option (entre 1.01 et 3.00)</li>
+          <li>La cote s'ajuste automatiquement en temps réel selon la répartition des mises</li>
+          <li>Les gains sont calculés avec la <strong>cote au moment de la fermeture</strong> : mise × cote finale</li>
+          <li>L'argent des gains vient du <strong>système</strong> — tu ne prends pas l'argent des perdants</li>
+          <li>Le créateur du pari empoche <strong>20% du pot total</strong> à la fermeture</li>
+          <li>Si personne n'a misé sur le bon choix, tout le monde est <strong>remboursé</strong></li>
+          <li>Tu peux <strong>retirer ta mise</strong> à tout moment tant que le pari est ouvert</li>
           <li>Les paris non clôturés sont supprimés automatiquement après <strong>3 jours</strong></li>
           <li>Les paris terminés disparaissent après <strong>24h</strong></li>
         </ul>
@@ -1890,11 +2039,12 @@
 
       <div class="info-card">
         <h3>🛒 La Boutique</h3>
-        <p>Dépense tes Pomels pour acheter des titres, des badges et des effets visuels. Active-les ensuite dans <strong>Paramètres</strong>.</p>
+        <p>Dépense tes Pomels pour acheter des titres, des badges, des effets visuels et des bannières. Active-les ensuite dans <strong>Mon profil → ⋯</strong>.</p>
         <ul>
           <li><strong>Titres</strong> — s'affichent à côté de ton nom dans le classement</li>
-          <li><strong>Couleur du pseudo</strong> — Effet ou couleur fixe sur ton nom dans le classement</li>
-          <li><strong>Badges</strong> — émojis affichés à côté de ton nom dans le classement</li>
+          <li><strong>Couleur du pseudo</strong> — effet ou couleur fixe sur ton nom</li>
+          <li><strong>Badges</strong> — émojis affichés à côté de ton nom</li>
+          <li><strong>Bannières</strong> — changent le fond de ta carte dans le classement, les profils et les classements de jeux. Trois catégories : couleurs (5 000 🪙), motifs (25 000 🪙) et effets animés (75 000 🪙)</li>
         </ul>
       </div>
 
@@ -2098,6 +2248,21 @@ const SHOP_TITLES = [
   { id: 'badge_toilettes', name: 'Badge Trône du criminel 🚽', price: 2500, type: 'badge', emoji: '🚽' },
   { id: 'badge_pomelien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟' },
   { id: 'badge_censure', name: 'Badge Censure 🚫', price: 10000, type: 'badge', emoji: '🚫' },
+  // ── BANNIÈRES ──────────────────────────────────────
+  // Couleurs unies
+  { id: 'banner_red',    name: '🟥 Bannière Rouge',   price: 5000,  type: 'banner', bannerClass: 'banner-red',    desc: 'Fond rouge sur ta carte de profil' },
+  { id: 'banner_green',  name: '🟩 Bannière Verte',   price: 5000,  type: 'banner', bannerClass: 'banner-green',  desc: 'Fond vert sur ta carte de profil' },
+  { id: 'banner_blue',   name: '🟦 Bannière Bleue',   price: 5000,  type: 'banner', bannerClass: 'banner-blue',   desc: 'Fond bleu sur ta carte de profil' },
+  { id: 'banner_orange', name: '🟧 Bannière Orange',  price: 5000,  type: 'banner', bannerClass: 'banner-orange', desc: 'Fond orange sur ta carte de profil' },
+  { id: 'banner_purple', name: '🟪 Bannière Violette',price: 5000,  type: 'banner', bannerClass: 'banner-purple', desc: 'Fond violet sur ta carte de profil' },
+  // Motifs
+  { id: 'banner_damier',        name: '🔲 Motif Damier',       price: 25000, type: 'banner', bannerClass: 'banner-damier',        desc: 'Fond en damier subtil' },
+  { id: 'banner_vagues',        name: '〰️ Motif Vagues',        price: 25000, type: 'banner', bannerClass: 'banner-vagues',        desc: 'Fond orné de vagues ondulées' },
+  { id: 'banner_constellation', name: '✦ Motif Constellation', price: 25000, type: 'banner', bannerClass: 'banner-constellation', desc: 'Fond étoilé comme un ciel nocturne' },
+  // Effets animés
+  { id: 'banner_rainbow', name: '🌈 Effet Arc-en-ciel', price: 75000, type: 'banner', bannerClass: 'banner-rainbow', desc: 'Fond arc-en-ciel animé en boucle !' },
+  { id: 'banner_aurora',  name: '🌌 Effet Aurore',     price: 75000, type: 'banner', bannerClass: 'banner-aurora',  desc: 'Blobs de lumière qui dérivent doucement' },
+  { id: 'banner_plasma',  name: '⚡ Effet Plasma',     price: 75000, type: 'banner', bannerClass: 'banner-plasma',  desc: 'Pulsation électrique rouge intense' },
 ];
 
 // ── STORAGE LAYER (FIREBASE) ────────────────────
@@ -2175,7 +2340,7 @@ function clearSession() {
 let state = null;
 
 function newAccount(code, name, password) {
-  return { code, name, password, balance: 0, lastSpin: null, history: [], group: null, ownedTitles: [], activeTitles: [], createdAt: new Date().toISOString() };
+  return { code, name, password, balance: 0, lastSpin: null, history: [], group: null, ownedTitles: [], activeTitles: [], activeBanner: null, createdAt: new Date().toISOString() };
 }
 
 // Migrate old accounts that don't have new fields
@@ -2184,6 +2349,7 @@ function migrateAccount(acc) {
   if (!acc.activeTitles) acc.activeTitles = [];
   if (!acc.activeColor) acc.activeColor = null;
   if (!acc.activeBadge) acc.activeBadge = null;
+  if (!acc.activeBanner) acc.activeBanner = null;
   if (!acc.customTitles) acc.customTitles = {};
   if (!acc.password) acc.password = acc.code;
   if (!acc.streak) acc.streak = { days: 0, lastClaim: null, cycleStart: null };
@@ -2378,8 +2544,7 @@ const DROPDOWN_MAP = {
   profils: 'social', quetes: 'social', paris: 'social', proverbe: 'social', live: 'social',
   monprofil: 'profil', banque: 'profil',
 };
-// Standalone nav button ids
-const STANDALONE_PAGES = [];
+// Standalone nav button ids (reserved for future use)
 
 function toggleUserMenu(e) {
   e.stopPropagation();
@@ -2515,7 +2680,7 @@ function _onPageLoad(id) {
     }
   }
   if (id === 'paris') { renderBets(); markPageSeen('paris'); }
-  if (id === 'boutique') renderShop();
+  if (id === 'boutique') { _shopCurrentTab = 'buy'; switchShopTab('buy'); }
   if (id === 'hotel') { renderHotel(); markPageSeen('hotel'); }
   if (id === 'proverbe') { renderProverbe(); markPageSeen('proverbe'); }
   if (id === 'live') { renderLive(); markPageSeen('live'); }
@@ -2676,6 +2841,18 @@ function getNameColorClass(activeColor) {
   return '';
 }
 
+// ── BANNER HELPER ────────────────────────────────
+function getBannerClass(activeBanner) {
+  if (!activeBanner) return '';
+  const def = SHOP_TITLES.find(t => t.id === activeBanner);
+  return def && def.bannerClass ? def.bannerClass : '';
+}
+
+async function toggleBanner(bannerId, active) {
+  state.activeBanner = active ? bannerId : null;
+  await saveAccount(state);
+}
+
 // Retourne le HTML du badge streak 🔥 si le joueur a une série ≥ 2 jours et n'a pas raté de jour
 function getStreakBadgeHTML(acc) {
   const s = acc.streak;
@@ -2729,6 +2906,9 @@ async function renderLeaderboard(mode) {
     else display = val.toLocaleString('fr-FR') + ' 🪙';
     const item = document.createElement('div');
     item.className = 'lb-item' + (isMe ? ' me' : '');
+    // Bannière de fond
+    const bannerCls = getBannerClass(acc.activeBanner);
+    if (bannerCls) item.classList.add(bannerCls);
     // Resolve group from groups data (source of truth) instead of acc.group
     const accGroupId = acc.group || _lbGroupMap[acc.code] || null;
     const groupBadge = accGroupId ? `<span class="lb-group-badge" data-gid="${accGroupId}">…</span>` : '';
@@ -3253,14 +3433,27 @@ async function checkGroupWeeklyReward() {
 }
 
 // ── BOUTIQUE / SHOP ─────────────────────────────
+let _shopCurrentTab = 'buy';
+
+function switchShopTab(tab) {
+  _shopCurrentTab = tab;
+  document.getElementById('shopTabBuy').classList.toggle('active', tab === 'buy');
+  document.getElementById('shopTabInventory').classList.toggle('active', tab === 'inventory');
+  document.getElementById('shopViewBuy').style.display      = tab === 'buy'       ? '' : 'none';
+  document.getElementById('shopViewInventory').style.display = tab === 'inventory' ? '' : 'none';
+  if (tab === 'inventory') renderShopInventory();
+  else renderShop();
+}
+
 function renderShop() {
   const grid = document.getElementById('shopGrid');
   grid.innerHTML = '';
 
   const sections = [
-    { label: '🏷️ Titres', types: ['title'], emptyMsg: 'Aucun titre disponible.' },
-    { label: '🎨 Couleurs', types: ['color'], emptyMsg: 'Aucune couleur disponible.' },
-    { label: '🏅 Badges',  types: ['badge'], emptyMsg: 'Aucun badge disponible.' },
+    { label: '🏷️ Titres',   types: ['title'],  emptyMsg: 'Aucun titre disponible.' },
+    { label: '🎨 Couleurs', types: ['color'],  emptyMsg: 'Aucune couleur disponible.' },
+    { label: '🏅 Badges',   types: ['badge'],  emptyMsg: 'Aucun badge disponible.' },
+    { label: '🖼️ Bannières',types: ['banner'], emptyMsg: 'Aucune bannière disponible.' },
   ];
 
   const now = Date.now();
@@ -3269,8 +3462,8 @@ function renderShop() {
     const items = SHOP_TITLES.filter(t => {
       if (!sec.types.includes(t.type)) return false;
       if (t.hidden) return false;
-      const owned = (state.ownedTitles || []).includes(t.id);
-      if (t.expiresAt && now > t.expiresAt && !owned) return false;
+      if ((state.ownedTitles || []).includes(t.id)) return false; // masquer les achetés
+      if (t.expiresAt && now > t.expiresAt) return false;
       return true;
     });
 
@@ -3287,25 +3480,29 @@ function renderShop() {
     if (!items.length) {
       const empty = document.createElement('div');
       empty.style.cssText = 'font-size:.82rem;color:var(--muted);padding:10px 14px;';
-      empty.textContent = sec.emptyMsg;
+      empty.textContent = 'Tout acheté dans cette catégorie !';
       col.appendChild(empty);
       grid.appendChild(col);
       return;
     }
 
     items.forEach(title => {
-      const owned    = (state.ownedTitles || []).includes(title.id);
       const canAfford = state.balance >= title.price;
 
       const item = document.createElement('div');
-      item.className = 'shop-item' + (owned ? ' owned' : '');
+      item.className = 'shop-item';
 
-      // Effet visuel sur le nom
-      const nameClass = title.id === 'rainbow' ? 'rainbow-text' : title.id === 'sparkle' ? 'sparkle-text' : '';
+      const nameClass = getNameColorClass(title.id);
 
-      // Countdown si item limité
+      if (title.type === 'banner' && title.bannerClass) {
+        item.classList.add(title.bannerClass);
+      }
+      const bannerPreviewHtml = title.type === 'banner' && title.bannerClass
+        ? `<div class="${title.bannerClass}" style="width:100%;height:10px;border-radius:4px;border:1px solid var(--border);margin-bottom:2px;"></div>`
+        : '';
+
       let countdownHtml = '';
-      if (title.expiresAt && now <= title.expiresAt && !owned) {
+      if (title.expiresAt && now <= title.expiresAt) {
         const rem = title.expiresAt - now;
         const h = Math.floor(rem / 3600000);
         const m = Math.floor((rem % 3600000) / 60000);
@@ -3322,17 +3519,14 @@ function renderShop() {
         ? `<div class="shop-item-desc">${title.desc}</div>`
         : '';
 
-      const btnHtml = owned
-        ? '<button class="btn-buy owned-btn" disabled>✅</button>'
-        : `<button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Pas assez !'}</button>`;
-
       item.innerHTML = `
+        ${bannerPreviewHtml}
         <div class="shop-item-name ${nameClass}">${title.name}</div>
         ${descHtml}
         ${countdownHtml}
         <div class="shop-item-footer">
           <div class="shop-item-price">${priceHtml}</div>
-          ${btnHtml}
+          <button class="btn-buy" ${!canAfford ? 'disabled' : ''} onclick="buyTitle('${title.id}')">${canAfford ? 'Acheter' : 'Pas assez !'}</button>
         </div>
       `;
       col.appendChild(item);
@@ -3342,6 +3536,104 @@ function renderShop() {
   });
 
   startShopCountdown();
+}
+
+function renderShopInventory() {
+  const container = document.getElementById('shopInventoryGrid');
+  container.innerHTML = '';
+
+  const owned = state.ownedTitles || [];
+
+  const sections = [
+    { label: '🏷️ Titres',    types: ['title'],  toggle: 'title'  },
+    { label: '🎨 Couleurs',  types: ['color'],  toggle: 'color'  },
+    { label: '🏅 Badges',    types: ['badge'],  toggle: 'badge'  },
+    { label: '🖼️ Bannières', types: ['banner'], toggle: 'banner' },
+  ];
+
+  // Items de l'hôtel (customTitles)
+  const customItems = Object.values(state.customTitles || {});
+
+  let hasAnything = false;
+
+  sections.forEach(sec => {
+    // Items boutique possédés de cette catégorie
+    const shopItems = SHOP_TITLES.filter(t =>
+      sec.types.includes(t.type) && owned.includes(t.id)
+    );
+    // Items hôtel (type title uniquement dans la section Titres)
+    const hotelItems = sec.toggle === 'title'
+      ? customItems.filter(t => owned.includes(t.id))
+      : [];
+
+    const allItems = [...shopItems, ...hotelItems];
+    if (!allItems.length) return;
+    hasAnything = true;
+
+    const section = document.createElement('div');
+    section.style.cssText = 'margin-bottom:20px;';
+
+    const secTitle = document.createElement('div');
+    secTitle.className = 'shop-col-title';
+    secTitle.style.cssText = 'font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:10px 0 8px;border-bottom:1px solid var(--border);margin-bottom:10px;';
+    secTitle.textContent = sec.label;
+    section.appendChild(secTitle);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+
+    allItems.forEach(title => {
+      const isHotel = !!title.id.startsWith('custom_');
+      const nameClass = getNameColorClass(title.id);
+
+      // Déterminer l'état actif selon le type
+      let isActive = false;
+      if (sec.toggle === 'title')  isActive = (state.activeTitles || []).includes(title.id);
+      if (sec.toggle === 'color')  isActive = state.activeColor  === title.id;
+      if (sec.toggle === 'badge')  isActive = state.activeBadge  === title.id;
+      if (sec.toggle === 'banner') isActive = state.activeBanner === title.id;
+
+      const onchangeFn =
+        sec.toggle === 'title'  ? `toggleTitle('${title.id}', this.checked); renderShopInventory();` :
+        sec.toggle === 'color'  ? `toggleColor('${title.id}', this.checked); renderShopInventory();` :
+        sec.toggle === 'badge'  ? `toggleBadge('${title.id}', this.checked); renderShopInventory();` :
+                                  `toggleBanner('${title.id}', this.checked); renderShopInventory();`;
+
+      // Aperçu bannière
+      const bannerPreview = title.type === 'banner' && title.bannerClass
+        ? `<span class="${title.bannerClass}" style="display:inline-block;width:28px;height:16px;border-radius:3px;border:1px solid var(--border);flex-shrink:0;vertical-align:middle;"></span>`
+        : '';
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface2);border-radius:10px;padding:10px 14px;';
+      if (title.type === 'banner' && title.bannerClass) row.classList.add(title.bannerClass);
+
+      row.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          ${bannerPreview}
+          <span class="shop-item-name ${nameClass}" style="font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title.name}${isHotel ? ' <span style="font-size:.62rem;color:var(--muted);font-weight:400;">(Hôtel)</span>' : ''}</span>
+        </div>
+        <label class="toggle-switch" style="flex-shrink:0;">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="${onchangeFn}" />
+          <span class="toggle-slider"></span>
+        </label>
+      `;
+      grid.appendChild(row);
+    });
+
+    section.appendChild(grid);
+    container.appendChild(section);
+  });
+
+  if (!hasAnything) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;color:var(--muted);">
+        <div style="font-size:2rem;margin-bottom:12px;">🛒</div>
+        <div style="font-size:.95rem;font-weight:600;">Aucun achat pour l'instant</div>
+        <div style="font-size:.82rem;margin-top:6px;">Explore la boutique pour personnaliser ton profil !</div>
+        <button class="btn-primary" style="margin-top:18px;width:auto;padding:10px 24px;" onclick="switchShopTab('buy')">Voir la boutique</button>
+      </div>`;
+  }
 }
 
 // Refresh boutique chaque seconde tant qu'un item limité est visible
@@ -3373,9 +3665,9 @@ async function buyTitle(titleId) {
   }
   await saveAccount(state);
   refreshUI();
-  renderShop();
-  setAlert('shopAlert', `✅ Titre "${title.name}" acheté !`, 'success');
-  setTimeout(() => { document.getElementById('shopAlert').className = 'alert'; }, 3000);
+  setAlert('shopAlert', `✅ "${title.name}" acheté ! Retrouve-le dans tes achats.`, 'success');
+  setTimeout(() => { document.getElementById('shopAlert').className = 'alert'; }, 3500);
+  switchShopTab('inventory');
 }
 
 // ── TITLES SETTINGS ─────────────────────────────
@@ -3424,41 +3716,62 @@ function generateBetId() {
 }
 
 async function handleCreateBet() {
-  const desc = document.getElementById('betDescInput').value.trim();
+  const desc    = document.getElementById('betDescInput').value.trim();
   const option1 = document.getElementById('betOption1Input').value.trim();
   const option2 = document.getElementById('betOption2Input').value.trim();
+  const odds1   = parseFloat(document.getElementById('betOdds1Input').value);
+  const odds2   = parseFloat(document.getElementById('betOdds2Input').value);
   const alertEl = document.getElementById('betCreateAlert');
   alertEl.className = 'alert';
-  if (!desc) { setAlert('betCreateAlert', 'Écris la question du pari !', 'error'); return; }
+
+  if (!desc)              { setAlert('betCreateAlert', 'Écris la question du pari !', 'error'); return; }
   if (!option1 || !option2) { setAlert('betCreateAlert', 'Remplis les deux choix !', 'error'); return; }
+  if (isNaN(odds1) || odds1 < 1.01 || odds1 > 3) { setAlert('betCreateAlert', 'Cote 1 invalide (entre 1.01 et 3.00) !', 'error'); return; }
+  if (isNaN(odds2) || odds2 < 1.01 || odds2 > 3) { setAlert('betCreateAlert', 'Cote 2 invalide (entre 1.01 et 3.00) !', 'error'); return; }
 
   const bet = {
     id: generateBetId(),
     creator: state.code,
     creatorName: state.name,
-    desc,
-    option1,
-    option2,
+    desc, option1, option2,
+    initOdds1: Math.round(odds1 * 100) / 100,
+    initOdds2: Math.round(odds2 * 100) / 100,
     bettors: [],
     status: 'open',
     winnerOption: null,
     createdAt: new Date().toISOString()
   };
   await saveBet(bet);
-  document.getElementById('betDescInput').value = '';
+  document.getElementById('betDescInput').value    = '';
   document.getElementById('betOption1Input').value = '';
   document.getElementById('betOption2Input').value = '';
+  document.getElementById('betOdds1Input').value   = '1.50';
+  document.getElementById('betOdds2Input').value   = '2.00';
   setAlert('betCreateAlert', '✅ Pari créé avec succès !', 'success');
   setTimeout(() => { document.getElementById('betCreateAlert').className = 'alert'; }, 3000);
   checkNotifUpdates();
   renderBets();
 }
 
+// Calcule la cote dynamique d'une option
+// Plus les mises sur cette option sont élevées par rapport au total, plus la cote descend
+function computeOdds(initOdds, totalOnThis, totalOther) {
+  const MIN_ODDS = 1.01;
+  if (totalOnThis === 0) return initOdds; // personne n'a misé encore
+  const total = totalOnThis + totalOther;
+  // ratio = part de cette option dans le pot
+  const ratio = totalOnThis / total;
+  // La cote descend linéairement vers MIN_ODDS quand ratio → 1
+  // et remonte vers initOdds * 1.5 quand ratio → 0
+  const dynamic = initOdds * (1 - ratio) + MIN_ODDS * ratio;
+  return Math.max(MIN_ODDS, Math.round(dynamic * 100) / 100);
+}
+
 async function placeBet(betId, choice) {
   const bet = await getBet(betId);
   if (!bet || bet.status !== 'open') return;
   const bettors = bet.bettors || [];
-  if (bettors.some(b => b.code === state.code)) { alert('Tu as déjà parié !'); return; }
+  if (bettors.some(b => b.code === state.code)) { alert('Tu as déjà parié sur ce pari !'); return; }
 
   const inputEl = document.getElementById(`bet-amount-${betId}-${choice}`);
   const amount = parseInt(inputEl ? inputEl.value : 0);
@@ -3476,39 +3789,76 @@ async function placeBet(betId, choice) {
   renderBets();
 }
 
+async function withdrawBet(betId) {
+  const bet = await getBet(betId);
+  if (!bet || bet.status !== 'open') return;
+  const bettors = bet.bettors || [];
+  const myBet = bettors.find(b => b.code === state.code);
+  if (!myBet) return;
+
+  showConfirm(`Retirer ta mise de ${myBet.amount.toLocaleString('fr-FR')} 🪙 ? Tu seras remboursé intégralement.`, async () => {
+    bet.bettors = bettors.filter(b => b.code !== state.code);
+    await saveBet(bet);
+
+    const acc = await getAccount(state.code);
+    if (acc) {
+      acc.balance += myBet.amount;
+      acc.history = acc.history || [];
+      acc.history.unshift({ type: 'bet', desc: `Mise retirée : "${bet.desc}"`, amount: myBet.amount, date: new Date().toISOString() });
+      await saveAccount(acc);
+      state = migrateAccount(acc);
+    }
+    closeConfirm();
+    refreshUI();
+    renderBets();
+  });
+}
+
 async function closeBet(betId, winnerOption) {
   const bet = await getBet(betId);
   if (!bet || bet.status !== 'open') return;
   if (bet.creator !== state.code) return;
 
   const bettors = bet.bettors || [];
-  const winners = bettors.filter(b => b.choice === winnerOption);
-  const losers = bettors.filter(b => b.choice !== winnerOption);
+  const bettors1 = bettors.filter(b => b.choice === 1);
+  const bettors2 = bettors.filter(b => b.choice === 2);
+  const total1 = bettors1.reduce((s, b) => s + b.amount, 0);
+  const total2 = bettors2.reduce((s, b) => s + b.amount, 0);
+  const totalPot = total1 + total2;
 
-  const loserPool = losers.reduce((s, b) => s + b.amount, 0);
+  // Cote finale au moment de la fermeture
+  const finalOdds1 = computeOdds(bet.initOdds1, total1, total2);
+  const finalOdds2 = computeOdds(bet.initOdds2, total2, total1);
+  const winnerOdds = winnerOption === 1 ? finalOdds1 : finalOdds2;
+  const winners = winnerOption === 1 ? bettors1 : bettors2;
+  const losers  = winnerOption === 1 ? bettors2 : bettors1;
+
+  // Commission créateur : 20% du pot
+  const creatorCut = Math.floor(totalPot * 0.20);
 
   bet.status = 'closed';
   bet.winnerOption = winnerOption;
+  bet.finalOdds1 = finalOdds1;
+  bet.finalOdds2 = finalOdds2;
   bet.closedAt = new Date().toISOString();
+  bet.creatorCut = creatorCut;
   await saveBet(bet);
 
-  if (winners.length > 0) {
-    // Each winner gets 2× their bet + equal share of loser pool (arrondi au-dessus)
-    const sharePerWinner = Math.ceil(loserPool / winners.length);
-    for (const w of winners) {
-      const totalWin = w.amount * 2 + sharePerWinner;
-      // Re-read fresh from Firebase to avoid stale data
-      const acc = await getAccount(w.code);
-      if (acc) {
-        acc.balance += totalWin;
-        acc.history = acc.history || [];
-        acc.history.unshift({ type: 'bet', desc: `Pari gagné : "${bet.desc}"`, amount: totalWin, date: new Date().toISOString() });
-        await saveAccount(acc);
-        if (w.code === state.code) { state = migrateAccount(acc); refreshUI(); }
-      }
+  // Payer les gagnants (argent système)
+  for (const w of winners) {
+    const gain = Math.floor(w.amount * winnerOdds);
+    const acc = await getAccount(w.code);
+    if (acc) {
+      acc.balance += gain;
+      acc.history = acc.history || [];
+      acc.history.unshift({ type: 'bet', desc: `Pari gagné ×${winnerOdds} : "${bet.desc}"`, amount: gain, date: new Date().toISOString() });
+      await saveAccount(acc);
+      if (w.code === state.code) { state = migrateAccount(acc); }
     }
-  } else {
-    // No winners — refund losers
+  }
+
+  // Rembourser si aucun gagnant (personne n'avait misé sur le bon choix)
+  if (winners.length === 0) {
     for (const l of losers) {
       const acc = await getAccount(l.code);
       if (acc) {
@@ -3516,25 +3866,38 @@ async function closeBet(betId, winnerOption) {
         acc.history = acc.history || [];
         acc.history.unshift({ type: 'bet', desc: `Pari remboursé : "${bet.desc}"`, amount: l.amount, date: new Date().toISOString() });
         await saveAccount(acc);
-        if (l.code === state.code) { state = migrateAccount(acc); refreshUI(); }
+        if (l.code === state.code) { state = migrateAccount(acc); }
       }
     }
   }
+
+  // Commission créateur
+  if (creatorCut > 0) {
+    const creator = await getAccount(bet.creator);
+    if (creator) {
+      creator.balance += creatorCut;
+      creator.history = creator.history || [];
+      creator.history.unshift({ type: 'bet', desc: `Commission pari : "${bet.desc}"`, amount: creatorCut, date: new Date().toISOString() });
+      await saveAccount(creator);
+      if (bet.creator === state.code) { state = migrateAccount(creator); }
+    }
+  }
+
+  refreshUI();
   renderBets();
 }
 
 async function deleteBetByCreator(betId) {
   const bet = await getBet(betId);
   if (!bet || bet.creator !== state.code) return;
-  showConfirm('Supprimer ce pari ? Les mises des parieurs seront remboursées.', async () => {
-    // Refund all bettors
+  showConfirm('Supprimer ce pari ? Les mises seront intégralement remboursées.', async () => {
     const bettors = bet.bettors || [];
     for (const b of bettors) {
       const acc = await getAccount(b.code);
       if (acc) {
         acc.balance += b.amount;
         acc.history = acc.history || [];
-        acc.history.unshift({ type: 'bet', desc: `Pari annulé remboursé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
+        acc.history.unshift({ type: 'bet', desc: `Pari annulé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
         await saveAccount(acc);
         if (b.code === state.code) { state = migrateAccount(acc); refreshUI(); }
       }
@@ -3551,7 +3914,6 @@ async function cleanupBets() {
   for (const bet of all) {
     const age = now - new Date(bet.createdAt).getTime();
     if (bet.status === 'open' && age > 3 * 24 * 3600 * 1000) {
-      // Refund bettors of expired open bets
       const bettors = bet.bettors || [];
       for (const b of bettors) {
         const acc = await getAccount(b.code);
@@ -3566,9 +3928,7 @@ async function cleanupBets() {
       await deleteBet(bet.id);
     } else if (bet.status === 'closed') {
       const closedAge = bet.closedAt ? now - new Date(bet.closedAt).getTime() : age;
-      if (closedAge > 24 * 3600 * 1000) {
-        await deleteBet(bet.id);
-      }
+      if (closedAge > 24 * 3600 * 1000) await deleteBet(bet.id);
     }
   }
 }
@@ -3576,82 +3936,109 @@ async function cleanupBets() {
 async function renderBets() {
   await cleanupBets();
   const all = await getAllBets();
-  const openList = document.getElementById('betsList');
+  const openList   = document.getElementById('betsList');
   const closedList = document.getElementById('betsClosedList');
   openList.innerHTML = '';
   closedList.innerHTML = '';
 
-  const openBets = all.filter(b => b.status === 'open').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const openBets   = all.filter(b => b.status === 'open').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   const closedBets = all.filter(b => b.status === 'closed').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  if (!openBets.length) openList.innerHTML = '<div class="bet-empty">Aucun pari en cours.</div>';
+  if (!openBets.length)   openList.innerHTML   = '<div class="bet-empty">Aucun pari en cours.</div>';
   if (!closedBets.length) closedList.innerHTML = '<div class="bet-empty">Aucun pari terminé.</div>';
 
-  openBets.forEach(bet => openList.appendChild(buildBetCard(bet)));
+  openBets.forEach(bet   => openList.appendChild(buildBetCard(bet)));
   closedBets.forEach(bet => closedList.appendChild(buildBetCard(bet)));
 }
 
 function buildBetCard(bet) {
   const card = document.createElement('div');
-  const isMine = bet.creator === state.code;
+  const isMine  = bet.creator === state.code;
   const bettors = bet.bettors || [];
-  const iJoined = bettors.some(b => b.code === state.code);
+  const myBet   = bettors.find(b => b.code === state.code);
+  const iJoined = !!myBet;
   card.className = 'bet-card' + (isMine ? ' mine' : '') + (bet.status === 'closed' ? ' closed' : '');
 
   const date = new Date(bet.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   const bettors1 = bettors.filter(b => b.choice === 1);
   const bettors2 = bettors.filter(b => b.choice === 2);
-  const total1 = bettors1.reduce((s, b) => s + b.amount, 0);
-  const total2 = bettors2.reduce((s, b) => s + b.amount, 0);
+  const total1   = bettors1.reduce((s, b) => s + b.amount, 0);
+  const total2   = bettors2.reduce((s, b) => s + b.amount, 0);
   const totalPot = total1 + total2;
 
+  // Cotes actuelles
+  const odds1 = bet.status === 'closed' ? bet.finalOdds1 : computeOdds(bet.initOdds1, total1, total2);
+  const odds2 = bet.status === 'closed' ? bet.finalOdds2 : computeOdds(bet.initOdds2, total2, total1);
+
   const renderBettorList = (list) => {
-    if (!list.length) return '<div style="color:var(--muted);font-size:.8rem;text-align:center;">Aucun parieur</div>';
-    return list.map(b => `<div class="bet-choice-bettor"><span class="bname">${b.name}</span><span class="bamount">${b.amount.toLocaleString('fr-FR')} 🪙</span></div>`).join('');
+    if (!list.length) return '<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:4px 0;">Aucun parieur</div>';
+    return list.map(b => {
+      const isMe = b.code === state.code;
+      return `<div class="bet-choice-bettor">
+        <span class="bname"${isMe ? ' style="color:var(--primary)"' : ''}>${b.name}${isMe ? ' (moi)' : ''}</span>
+        <span class="bamount">${b.amount.toLocaleString('fr-FR')} 🪙</span>
+      </div>`;
+    }).join('');
   };
 
-  let choice1Actions = '';
-  let choice2Actions = '';
-  if (bet.status === 'open' && !iJoined && !isMine) {
-    choice1Actions = `
-      <div class="bet-choice-input">
-        <input type="number" id="bet-amount-${bet.id}-1" placeholder="Mise" min="1" />
-        <button class="btn-bet join" onclick="placeBet('${bet.id}', 1)">Parier</button>
-      </div>`;
-    choice2Actions = `
-      <div class="bet-choice-input">
-        <input type="number" id="bet-amount-${bet.id}-2" placeholder="Mise" min="1" />
-        <button class="btn-bet join" onclick="placeBet('${bet.id}', 2)">Parier</button>
-      </div>`;
-  } else if (bet.status === 'open' && isMine && !iJoined) {
-    choice1Actions = `<div style="font-size:.75rem;color:var(--muted);text-align:center;padding:4px 0;">Tu es le créateur</div>`;
-    choice2Actions = `<div style="font-size:.75rem;color:var(--muted);text-align:center;padding:4px 0;">Tu es le créateur</div>`;
+  // Actions de mise
+  let choice1Actions = '', choice2Actions = '';
+  if (bet.status === 'open') {
+    if (iJoined && myBet.choice === 1) {
+      choice1Actions = `<button class="btn-bet delete" style="width:100%;margin-top:4px;" onclick="withdrawBet('${bet.id}')">↩ Retirer ma mise</button>`;
+    } else if (iJoined && myBet.choice === 2) {
+      choice2Actions = `<button class="btn-bet delete" style="width:100%;margin-top:4px;" onclick="withdrawBet('${bet.id}')">↩ Retirer ma mise</button>`;
+    } else if (!isMine) {
+      choice1Actions = `
+        <div class="bet-choice-input">
+          <input type="number" id="bet-amount-${bet.id}-1" placeholder="Mise" min="1" />
+          <button class="btn-bet join" onclick="placeBet('${bet.id}', 1)">Parier</button>
+        </div>`;
+      choice2Actions = `
+        <div class="bet-choice-input">
+          <input type="number" id="bet-amount-${bet.id}-2" placeholder="Mise" min="1" />
+          <button class="btn-bet join" onclick="placeBet('${bet.id}', 2)">Parier</button>
+        </div>`;
+    } else {
+      choice1Actions = `<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:4px 0;">Tu es le créateur</div>`;
+      choice2Actions = `<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:4px 0;">Tu es le créateur</div>`;
+    }
   }
 
+  // Actions fermeture/suppression (créateur)
   let closeActions = '';
   if (bet.status === 'open' && isMine) {
-    const closeWinBtns = bettors.length >= 1 ? `
-      <button class="btn-bet close1" onclick="closeBet('${bet.id}', 1)">✅ "${bet.option1}" gagne</button>
-      <button class="btn-bet close2" onclick="closeBet('${bet.id}', 2)">✅ "${bet.option2}" gagne</button>` : '';
+    const canClose = bettors.length >= 1;
     closeActions = `
-      <div class="bet-actions" style="margin-top:8px;">
-        ${closeWinBtns}
+      <div class="bet-actions" style="margin-top:8px;flex-wrap:wrap;gap:8px;">
+        ${canClose ? `
+          <button class="btn-bet close1" onclick="closeBet('${bet.id}', 1)">✅ "${bet.option1}" gagne</button>
+          <button class="btn-bet close2" onclick="closeBet('${bet.id}', 2)">✅ "${bet.option2}" gagne</button>` : ''}
         <button class="btn-bet delete" onclick="deleteBetByCreator('${bet.id}')">🗑️ Supprimer</button>
       </div>`;
   }
 
+  // Résultat final
   let resultHTML = '';
   if (bet.status === 'closed') {
-    const winLabel = bet.winnerOption === 1 ? bet.option1 : bet.option2;
-    const losersPool = (bet.winnerOption === 1 ? total2 : total1);
-    const winnersCount = (bet.winnerOption === 1 ? bettors1 : bettors2).length;
-    const sharePerWinner = winnersCount > 0 ? Math.ceil(losersPool / winnersCount) : 0;
-    resultHTML = `<div class="bet-winner-result">🏆 "${winLabel}" a gagné ! Chaque gagnant reçoit 2× sa mise + ${sharePerWinner.toLocaleString('fr-FR')} 🪙 bonus (part du pool perdants)</div>`;
+    const winLabel  = bet.winnerOption === 1 ? bet.option1 : bet.option2;
+    const winOdds   = bet.winnerOption === 1 ? bet.finalOdds1 : bet.finalOdds2;
+    const creatorCut = bet.creatorCut || 0;
+    resultHTML = `
+      <div class="bet-winner-result">
+        🏆 <strong>"${winLabel}"</strong> a gagné ! Cote finale : <strong>×${winOdds}</strong>
+        ${creatorCut > 0 ? `· Créateur : <strong>+${creatorCut.toLocaleString('fr-FR')} 🪙</strong> (20% du pot)` : ''}
+      </div>`;
   }
 
   const win1 = bet.status === 'closed' && bet.winnerOption === 1 ? ' winner-block' : '';
   const win2 = bet.status === 'closed' && bet.winnerOption === 2 ? ' winner-block' : '';
+
+  // Indicateur pot et commission
+  const creatorCutDisplay = totalPot > 0
+    ? `<span style="color:var(--yellow);font-size:.78rem;">· Créateur : ${Math.floor(totalPot * 0.2).toLocaleString('fr-FR')} 🪙 (20%)</span>`
+    : '';
 
   card.innerHTML = `
     <div class="bet-header">
@@ -3660,20 +4047,27 @@ function buildBetCard(bet) {
     </div>
     <div class="bet-desc">${bet.desc}</div>
     <div class="bet-meta">
-      <span>Créé par <strong>${bet.creatorName}</strong></span>
-      <span>Pot total : <span class="bet-stake">${totalPot.toLocaleString('fr-FR')} 🪙</span></span>
+      <span>Par <strong>${bet.creatorName}</strong></span>
+      <span>Pot : <span class="bet-stake">${totalPot.toLocaleString('fr-FR')} 🪙</span></span>
+      ${totalPot > 0 ? creatorCutDisplay : ''}
     </div>
     <div class="bet-choices">
       <div class="bet-choice-block${win1}">
-        <div class="bet-choice-title">${bet.option1}</div>
+        <div class="bet-choice-title">
+          ${bet.option1}
+          <span style="float:right;font-family:'Space Mono',monospace;font-size:.82rem;color:var(--yellow);font-weight:700;">×${odds1}</span>
+        </div>
         <div class="bet-choice-bettors">${renderBettorList(bettors1)}</div>
-        <div class="bet-choice-total">${total1.toLocaleString('fr-FR')} 🪙</div>
+        <div class="bet-choice-total">${total1.toLocaleString('fr-FR')} 🪙 misés</div>
         ${choice1Actions}
       </div>
       <div class="bet-choice-block${win2}">
-        <div class="bet-choice-title">${bet.option2}</div>
+        <div class="bet-choice-title">
+          ${bet.option2}
+          <span style="float:right;font-family:'Space Mono',monospace;font-size:.82rem;color:var(--yellow);font-weight:700;">×${odds2}</span>
+        </div>
         <div class="bet-choice-bettors">${renderBettorList(bettors2)}</div>
-        <div class="bet-choice-total">${total2.toLocaleString('fr-FR')} 🪙</div>
+        <div class="bet-choice-total">${total2.toLocaleString('fr-FR')} 🪙 misés</div>
         ${choice2Actions}
       </div>
     </div>
@@ -4026,14 +4420,18 @@ async function renderHomeBets() {
   el.innerHTML = '';
   openBets.forEach(bet => {
     const bettors = bet.bettors || [];
-    const pot = bettors.reduce((s,b)=>s+b.amount, 0);
+    const total1 = bettors.filter(b=>b.choice===1).reduce((s,b)=>s+b.amount,0);
+    const total2 = bettors.filter(b=>b.choice===2).reduce((s,b)=>s+b.amount,0);
+    const pot = total1 + total2;
+    const odds1 = computeOdds(bet.initOdds1 || 1.5, total1, total2);
+    const odds2 = computeOdds(bet.initOdds2 || 2.0, total2, total1);
     const div = document.createElement('div');
     div.className = 'home-bet-row';
     div.innerHTML = `
       <div class="home-bet-desc">${bet.desc}</div>
       <div class="home-bet-options">
-        <span class="home-bet-option">🅰️ ${bet.option1}</span>
-        <span class="home-bet-option">🅱️ ${bet.option2}</span>
+        <span class="home-bet-option">${bet.option1} <span style="color:var(--yellow);font-family:'Space Mono',monospace;font-weight:700;">×${odds1}</span></span>
+        <span class="home-bet-option">${bet.option2} <span style="color:var(--yellow);font-family:'Space Mono',monospace;font-weight:700;">×${odds2}</span></span>
       </div>
       <div class="home-bet-meta">
         <span>Par <strong>${bet.creatorName}</strong></span>
@@ -4562,13 +4960,16 @@ async function renderSnakeLb() {
   const entries = Object.values(snap).sort((a, b) => b.score - a.score).slice(0, SNAKE_MAX_LB);
   list.innerHTML = '';
   const medals = ['🥇','🥈','🥉'];
-  entries.forEach((e, i) => {
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
     const rank = i + 1;
     const isMe = e.code === state.code;
     const rankClass = rank <= 3 ? `top${rank}` : '';
     const medal = rank <= 3 ? medals[i] : '';
     const div = document.createElement('div');
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    const bcS = await getAccBannerClass(e.code);
+    if (bcS) div.classList.add(bcS);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
       <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
@@ -4576,7 +4977,7 @@ async function renderSnakeLb() {
       <span class="snake-lb-pomels">+${(e.score * SNAKE_POMEL_PER_FRUIT).toLocaleString('fr-FR')} 🪙</span>
     `;
     list.appendChild(div);
-  });
+  }
 }
 
 // ── SNAKE WEEKLY LEADERBOARD ─────────────────────
@@ -4614,20 +5015,23 @@ async function renderSnakeWeeklyLb() {
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
-  entries.forEach((e, i) => {
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
     const rank = i + 1;
     const isMe = e.code === state.code;
     const rankClass = rank <= 3 ? `top${rank}` : '';
     const medal = rank <= 3 ? ['🥇','🥈','🥉'][i] : '';
     const div = document.createElement('div');
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    const bcSW = await getAccBannerClass(e.code);
+    if (bcSW) div.classList.add(bcSW);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
       <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score} 🍎</span>
     `;
     list.appendChild(div);
-  });
+  }
 }
 
 // Reset + distribution des récompenses le lundi à 9h
@@ -4873,6 +5277,19 @@ async function g2048SaveScore(score) {
   }
 }
 
+// ── BANNER LB HELPER ─────────────────────────────
+// Cache léger des comptes pour la résolution de bannière dans les classements de jeux
+let _accBannerCache = null;
+async function getAccBannerClass(code) {
+  if (!_accBannerCache) {
+    const all = await getAllAccounts();
+    _accBannerCache = {};
+    all.forEach(a => { _accBannerCache[a.code] = getBannerClass(a.activeBanner); });
+    setTimeout(() => { _accBannerCache = null; }, 60000);
+  }
+  return _accBannerCache[code] || '';
+}
+
 async function g2048RenderLb() {
   const list = document.getElementById('g2048LbList');
   if (!list) return;
@@ -4882,12 +5299,15 @@ async function g2048RenderLb() {
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   const medals = ['🥇','🥈','🥉'];
-  entries.forEach((e, i) => {
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
     const rank = i + 1;
     const isMe = e.code === state.code;
     const rankClass = rank <= 3 ? `top${rank}` : '';
     const div = document.createElement('div');
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    const bc = await getAccBannerClass(e.code);
+    if (bc) div.classList.add(bc);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medals[i] || rank}</span>
       <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
@@ -4895,7 +5315,7 @@ async function g2048RenderLb() {
       <span class="snake-lb-pomels"></span>
     `;
     list.appendChild(div);
-  });
+  }
 }
 
 // ── 2048 WEEKLY LEADERBOARD ───────────────────────
@@ -4920,20 +5340,23 @@ async function g2048RenderWeeklyLb() {
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
-  entries.forEach((e, i) => {
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
     const rank = i + 1;
     const isMe = e.code === state.code;
     const rankClass = rank <= 3 ? `top${rank}` : '';
     const prize = i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION;
     const div = document.createElement('div');
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+    const bc2 = await getAccBannerClass(e.code);
+    if (bc2) div.classList.add(bc2);
     div.innerHTML = `
     <span class="snake-lb-rank ${rankClass}">${['🥇','🥈','🥉'][i] || rank}</span>
     <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
     <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
     `;
     list.appendChild(div);
-  });
+  }
 }
 
 async function checkG2048WeeklyReset() {
@@ -5703,26 +6126,31 @@ function renderJardinLb(flowers) {
   // Count per player
   const counts = {};
   flowers.forEach(f => {
-    if (!counts[f.playerCode]) counts[f.playerCode] = { name: f.playerName, count: 0 };
+    if (!counts[f.playerCode]) counts[f.playerCode] = { name: f.playerName, code: f.playerCode, count: 0 };
     counts[f.playerCode].count++;
   });
   const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
 
   const medals = ['🥇','🥈','🥉'];
   list.innerHTML = '';
-  sorted.forEach((p, i) => {
-    const isMe = flowers.find(f => f.playerCode === state.code && f.playerName === p.name);
-    const prize = i < 3 ? JARDIN_PRIZES[i] : CONSOLATION;
-    const div = document.createElement('div');
-    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
-    div.innerHTML = `
-      <span class="snake-lb-rank ${i < 3 ? 'top'+(i+1) : ''}">${medals[i] || (i+1)}</span>
-      <span class="snake-lb-name">${p.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
-      <span class="snake-lb-score">${p.count} 🌸</span>
-      <span class="snake-lb-pomels">→ ${prize.toLocaleString('fr-FR')} 🪙</span>
-    `;
-    list.appendChild(div);
-  });
+  (async () => {
+    for (let i = 0; i < sorted.length; i++) {
+      const p = sorted[i];
+      const isMe = flowers.find(f => f.playerCode === state.code && f.playerName === p.name);
+      const prize = i < 3 ? JARDIN_PRIZES[i] : CONSOLATION;
+      const div = document.createElement('div');
+      div.className = 'snake-lb-item' + (isMe ? ' me' : '');
+      const bcJ = await getAccBannerClass(p.code);
+      if (bcJ) div.classList.add(bcJ);
+      div.innerHTML = `
+        <span class="snake-lb-rank ${i < 3 ? 'top'+(i+1) : ''}">${medals[i] || (i+1)}</span>
+        <span class="snake-lb-name">${p.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+        <span class="snake-lb-score">${p.count} 🌸</span>
+        <span class="snake-lb-pomels">→ ${prize.toLocaleString('fr-FR')} 🪙</span>
+      `;
+      list.appendChild(div);
+    }
+  })();
 }
 
 async function checkJardinReset() {
@@ -6355,6 +6783,11 @@ async function renderMonProfil() {
   const spent   = (me.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
   const joined  = new Date(me.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const nameClass = getNameColorClass(me.activeColor);
+  const bannerClsMe = getBannerClass(me.activeBanner);
+  const monProfilCard = document.getElementById('monProfilCard');
+  // Reset previous banner classes then apply new one
+  SHOP_TITLES.filter(t => t.type === 'banner').forEach(t => monProfilCard.classList.remove(t.bannerClass));
+  if (bannerClsMe) monProfilCard.classList.add(bannerClsMe);
   const badgeDefMP = me.activeBadge ? (resolveTitleDef(me.activeBadge) || {}) : {};
   const badgeEmojiMP = badgeDefMP.emoji || '';
   const badgeNameMP = badgeDefMP.name || '';
@@ -6497,6 +6930,32 @@ function renderDotsMenu() {
       badgesEl.appendChild(row);
     });
   }
+
+  // Bannières
+  const bannersEl = document.getElementById('dotsMenuBanners');
+  if (bannersEl) {
+    const ownedBanners = owned.filter(tid => { const t = SHOP_TITLES.find(x => x.id === tid); return t && t.type === 'banner'; });
+    if (!ownedBanners.length) {
+      bannersEl.innerHTML = '<div class="profil-dots-empty">Aucune bannière — va à la Boutique !</div>';
+    } else {
+      bannersEl.innerHTML = '';
+      ownedBanners.forEach(tid => {
+        const t = SHOP_TITLES.find(x => x.id === tid); if (!t) return;
+        const isActive = state.activeBanner === tid;
+        const row = document.createElement('div');
+        row.className = 'profil-dots-row';
+        // Petit aperçu de la bannière
+        const preview = `<span class="${t.bannerClass}" style="display:inline-block;width:22px;height:14px;border-radius:3px;border:1px solid var(--border);flex-shrink:0;vertical-align:middle;margin-right:6px;"></span>`;
+        row.innerHTML = `
+          <span class="profil-dots-name">${preview}${t.name}</span>
+          <label class="toggle-switch">
+            <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleBanner('${tid}', this.checked); renderMonProfil();" />
+            <span class="toggle-slider"></span>
+          </label>`;
+        bannersEl.appendChild(row);
+      });
+    }
+  }
 }
 
 // ── PROFILS ──────────────────────────────────────
@@ -6543,6 +7002,8 @@ async function renderProfils() {
 
     const card = document.createElement('div');
     card.className = 'profil-card';
+    const bannerClsP = getBannerClass(migrated.activeBanner);
+    if (bannerClsP) card.classList.add(bannerClsP);
     card.onclick = () => openProfileModal(acc.code);
     card.innerHTML = `
       <div class="profil-card-name">
