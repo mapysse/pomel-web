@@ -3753,20 +3753,6 @@ async function handleCreateBet() {
   renderBets();
 }
 
-// Calcule la cote dynamique d'une option
-// Plus les mises sur cette option sont élevées par rapport au total, plus la cote descend
-function computeOdds(initOdds, totalOnThis, totalOther) {
-  const MIN_ODDS = 1.01;
-  if (totalOnThis === 0) return initOdds; // personne n'a misé encore
-  const total = totalOnThis + totalOther;
-  // ratio = part de cette option dans le pot
-  const ratio = totalOnThis / total;
-  // La cote descend linéairement vers MIN_ODDS quand ratio → 1
-  // et remonte vers initOdds * 1.5 quand ratio → 0
-  const dynamic = initOdds * (1 - ratio) + MIN_ODDS * ratio;
-  return Math.max(MIN_ODDS, Math.round(dynamic * 100) / 100);
-}
-
 async function placeBet(betId, choice) {
   const bet = await getBet(betId);
   if (!bet || bet.status !== 'open') return;
@@ -3789,31 +3775,6 @@ async function placeBet(betId, choice) {
   renderBets();
 }
 
-async function withdrawBet(betId) {
-  const bet = await getBet(betId);
-  if (!bet || bet.status !== 'open') return;
-  const bettors = bet.bettors || [];
-  const myBet = bettors.find(b => b.code === state.code);
-  if (!myBet) return;
-
-  showConfirm(`Retirer ta mise de ${myBet.amount.toLocaleString('fr-FR')} 🪙 ? Tu seras remboursé intégralement.`, async () => {
-    bet.bettors = bettors.filter(b => b.code !== state.code);
-    await saveBet(bet);
-
-    const acc = await getAccount(state.code);
-    if (acc) {
-      acc.balance += myBet.amount;
-      acc.history = acc.history || [];
-      acc.history.unshift({ type: 'bet', desc: `Mise retirée : "${bet.desc}"`, amount: myBet.amount, date: new Date().toISOString() });
-      await saveAccount(acc);
-      state = migrateAccount(acc);
-    }
-    closeConfirm();
-    refreshUI();
-    renderBets();
-  });
-}
-
 async function closeBet(betId, winnerOption) {
   const bet = await getBet(betId);
   if (!bet || bet.status !== 'open') return;
@@ -3826,10 +3787,8 @@ async function closeBet(betId, winnerOption) {
   const total2 = bettors2.reduce((s, b) => s + b.amount, 0);
   const totalPot = total1 + total2;
 
-  // Cote finale au moment de la fermeture
-  const finalOdds1 = computeOdds(bet.initOdds1, total1, total2);
-  const finalOdds2 = computeOdds(bet.initOdds2, total2, total1);
-  const winnerOdds = winnerOption === 1 ? finalOdds1 : finalOdds2;
+  // Cote fixe définie à la création
+  const winnerOdds = winnerOption === 1 ? bet.initOdds1 : bet.initOdds2;
   const winners = winnerOption === 1 ? bettors1 : bettors2;
   const losers  = winnerOption === 1 ? bettors2 : bettors1;
 
@@ -3838,8 +3797,8 @@ async function closeBet(betId, winnerOption) {
 
   bet.status = 'closed';
   bet.winnerOption = winnerOption;
-  bet.finalOdds1 = finalOdds1;
-  bet.finalOdds2 = finalOdds2;
+  bet.finalOdds1 = bet.initOdds1;
+  bet.finalOdds2 = bet.initOdds2;
   bet.closedAt = new Date().toISOString();
   bet.creatorCut = creatorCut;
   await saveBet(bet);
@@ -3967,9 +3926,9 @@ function buildBetCard(bet) {
   const total2   = bettors2.reduce((s, b) => s + b.amount, 0);
   const totalPot = total1 + total2;
 
-  // Cotes actuelles
-  const odds1 = bet.status === 'closed' ? bet.finalOdds1 : computeOdds(bet.initOdds1, total1, total2);
-  const odds2 = bet.status === 'closed' ? bet.finalOdds2 : computeOdds(bet.initOdds2, total2, total1);
+  // Cotes fixes
+  const odds1 = bet.initOdds1 || 1.5;
+  const odds2 = bet.initOdds2 || 2.0;
 
   const renderBettorList = (list) => {
     if (!list.length) return '<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:4px 0;">Aucun parieur</div>';
@@ -3985,10 +3944,11 @@ function buildBetCard(bet) {
   // Actions de mise
   let choice1Actions = '', choice2Actions = '';
   if (bet.status === 'open') {
-    if (iJoined && myBet.choice === 1) {
-      choice1Actions = `<button class="btn-bet delete" style="width:100%;margin-top:4px;" onclick="withdrawBet('${bet.id}')">↩ Retirer ma mise</button>`;
-    } else if (iJoined && myBet.choice === 2) {
-      choice2Actions = `<button class="btn-bet delete" style="width:100%;margin-top:4px;" onclick="withdrawBet('${bet.id}')">↩ Retirer ma mise</button>`;
+    if (iJoined) {
+      // déjà parié, plus rien à faire
+      const lockedMsg = `<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:4px 0;">✅ Misé</div>`;
+      if (myBet.choice === 1) choice1Actions = lockedMsg;
+      else choice2Actions = lockedMsg;
     } else if (!isMine) {
       choice1Actions = `
         <div class="bet-choice-input">
@@ -4423,8 +4383,8 @@ async function renderHomeBets() {
     const total1 = bettors.filter(b=>b.choice===1).reduce((s,b)=>s+b.amount,0);
     const total2 = bettors.filter(b=>b.choice===2).reduce((s,b)=>s+b.amount,0);
     const pot = total1 + total2;
-    const odds1 = computeOdds(bet.initOdds1 || 1.5, total1, total2);
-    const odds2 = computeOdds(bet.initOdds2 || 2.0, total2, total1);
+    const odds1 = bet.initOdds1 || 1.5;
+    const odds2 = bet.initOdds2 || 2.0;
     const div = document.createElement('div');
     div.className = 'home-bet-row';
     div.innerHTML = `
@@ -5212,11 +5172,31 @@ function g2048Has2048() {
   return g2048Grid.some(row => row.some(v => v >= 2048));
 }
 
+const G2048_DAILY_LIMIT = 20;
+const G2048_LIMIT_KEY = () => `g2048_plays_${getTodayKey()}`;
+
+function g2048TodayPlays() {
+  try { return parseInt(localStorage.getItem(G2048_LIMIT_KEY()) || '0'); } catch { return 0; }
+}
+function g2048IncrPlays() {
+  try { localStorage.setItem(G2048_LIMIT_KEY(), String(g2048TodayPlays() + 1)); } catch {}
+}
+
 function start2048() {
+  const plays = g2048TodayPlays();
+  if (plays >= G2048_DAILY_LIMIT) {
+    document.getElementById('g2048OverlayTitle').textContent = '🚫 Limite atteinte';
+    document.getElementById('g2048OverlaySub').textContent = `Tu as joué ${G2048_DAILY_LIMIT} parties aujourd'hui. Reviens demain !`;
+    document.getElementById('g2048StartBtn').textContent = 'Demain…';
+    document.getElementById('g2048StartBtn').disabled = true;
+    return;
+  }
+  g2048IncrPlays();
   g2048Grid = g2048NewGrid();
   g2048Score = 0;
   g2048Won = false;
   g2048Running = true;
+  document.getElementById('g2048StartBtn').disabled = false;
   document.getElementById('g2048Overlay').classList.add('hidden');
   g2048AddTile();
   g2048AddTile();
@@ -5241,10 +5221,19 @@ async function g2048GameOver() {
 
   const overlay = document.getElementById('g2048Overlay');
   document.getElementById('g2048OverlayTitle').textContent = g2048Won ? '🎉 Bravo !' : '💀 Game Over !';
+  const remaining = Math.max(0, G2048_DAILY_LIMIT - g2048TodayPlays());
   document.getElementById('g2048OverlaySub').innerHTML =
     `Score : <strong>${finalScore.toLocaleString('fr-FR')}</strong><br>` +
-    `Tu gagnes <strong style="color:var(--green)">+${pomels.toLocaleString('fr-FR')} 🪙</strong>`;
-  document.getElementById('g2048StartBtn').textContent = '🔄 Rejouer';
+    `Tu gagnes <strong style="color:var(--green)">+${pomels.toLocaleString('fr-FR')} 🪙</strong><br>` +
+    `<span style="font-size:.78rem;color:var(--muted);">Parties restantes aujourd'hui : ${remaining}/${G2048_DAILY_LIMIT}</span>`;
+  const startBtn = document.getElementById('g2048StartBtn');
+  if (remaining === 0) {
+    startBtn.textContent = 'Demain…';
+    startBtn.disabled = true;
+  } else {
+    startBtn.textContent = '🔄 Rejouer';
+    startBtn.disabled = false;
+  }
   overlay.classList.remove('hidden');
 
   await g2048RenderLb();
@@ -5257,8 +5246,18 @@ function render2048Page() {
   g2048Score = 0;
   document.getElementById('g2048Score').textContent = '0';
   document.getElementById('g2048Earned').textContent = '+0 🪙';
+  const remaining = Math.max(0, G2048_DAILY_LIMIT - g2048TodayPlays());
   document.getElementById('g2048OverlayTitle').textContent = '🔢 2048';
-  document.getElementById('g2048OverlaySub').textContent = 'Fusionne les tuiles identiques pour atteindre 2048 !';
+  const startBtn = document.getElementById('g2048StartBtn');
+  if (remaining === 0) {
+    document.getElementById('g2048OverlaySub').textContent = `Limite de ${G2048_DAILY_LIMIT} parties atteinte — reviens demain !`;
+    startBtn.textContent = 'Demain…';
+    startBtn.disabled = true;
+  } else {
+    document.getElementById('g2048OverlaySub').innerHTML = `Fusionne les tuiles identiques pour atteindre 2048 !<br><span style="font-size:.78rem;color:var(--muted);">${remaining} partie${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''} aujourd'hui</span>`;
+    startBtn.textContent = 'Jouer !';
+    startBtn.disabled = false;
+  }
   document.getElementById('g2048StartBtn').textContent = 'Jouer !';
   document.getElementById('g2048Overlay').classList.remove('hidden');
   g2048Render();
