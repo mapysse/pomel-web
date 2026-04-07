@@ -1349,7 +1349,7 @@
         <button class="nav-dropdown-item" onclick="goToFromDropdown('clicker','games',this)">🌱 Clicker</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('jardin','games',this)">🌸 Jardin</button>
         <div class="nav-dropdown-sep"></div>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('pfc','games',this)">🪨 Pierre Feuille Ciseaux</button>
+        <button class="nav-dropdown-item" id="navbtn-pfc" onclick="goToFromDropdown('pfc','games',this)">🪨 Pierre Feuille Ciseaux</button>
       </div>
     </div>
 
@@ -1430,6 +1430,12 @@
         <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item[onclick*=\'quetes\']'))">
           <div class="home-card-title" style="color:var(--primary);">🧭 Mes quêtes créées</div>
           <div id="homeQuetesOut" class="home-bets-zone"></div>
+        </div>
+
+        <!-- 3b. Défi PFC reçu (urgent, personnel) — full width -->
+        <div class="home-card home-card-full" id="homePFCCard" style="display:none; border-color:var(--yellow); box-shadow:0 0 16px rgba(240,192,64,0.15); cursor:pointer;" onclick="goToFromDropdown('pfc','games', document.querySelector('#dropdown-games .nav-dropdown-item[onclick*=\'pfc\']'))">
+          <div class="home-card-title" style="color:var(--yellow);">🪨 Pierre Feuille Ciseaux — Défi reçu !</div>
+          <div id="homePFCStatus" class="home-bets-zone"></div>
         </div>
 
         <!-- 4. Roulette (quotidien) — pleine largeur pour le CTA -->
@@ -3027,7 +3033,7 @@ function _onPageLoad(id) {
   if (id === 'clicker') renderClickerPage();
   if (id === 'jardin') renderJardin();
   if (id === 'profils') renderProfils();
-  if (id === 'pfc') renderPFC();
+  if (id === 'pfc') { renderPFC(); markPageSeen('pfc'); }
   if (id === 'discussion') { renderDiscussion(); markPageSeen('discussion'); }
   // Stop discussion listener when leaving the page
   if (id !== 'discussion') stopDiscussionListener();
@@ -7492,15 +7498,43 @@ function trimHistory() {
   }
 }
 
+// Types d'entrées à masquer dans l'historique affiché
+const HISTORY_HIDDEN_TYPES = new Set(['seeds', 'pfc']);
+// Pour snake/2048/group : on affiche uniquement si amount != 0 (classements hebdo, gains/dépenses)
+
 function renderHistory() {
   const list = document.getElementById('historyList');
   list.innerHTML = '';
   if (!state.history || !state.history.length) { list.innerHTML = '<div class="history-empty">Aucune transaction pour l\'instant.</div>'; return; }
-  state.history.slice(0, 20).forEach(h => {
+
+  const visible = state.history.filter(h => {
+    if (HISTORY_HIDDEN_TYPES.has(h.type)) return false;
+    // Parties individuelles snake/2048 : masquer (les classements hebdo ont un desc différent)
+    if (h.type === 'snake' && !h.desc.includes('hebdo')) return false;
+    if (h.type === '2048'  && !h.desc.includes('hebdo')) return false;
+    // Événements groupe sans montant (dissolution, expulsion, notification) : masquer
+    if (h.type === 'group' && h.amount === 0) return false;
+    return true;
+  }).slice(0, 20);
+
+  if (!visible.length) { list.innerHTML = '<div class="history-empty">Aucune transaction pour l\'instant.</div>'; return; }
+
+  visible.forEach(h => {
     const div = document.createElement('div');
     div.className = 'history-item';
     const isPos = h.amount > 0;
-    const icon = h.type === 'roulette' ? '🎰' : h.type === 'bet' ? '🎲' : h.type === 'shop' ? '🛒' : h.type === 'snake' ? '🐍' : h.type === 'hotel' ? '🏨' : h.type === 'quete' ? '⚔️' : h.type === 'clicker' ? '🌱' : h.type === 'jardin' ? '🌸' : h.type === 'streak' ? '🔥' : '💸';
+    const icon = h.type === 'roulette' ? '🎰'
+      : h.type === 'bet'      ? '🎲'
+      : h.type === 'shop'     ? '🛒'
+      : h.type === 'snake'    ? '🐍'
+      : h.type === '2048'     ? '🔢'
+      : h.type === 'hotel'    ? '🏨'
+      : h.type === 'quete'    ? '⚔️'
+      : h.type === 'clicker'  ? '🌱'
+      : h.type === 'jardin'   ? '🌸'
+      : h.type === 'streak'   ? '🔥'
+      : h.type === 'group'    ? '🏅'
+      : '💸';
     const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     div.innerHTML = `
       <span class="hi-type">${icon}</span>
@@ -8101,6 +8135,13 @@ function refreshAllBadges() {
   // Discussion → Chat standalone
   const chatBtn = document.getElementById('navbtn-chat');
   setBadge(chatBtn, hasUnread('discussion'));
+
+  // PFC → Jeux dropdown item
+  const pfcBtn = document.getElementById('navbtn-pfc');
+  const gamesTrigger = document.querySelector('#dropdown-games .nav-dropdown-trigger');
+  const pfcUnread = hasUnread('pfc');
+  setBadge(pfcBtn, pfcUnread);
+  setBadge(gamesTrigger, pfcUnread);
 }
 
 // Vérifie Firebase pour les nouveaux contenus et met à jour les timestamps
@@ -8147,6 +8188,38 @@ async function checkNotifUpdates() {
     if (discMsgs.length) {
       const latest = discMsgs.reduce((max, m) => Math.max(max, new Date(m.createdAt).getTime()), 0);
       setLatestContent('discussion', new Date(latest).toISOString());
+    }
+
+    // PFC — défis reçus en attente
+    const pfcData = await getAllPFCChallenges() || {};
+    const now = Date.now();
+    const pendingChallenges = Object.values(pfcData).filter(c =>
+      c.challengedCode === state.code &&
+      c.status === 'pending' &&
+      now < c.expiresAt
+    );
+    // Carte home PFC
+    const pfcCard = document.getElementById('homePFCCard');
+    const pfcStatus = document.getElementById('homePFCStatus');
+    if (pfcCard && pfcStatus) {
+      if (pendingChallenges.length) {
+        pfcCard.style.display = '';
+        pfcStatus.innerHTML = pendingChallenges.map(c => {
+          const remaining = Math.max(0, Math.ceil((c.expiresAt - now) / 60000));
+          return `<div style="font-size:.85rem;color:var(--text);">⚔️ <strong>${c.challengerName}</strong> te défie ! <span style="color:var(--muted);font-size:.78rem;">⏱ ${remaining} min</span></div>`;
+        }).join('');
+      } else {
+        pfcCard.style.display = 'none';
+      }
+    }
+    // Pastille notif PFC
+    if (pendingChallenges.length) {
+      const latest = pendingChallenges.reduce((max, c) => Math.max(max, c.createdAt), 0);
+      setLatestContent('pfc', new Date(latest).toISOString());
+    } else {
+      // Aucun défi en attente → pas de pastille
+      localStorage.removeItem('notif_latest_pfc');
+      localStorage.removeItem('notif_seen_pfc');
     }
   } catch(e) {}
   refreshAllBadges();
@@ -8281,6 +8354,31 @@ async function renderPFC() {
     }
   }
 
+  // Défis envoyés récemment résolus (le challenger découvre son résultat)
+  const justResolved = challenges.find(c =>
+    c.challengerCode === state.code &&
+    c.status === 'resolved' &&
+    c.resolvedDate === today &&
+    c.challengerResult &&
+    !state.pfcSeenResults?.includes(c.id)
+  );
+
+  // Si le challenger a un résultat non vu → afficher la carte de résultat
+  if (justResolved && !hasPlayed) {
+    // Marquer comme vu pour ne pas boucler
+    state.pfcSeenResults = state.pfcSeenResults || [];
+    if (!state.pfcSeenResults.includes(justResolved.id)) {
+      state.pfcSeenResults.push(justResolved.id);
+    }
+    pfcShowResult(
+      justResolved.challengerResult,
+      justResolved.challengerHand,
+      justResolved.challengedHand,
+      justResolved.challengedName
+    );
+    return;
+  }
+
   // ── RENDU HTML ──
   let html = `<div class="pfc-wrap">`;
 
@@ -8348,10 +8446,12 @@ async function renderPFC() {
     html += `<div><div class="pfc-section-title">📜 Résultats du jour</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">`;
     for (const c of recentResults) {
       const iAmChallenger = c.challengerCode === state.code;
-      const myHand = iAmChallenger ? c.challengerHand : c.challengedHand;
-      const oppHand = iAmChallenger ? c.challengedHand : c.challengerHand;
-      const oppName = iAmChallenger ? c.challengedName : c.challengerName;
-      const result = iAmChallenger ? c.challengerResult : c.challengedResult;
+      const myHand  = iAmChallenger ? c.challengerHand  : c.challengedHand;
+      const oppHand = iAmChallenger ? c.challengedHand  : c.challengerHand;
+      const oppName = iAmChallenger ? c.challengedName  : c.challengerName;
+      const result  = iAmChallenger ? c.challengerResult : c.challengedResult;
+      // Sécurité : si le challenger voit un résultat avant que les champs soient remplis
+      if (!result || !myHand || !oppHand) continue;
       const pomcoins = result === 'win' ? 500 : result === 'draw' ? 500 : 200;
       const pts = result !== 'lose' ? 1000 : 0;
       html += `
@@ -8462,16 +8562,15 @@ async function pfcRespond(challengeId, myHand, myGroupId) {
     resolvedDate: today,
   });
 
-  // Appliquer mes récompenses
+  // Appliquer mes récompenses (je suis le répondeur)
   await pfcApplyRewards(result, myGroupId, c.challengerGroupId, c.challengerName, myHand, c.challengerHand);
 
   // Appliquer les récompenses du challenger (sauf égalité déjà gérée dans pfcApplyRewards)
   if (result !== 'draw') {
     const chalAcc = await getAccount(c.challengerCode);
     if (chalAcc) {
-      const chalResult = challengerResult;
-      const chalPomcoins = chalResult === 'win' ? 500 : 200;
-      const chalPts = chalResult !== 'lose' ? 1000 : 0;
+      const chalPomcoins = challengerResult === 'win' ? 500 : 200;
+      const chalPts = challengerResult !== 'lose' ? 1000 : 0;
       const chalGroup = await getGroup(c.challengerGroupId);
       if (chalGroup) {
         chalGroup.pomcoins = (chalGroup.pomcoins || 0) + chalPomcoins;
@@ -8480,12 +8579,12 @@ async function pfcRespond(challengeId, myHand, myGroupId) {
       }
       chalAcc.pfcLastPlayedDate = today;
       chalAcc.history = chalAcc.history || [];
-      chalAcc.history.unshift({ type: 'pfc', desc: `PFC vs ${state.name} — ${chalResult === 'win' ? '🏆 Gagné' : '💀 Perdu'} (${PFC_LABELS[c.challengerHand]} vs ${PFC_LABELS[myHand]})`, amount: 0, date: new Date().toISOString() });
+      chalAcc.history.unshift({ type: 'pfc', desc: `PFC vs ${state.name} — ${challengerResult === 'win' ? '🏆 Gagné' : '💀 Perdu'} (${PFC_LABELS[c.challengerHand]} vs ${PFC_LABELS[myHand]})`, amount: 0, date: new Date().toISOString() });
       await saveAccount(chalAcc);
     }
   }
 
-  // Afficher le résultat
+  // Afficher le résultat — je suis le répondeur : ma main à gauche, celle du challenger à droite
   pfcShowResult(result, myHand, c.challengerHand, c.challengerName);
 }
 
