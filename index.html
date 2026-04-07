@@ -3551,7 +3551,11 @@ async function renderGroupsOnPage() {
         const acc = allAccounts.find(a => a.code === code);
         const name = acc ? acc.name : code;
         const isOwner = code === g.creatorCode;
-        return `<span style="font-size:.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;white-space:nowrap;">${isOwner ? '👑 ' : ''}${name}</span>`;
+        const canKick = isCreator && !isOwner; // le créateur peut expulser tout le monde sauf lui-même
+        return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;white-space:nowrap;">
+          ${isOwner ? '👑 ' : ''}${name}
+          ${canKick ? `<button onclick="kickGroupMember('${g.id}','${code}','${name}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0 0 0 2px;line-height:1;" title="Expulser ${name}">✕</button>` : ''}
+        </span>`;
       }).join('');
       item.innerHTML = `
         <div style="flex:1;min-width:0;">
@@ -3576,6 +3580,27 @@ async function renderGroupsOnPage() {
       allGroupsEl.appendChild(item);
     });
   }
+}
+
+async function kickGroupMember(groupId, memberCode, memberName) {
+  const group = await getGroup(groupId);
+  if (!group || group.creatorCode !== state.code) return;
+  if (memberCode === state.code) return; // ne peut pas s'expulser soi-même
+  showConfirm(`Expulser ${memberName} du groupe "${group.name}" ?`, async () => {
+    group.members = (group.members || []).filter(c => c !== memberCode);
+    await saveGroup(group);
+    // Notifier le membre expulsé dans son historique
+    const expelled = await getAccount(memberCode);
+    if (expelled) {
+      expelled.group = null;
+      expelled.history = expelled.history || [];
+      expelled.history.unshift({ type: 'group', desc: `🚫 Tu as été expulsé du groupe "${group.name}"`, amount: 0, date: new Date().toISOString() });
+      await saveAccount(expelled);
+    }
+    closeConfirm();
+    _groupCache = null;
+    renderGroupsOnPage();
+  });
 }
 
 async function handleCreateGroup() {
