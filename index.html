@@ -247,7 +247,7 @@
   .lb-name:hover { color: var(--primary); text-decoration: underline; }
   .lb-info { display: flex; align-items: center; gap: 6px; flex: 1; flex-wrap: wrap; }
   .lb-val { font-family: 'Space Mono', monospace; font-weight: 700; font-size: .88rem; color: var(--primary); flex-shrink: 0; }
-  .lb-you-badge { font-size: .65rem; font-weight: 700; background: var(--primary); color: #fff; border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
+  .lb-you-badge { font-size: .65rem; font-weight: 700; background: transparent; color: var(--primary); border: 1.5px solid var(--primary); border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
   .lb-group-badge { font-size: .65rem; font-weight: 600; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
 
   /* GROUPES DYNAMIQUES */
@@ -388,8 +388,8 @@
   .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
 
   /* PROFILE MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn .2s; }
-  .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; width: 100%; max-width: 400px; margin: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 60px rgba(0,0,0,0.4); animation: slideUp .3s; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: flex-start; justify-content: center; animation: fadeIn .2s; overflow-y: auto; padding: 24px 16px; }
+  .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; width: 100%; max-width: 400px; margin: auto; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 60px rgba(0,0,0,0.4); animation: slideUp .3s; }
   .modal-box h2 { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
   .modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; transition: color .2s; }
   .modal-close:hover { color: var(--text); }
@@ -689,15 +689,32 @@
   .live-reply-btn:disabled { opacity: .4; cursor: not-allowed; }
 
   /* INFORMATIONS */
-  .info-wrap { display: flex; flex-direction: column; gap: 20px; }
-  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 14px; }
-  .info-card h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
-  .info-card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-  .info-card p { font-size: .9rem; color: var(--muted); line-height: 1.7; }
-  .info-card ul { display: flex; flex-direction: column; gap: 8px; padding-left: 4px; }
-  .info-card ul li { font-size: .88rem; color: var(--muted); line-height: 1.6; padding-left: 16px; position: relative; }
-  .info-card ul li::before { content: '→'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
-  .info-divider { height: 1px; background: var(--border); }
+  .info-wrap { display: flex; flex-direction: column; gap: 12px; max-width: 700px; margin: 0 auto; }
+  .info-hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .info-hero h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+  .info-hero p { font-size: .9rem; color: var(--muted); line-height: 1.7; }
+  .info-category-title { font-size: .68rem; font-weight: 700; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; padding: 8px 4px 4px; }
+  /* Accordéon */
+  .info-accordion { display: flex; flex-direction: column; gap: 6px; }
+  .info-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .2s; }
+  .info-item:hover { border-color: rgba(235,88,70,0.35); }
+  .info-item.open { border-color: var(--primary); }
+  .info-trigger { width: 100%; background: none; border: none; padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; text-align: left; }
+  .info-trigger-icon { font-size: 1.15rem; flex-shrink: 0; width: 28px; text-align: center; }
+  .info-trigger-label { flex: 1; font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 700; color: var(--text); }
+  .info-trigger-arrow { font-size: .65rem; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
+  .info-item.open .info-trigger-arrow { transform: rotate(180deg); }
+  .info-body { display: none; padding: 0 20px 18px; }
+  .info-item.open .info-body { display: block; }
+  .info-body p { font-size: .88rem; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+  .info-body ul { display: flex; flex-direction: column; gap: 6px; padding-left: 4px; margin-top: 4px; }
+  .info-body li { font-size: .86rem; color: var(--muted); line-height: 1.6; padding-left: 16px; position: relative; }
+  .info-body li::before { content: '→'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+  .info-body .info-tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; margin: 2px 2px 2px 0; }
+  .info-body .info-tag.green { background: rgba(62,207,110,0.15); color: var(--green); }
+  .info-body .info-tag.red   { background: rgba(235,88,70,0.12); color: var(--primary); }
+  .info-body .info-tag.yellow{ background: rgba(240,192,64,0.15); color: var(--yellow); }
+  .info-divider { height: 1px; background: var(--border); margin: 4px 0; }
 
   /* PROFILS */
   .profils-wrap { display: flex; flex-direction: column; gap: 24px; }
@@ -1021,6 +1038,223 @@
     .bet-choice-block { min-width: 0; }
     .user-menu { right: -8px; }
   }
+
+  /* ── BOUTIQUE GROUPE ── */
+  .group-shop-modal { max-width: 620px; display: flex; flex-direction: column; gap: 20px; }
+  .group-shop-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .group-shop-coins { display: flex; align-items: center; gap: 8px; background: rgba(240,192,64,0.12); border: 1px solid rgba(240,192,64,0.4); border-radius: 10px; padding: 8px 16px; }
+  .group-shop-coins-val { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1.1rem; color: var(--yellow); }
+  .group-shop-section { display: flex; flex-direction: column; gap: 10px; }
+  .group-shop-section-title { font-size: .68rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .group-shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .group-shop-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 6px; transition: border-color .2s; }
+  .group-shop-item:hover { border-color: var(--yellow); }
+  .group-shop-item.owned { border-color: var(--green); opacity: .8; }
+  .group-shop-item.active-item { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+  .group-shop-item-name { font-size: .85rem; font-weight: 700; line-height: 1.3; }
+  .group-shop-item-preview { height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 700; overflow: hidden; position: relative; }
+  .group-shop-item-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 2px; }
+  .group-shop-item-price { font-family: 'Space Mono', monospace; font-size: .75rem; color: var(--yellow); font-weight: 700; }
+  .btn-gshop { border: none; border-radius: 7px; padding: 5px 12px; font-family: 'Syne', sans-serif; font-size: .75rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .btn-gshop.buy  { background: var(--yellow); color: #1a1200; }
+  .btn-gshop.buy:hover { filter: brightness(1.1); }
+  .btn-gshop.equip  { background: var(--primary); color: #fff; }
+  .btn-gshop.equip:hover { filter: brightness(1.1); }
+  .btn-gshop.equipped { background: var(--green); color: #fff; cursor: default; }
+  .btn-gshop:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── BANNIÈRES DE GROUPE (carte lb) ── */
+  .group-banner-red    { background: rgba(235,88,70,0.22)  !important; border-color: rgba(235,88,70,0.5)  !important; }
+  .group-banner-green  { background: rgba(62,207,110,0.2)  !important; border-color: rgba(62,207,110,0.5) !important; }
+  .group-banner-blue   { background: rgba(91,141,239,0.22) !important; border-color: rgba(91,141,239,0.5) !important; }
+  .group-banner-orange { background: rgba(240,160,64,0.22) !important; border-color: rgba(240,160,64,0.5) !important; }
+  .group-banner-purple { background: rgba(176,91,239,0.22) !important; border-color: rgba(176,91,239,0.5) !important; }
+  .group-banner-black  { background: rgba(10,10,12,0.7)    !important; border-color: rgba(255,255,255,0.15) !important; }
+  .group-banner-gold   { background: rgba(240,192,64,0.22) !important; border-color: rgba(240,192,64,0.6) !important; }
+
+  .group-banner-damier {
+    background-image: repeating-conic-gradient(rgba(235,88,70,0.15) 0% 25%, transparent 0% 50%) !important;
+    background-size: 14px 14px !important; background-color: var(--surface) !important;
+    border-color: rgba(235,88,70,0.35) !important;
+  }
+  .group-banner-vagues {
+    background-color: var(--surface) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='22'%3E%3Cpath d='M0 11 Q15 1 30 11 Q45 21 60 11' stroke='rgba(235,88,70,0.45)' stroke-width='2.5' fill='none'/%3E%3C/svg%3E") !important;
+    background-repeat: repeat !important; border-color: rgba(235,88,70,0.4) !important;
+  }
+  .group-banner-constellation {
+    background-color: var(--surface) !important;
+    background-image: radial-gradient(circle, rgba(255,220,80,0.9) 1.5px, transparent 1.5px), radial-gradient(circle, rgba(235,88,70,0.7) 1px, transparent 1px) !important;
+    background-size: 36px 36px, 20px 20px !important; background-position: 0 0, 10px 10px !important;
+    border-color: rgba(235,88,70,0.4) !important;
+  }
+  .group-banner-grille {
+    background-color: var(--surface) !important;
+    background-image: linear-gradient(rgba(235,88,70,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(235,88,70,0.2) 1px, transparent 1px) !important;
+    background-size: 16px 16px !important; border-color: rgba(235,88,70,0.35) !important;
+  }
+  .group-banner-diagonales {
+    background-color: var(--surface) !important;
+    background-image: repeating-linear-gradient(45deg, rgba(235,88,70,0.18) 0px, rgba(235,88,70,0.18) 2px, transparent 2px, transparent 14px) !important;
+    border-color: rgba(235,88,70,0.35) !important;
+  }
+  .group-banner-rainbow {
+    background: linear-gradient(90deg, rgba(235,88,70,0.5), rgba(240,192,64,0.5), rgba(62,207,110,0.5), rgba(91,141,239,0.5), rgba(176,91,239,0.5), rgba(235,88,70,0.5)) !important;
+    background-size: 400% 100% !important; border-color: rgba(255,255,255,0.3) !important;
+    animation: banner-rainbow-shift 2.5s linear infinite !important;
+  }
+  .group-banner-aurora {
+    background: var(--surface) !important; position: relative; overflow: hidden;
+    border-color: rgba(180,100,230,0.5) !important;
+  }
+  .group-banner-aurora::before {
+    content: ''; position: absolute; inset: -40%; pointer-events: none; width: 180%; height: 180%;
+    background: radial-gradient(ellipse 50% 50% at 30% 50%, rgba(235,88,70,0.6) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 50% at 70% 50%, rgba(91,141,239,0.6) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(176,91,239,0.4) 0%, transparent 60%);
+    animation: banner-aurora-drift 3s ease-in-out infinite alternate;
+  }
+  .group-banner-plasma {
+    background: var(--surface) !important; position: relative; overflow: hidden;
+    border-color: rgba(235,88,70,0.5) !important;
+  }
+  .group-banner-plasma::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg, rgba(235,88,70,0.6) 0%, rgba(13,13,15,0.05) 40%, rgba(192,60,44,0.6) 70%, rgba(255,120,80,0.35) 100%);
+    background-size: 200% 200%; animation: banner-plasma-pulse 2s ease-in-out infinite;
+  }
+  .group-banner-feu {
+    background: var(--surface) !important; position: relative; overflow: hidden;
+    border-color: rgba(240,120,40,0.6) !important;
+  }
+  .group-banner-feu::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(0deg, rgba(235,88,70,0.8) 0%, rgba(240,160,40,0.5) 50%, rgba(240,192,64,0.2) 100%);
+    background-size: 100% 200%; animation: group-feu-rise 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes group-feu-rise { 0% { background-position: 0% 100%; } 100% { background-position: 0% 0%; } }
+  .group-banner-glace {
+    background: var(--surface) !important; position: relative; overflow: hidden;
+    border-color: rgba(91,200,239,0.5) !important;
+  }
+  .group-banner-glace::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg, rgba(91,200,239,0.35) 0%, rgba(180,230,255,0.15) 50%, rgba(91,141,239,0.35) 100%);
+    background-size: 200% 200%; animation: group-glace-shift 3s ease-in-out infinite alternate;
+  }
+  @keyframes group-glace-shift { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+
+  /* ── EFFETS NOM DE GROUPE ── */
+  .gname-red    { color: #EB5846 !important; }
+  .gname-green  { color: #3ecf6e !important; }
+  .gname-blue   { color: #5b8def !important; }
+  .gname-gold   { color: var(--yellow) !important; }
+  .gname-purple { color: #b05bef !important; }
+  .gname-cyan   { color: #3ecfcf !important; }
+  .gname-rainbow { animation: rainbow 2s linear infinite; font-weight: 800; }
+  .gname-fire {
+    background: linear-gradient(90deg, #EB5846, #f0a040, #f0c040, #EB5846);
+    background-size: 300% auto; -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; animation: sparkle-shine 1.8s linear infinite; font-weight: 800;
+  }
+  .gname-neon {
+    color: #3ecf6e !important; text-shadow: 0 0 8px rgba(62,207,110,0.9), 0 0 20px rgba(62,207,110,0.5);
+    animation: gname-neon-blink 1.2s ease-in-out infinite;
+  }
+  @keyframes gname-neon-blink { 0%,100%{opacity:1} 50%{opacity:.7} }
+  .gname-glitch {
+    color: var(--text) !important; position: relative;
+    animation: gname-glitch-anim 2s steps(1) infinite;
+  }
+  @keyframes gname-glitch-anim {
+    0%,90%,100% { text-shadow: none; color: var(--text); }
+    92% { text-shadow: -2px 0 #EB5846, 2px 0 #5b8def; }
+    94% { text-shadow: 2px 0 #EB5846, -2px 0 #5b8def; }
+  }
+  .gname-brillant {
+    background: linear-gradient(90deg, #b07000, #ffe066, #d4a000, #fff5c0, #c49000);
+    background-size: 250% auto; -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; animation: sparkle-shine 2.2s linear infinite; font-weight: 800;
+    filter: drop-shadow(0 0 3px rgba(220,170,0,0.5));
+  }
+
+  /* ── TAG GROUPE SUR PROFIL/CLASSEMENT ── */
+  .group-tag { display: inline-flex; align-items: center; gap: 4px; font-size: .65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; border: 1px solid; white-space: nowrap; cursor: pointer; }
+  /* Styles de tag */
+  .gtag-default  { background: rgba(235,88,70,0.12); color: var(--primary); border-color: rgba(235,88,70,0.3); }
+  .gtag-rounded  { background: rgba(235,88,70,0.12); color: var(--primary); border-color: rgba(235,88,70,0.3); border-radius: 100px; }
+  .gtag-angular  { background: rgba(235,88,70,0.12); color: var(--primary); border-color: rgba(235,88,70,0.3); border-radius: 0; }
+  .gtag-outline  { background: transparent; border-color: var(--primary); color: var(--primary); }
+  .gtag-filled   { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .gtag-glass    { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: var(--text); backdrop-filter: blur(6px); }
+  /* Couleurs de texte du tag */
+  .gtag-color-red    { color: #EB5846 !important; border-color: rgba(235,88,70,0.4) !important; }
+  .gtag-color-green  { color: #3ecf6e !important; border-color: rgba(62,207,110,0.4) !important; }
+  .gtag-color-blue   { color: #5b8def !important; border-color: rgba(91,141,239,0.4) !important; }
+  .gtag-color-gold   { color: var(--yellow) !important; border-color: rgba(240,192,64,0.4) !important; }
+  .gtag-color-purple { color: #b05bef !important; border-color: rgba(176,91,239,0.4) !important; }
+  .gtag-color-cyan   { color: #3ecfcf !important; border-color: rgba(62,207,207,0.4) !important; }
+  /* Effets de tag */
+  .gtag-fx-rainbow { animation: rainbow 2s linear infinite; border-color: rgba(235,88,70,0.3) !important; }
+  .gtag-fx-holo {
+    background: linear-gradient(90deg, rgba(235,88,70,0.2), rgba(91,141,239,0.2), rgba(62,207,110,0.2), rgba(240,192,64,0.2)) !important;
+    background-size: 300% auto !important; animation: sparkle-shine 2s linear infinite; border-color: rgba(255,255,255,0.2) !important;
+  }
+  .gtag-fx-pulse { animation: gtag-pulse 1.4s ease-in-out infinite; }
+  @keyframes gtag-pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(235,88,70,0.3); } 50%{ box-shadow: 0 0 0 4px rgba(235,88,70,0); } }
+  /* ── PIERRE FEUILLE CISEAUX ── */
+  .pfc-wrap { display: flex; flex-direction: column; gap: 24px; max-width: 700px; margin: 0 auto; }
+  .pfc-locked { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 60px 24px; text-align: center; }
+  .pfc-locked-icon { font-size: 3rem; }
+  .pfc-locked-title { font-size: 1.3rem; font-weight: 800; }
+  .pfc-locked-sub { font-size: .9rem; color: var(--muted); }
+  .pfc-section-title { font-size: .68rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .pfc-status-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .pfc-status-left { display: flex; flex-direction: column; gap: 4px; }
+  .pfc-status-label { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .pfc-status-val { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--primary); }
+  .pfc-status-val.ok { color: var(--green); }
+  .pfc-status-val.used { color: var(--muted); }
+  /* Grille joueurs à défier */
+  .pfc-players-grid { display: flex; flex-direction: column; gap: 8px; }
+  .pfc-player-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; transition: border-color .2s; }
+  .pfc-player-row:hover { border-color: var(--primary); }
+  .pfc-player-name { flex: 1; font-weight: 700; font-size: .92rem; }
+  .pfc-player-group { font-size: .72rem; color: var(--muted); font-weight: 600; }
+  .pfc-player-status { font-size: .72rem; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+  .pfc-player-status.available { background: rgba(62,207,110,0.15); color: var(--green); }
+  .pfc-player-status.played    { background: var(--surface2); color: var(--muted); }
+  .pfc-player-status.pending   { background: rgba(240,192,64,0.15); color: var(--yellow); }
+  /* Choix PFC */
+  .pfc-choices { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .pfc-choice-btn { background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 20px 28px; font-size: 2.8rem; cursor: pointer; transition: all .2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .pfc-choice-btn:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 24px var(--primary-glow); }
+  .pfc-choice-btn.selected { border-color: var(--primary); background: rgba(235,88,70,0.1); }
+  .pfc-choice-btn span { font-size: .75rem; font-weight: 700; color: var(--muted); font-family: 'Syne', sans-serif; }
+  /* Défis reçus / en attente */
+  .pfc-challenge-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .pfc-challenge-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .pfc-challenge-from { font-weight: 700; font-size: .95rem; }
+  .pfc-challenge-timer { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--yellow); }
+  .pfc-challenge-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* Résultat */
+  .pfc-result-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+  .pfc-result-card.win  { border-color: var(--green); box-shadow: 0 0 20px rgba(62,207,110,0.2); }
+  .pfc-result-card.lose { border-color: var(--red);   box-shadow: 0 0 20px rgba(235,88,70,0.15); }
+  .pfc-result-card.draw { border-color: var(--yellow); box-shadow: 0 0 20px rgba(240,192,64,0.15); }
+  .pfc-result-emoji { font-size: 3rem; }
+  .pfc-result-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; }
+  .pfc-result-sub { font-size: .88rem; color: var(--muted); }
+  .pfc-result-hands { display: flex; align-items: center; gap: 16px; font-size: 2rem; }
+  .pfc-result-vs { font-size: .75rem; font-weight: 700; color: var(--muted); }
+  /* Historique */
+  .pfc-hist-item { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: 8px; padding: 10px 14px; font-size: .85rem; }
+  .pfc-hist-result { font-weight: 700; width: 60px; flex-shrink: 0; }
+  .pfc-hist-result.win  { color: var(--green); }
+  .pfc-hist-result.lose { color: var(--red); }
+  .pfc-hist-result.draw { color: var(--yellow); }
+  .pfc-hist-detail { flex: 1; color: var(--muted); }
+  .pfc-hist-reward { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--yellow); }
 </style>
 </head>
 <body>
@@ -1114,6 +1348,8 @@
         <div class="nav-dropdown-sep"></div>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('clicker','games',this)">🌱 Clicker</button>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('jardin','games',this)">🌸 Jardin</button>
+        <div class="nav-dropdown-sep"></div>
+        <button class="nav-dropdown-item" onclick="goToFromDropdown('pfc','games',this)">🪨 Pierre Feuille Ciseaux</button>
       </div>
     </div>
 
@@ -1617,6 +1853,11 @@
     </div>
   </div>
 
+  <!-- PIERRE FEUILLE CISEAUX -->
+  <div class="page" id="page-pfc">
+    <div id="pfcContent"></div>
+  </div>
+
   <!-- CLASSEMENT -->
   <div class="page" id="page-classement">
     <div class="leaderboard-wrap">
@@ -1637,7 +1878,13 @@
 
       <!-- VUE GROUPES -->
       <div id="classementViewGroupes" style="display:none;">
-        <div class="lb-note">🏅 Classement hebdomadaire des groupes — le score est calculé sur les Pomels + graines gagnés cette semaine par les membres.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div class="lb-note" style="flex:1;">🏅 Classement hebdomadaire des groupes — le score est calculé sur les Pomels + graines récoltées cette semaine par les membres.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+            <button id="groupShopTopBtn" onclick="openGroupShopFromTop()" style="background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.4);border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;color:var(--yellow);cursor:pointer;transition:all .2s;white-space:nowrap;" onmouseover="this.style.background='rgba(240,192,64,0.25)'" onmouseout="this.style.background='rgba(240,192,64,0.15)'">🛍️ Boutique</button>
+            <button onclick="openGroupInfoModal()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">ℹ️ Règles</button>
+          </div>
+        </div>
 
         <!-- Classement hebdomadaire des groupes -->
         <div style="margin-top:16px;">
@@ -1973,226 +2220,318 @@
   <div class="page" id="page-infos">
     <div class="info-wrap">
 
-      <div class="info-card">
-        <h2>🎰 Bienvenue sur Pomel.</h2>
-        <p>Pomel est un site communautaire où tu peux gagner des Pomels (notre monnaie virtuelle), les dépenser en boutique, parier avec tes amis, accomplir des quêtes et bien plus encore !</p>
+      <div class="info-hero">
+        <h2>🍎 Pomel.</h2>
+        <p>Gagne des <strong>Pomels</strong> chaque jour, dépense-les en boutique, joue avec tes amis et grimpe dans le classement. Tout est ici.</p>
       </div>
 
-      <div class="info-card">
-        <h3>🏠 Page d'accueil</h3>
-        <p>Clique sur le logo <strong>Pomel.</strong> en haut à gauche pour revenir à l'accueil. La page s'adapte à ta largeur d'écran et affiche en priorité ce qui te concerne :</p>
-        <ul>
-          <li>🌱 Alerte si ton stock auto-clicker est plein</li>
-          <li>⚔️ Tes quêtes reçues ou créées en attente</li>
-          <li>🎰 Le statut de ta roulette du jour</li>
-          <li>📜 Le proverbe du jour</li>
-          <li>🏨 Les derniers titres en vente à l'Hôtel des Ventes</li>
-          <li>🌸 Les résultats du Jardin de la semaine (si disponibles)</li>
-          <li>🎲 Les paris en cours, le Pomel'Live et bien plus</li>
-        </ul>
-        <p style="margin-top:8px;font-size:.85rem;color:var(--muted);">Une <strong>pastille rouge</strong> apparaît sur les onglets de navigation quand du nouveau contenu t'attend (nouveau titre à l'hôtel, nouveau pari, nouveau proverbe ou post Live). Elle disparaît dès que tu ouvres la page concernée.</p>
+      <!-- GAGNER DES POMELS -->
+      <div class="info-category-title">💰 Gagner des Pomels</div>
+      <div class="info-accordion">
+
+        <div class="info-item" id="info-roulette">
+          <button class="info-trigger" onclick="toggleInfo('roulette')">
+            <span class="info-trigger-icon">🎰</span>
+            <span class="info-trigger-label">Roulette quotidienne</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Chaque jour à partir de <strong>9h15</strong>, fais tourner la roulette pour gagner des Pomels. Un seul tirage par jour.</p>
+            <ul>
+              <li>Gains : <strong>10 à 1 000 Pomels</strong> selon la chance</li>
+              <li>Se réinitialise chaque jour à minuit</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-paris">
+          <button class="info-trigger" onclick="toggleInfo('paris')">
+            <span class="info-trigger-icon">🎲</span>
+            <span class="info-trigger-label">Paris</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Crée un pari à 2 choix avec des <strong>cotes dynamiques</strong> — plus une option est populaire, plus sa cote baisse.</p>
+            <ul>
+              <li>Cote initiale fixée entre 1.01 et 3.00 à la création</li>
+              <li>Les gains = mise × cote au moment de la fermeture</li>
+              <li>L'argent des gains vient du système — tu ne prends pas celui des perdants</li>
+              <li>Le créateur empoche <strong>20% du pot</strong> à la fermeture</li>
+              <li>Si personne n'a misé sur le bon choix → tout le monde est remboursé</li>
+              <li>Tu peux retirer ta mise à tout moment tant que le pari est ouvert</li>
+              <li>Expire après <strong>3 jours</strong> sans clôture, résultats supprimés après <strong>24h</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-quetes">
+          <button class="info-trigger" onclick="toggleInfo('quetes')">
+            <span class="info-trigger-icon">⚔️</span>
+            <span class="info-trigger-label">Quêtes</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Assigne une mission à un joueur — les Pomels de récompense viennent du système, pas de ta poche.</p>
+            <ul>
+              <li>Récompense max : <strong>5 000 Pomels</strong></li>
+              <li>Le joueur peut accepter ou refuser</li>
+              <li>Quand tu valides : le joueur reçoit la récompense complète, toi tu reçois <strong>la moitié en bonus</strong></li>
+              <li>Expire après <strong>3 jours</strong> sans validation</li>
+            </ul>
+          </div>
+        </div>
+
       </div>
 
-      <div class="info-divider"></div>
+      <!-- JEUX -->
+      <div class="info-category-title">🎮 Jeux</div>
+      <div class="info-accordion">
 
-      <div class="info-card">
-        <h3>🎰 La Roulette Quotidienne</h3>
-        <p>Chaque jour à partir de <strong>9h15</strong>, tu peux faire tourner la roulette et gagner des Pomels. Un seul tirage par jour !</p>
-        <ul>
-          <li>Les gains vont de <strong>10 à 1 000 Pomels</strong> selon la chance</li>
-          <li>Le tirage se réinitialise chaque jour à minuit</li>
-        </ul>
+        <div class="info-item" id="info-snake">
+          <button class="info-trigger" onclick="toggleInfo('snake')">
+            <span class="info-trigger-icon">🐍</span>
+            <span class="info-trigger-label">Serpent & 2048</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Deux jeux avec leaderboard général (all-time) et classement hebdomadaire. Récompenses chaque lundi à 9h.</p>
+            <ul>
+              <li><strong>Serpent</strong> — +5 Pomels par fruit mangé. Le serpent grandit et accélère tous les 5 fruits. Espace = pause.</li>
+              <li><strong>2048</strong> — 1 Pomel tous les 10 points. Tu peux continuer après avoir atteint 2048.</li>
+              <li>Récompenses hebdo : 🥇 2 000 · 🥈 1 500 · 🥉 1 000 · autres 500 🪙</li>
+              <li>Contrôles : flèches, ZQSD ou swipe mobile</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-clicker">
+          <button class="info-trigger" onclick="toggleInfo('clicker')">
+            <span class="info-trigger-icon">🌱</span>
+            <span class="info-trigger-label">Clicker</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Génère des <strong>graines</strong> en cliquant sur un fruit. Les graines sont la monnaie du Clicker et du Jardin.</p>
+            <ul>
+              <li>1 graine par clic (2 avec le Second Fruit)</li>
+              <li>Échange : <strong>100 graines = 1 Pomel</strong></li>
+              <li>Améliorations : Auto-Clicker (200 🌱), Turbo (1 000 🌱), Hyper (10 000 🌱), Ultra (100 000 🌱)</li>
+              <li>Stocks : Extension (2 000 🌱), Grand Entrepôt (5 000 🌱), Méga Entrepôt (100 000 🌱)</li>
+              <li>Second Fruit (10 000 🌱) — 2e fruit cliquable, auto-clicker sur les deux</li>
+              <li>Quand ton stock est plein, un raccourci s'affiche sur la page d'accueil</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-jardin">
+          <button class="info-trigger" onclick="toggleInfo('jardin')">
+            <span class="info-trigger-icon">🌸</span>
+            <span class="info-trigger-label">Jardin de Pomel'Land</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Un jardin communautaire partagé. Plante des fleurs avec tes graines et grimpe au classement de la semaine.</p>
+            <ul>
+              <li>Planter une fleur coûte <strong>10 000 graines</strong></li>
+              <li>Chaque fleur a un design unique généré depuis ton pseudo</li>
+              <li>Le jardin ferme le <strong>dimanche à 12h</strong> et rouvre le <strong>lundi à 12h30</strong></li>
+              <li>Récompenses le lundi à 12h : 🥇 2 000 · 🥈 1 500 · 🥉 1 000 · participants 500 🪙</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-pfc">
+          <button class="info-trigger" onclick="toggleInfo('pfc')">
+            <span class="info-trigger-icon">🪨</span>
+            <span class="info-trigger-label">Pierre Feuille Ciseaux — Groupes</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Un mode multijoueur <strong>réservé aux membres d'un groupe</strong>. Défie un joueur d'un autre groupe en temps réel.</p>
+            <ul>
+              <li>Tu choisis ton coup en envoyant le défi, l'adversaire choisit le sien en répondant</li>
+              <li>Le défi expire au bout d'<strong>1 heure</strong> — si pas de réponse, ta partie quotidienne est rendue</li>
+              <li>On ne peut défier que des membres d'un <strong>autre groupe</strong></li>
+              <li><strong>1 partie par joueur par jour</strong> (résolue uniquement)</li>
+              <li>Récompenses pour ton groupe :
+                <span class="info-tag green">🏆 Victoire : +500 💠 +1 000 pts</span>
+                <span class="info-tag yellow">🤝 Égalité : +500 💠 +1 000 pts (les deux)</span>
+                <span class="info-tag red">💀 Défaite : +200 💠</span>
+              </li>
+              <li>Les points PFC s'ajoutent au score hebdomadaire de ton groupe</li>
+            </ul>
+          </div>
+        </div>
+
       </div>
 
-      <div class="info-divider"></div>
+      <!-- COMMUNAUTÉ -->
+      <div class="info-category-title">👥 Communauté</div>
+      <div class="info-accordion">
 
-      <div class="info-card">
-        <h3>🎲 Les Paris</h3>
-        <p>Crée un pari avec 2 choix et des <strong>cotes dynamiques</strong>. Plus de monde mise sur une option, plus sa cote baisse — et inversement !</p>
-        <ul>
-          <li>À la création, tu fixes une <strong>cote initiale</strong> pour chaque option (entre 1.01 et 3.00)</li>
-          <li>La cote s'ajuste automatiquement en temps réel selon la répartition des mises</li>
-          <li>Les gains sont calculés avec la <strong>cote au moment de la fermeture</strong> : mise × cote finale</li>
-          <li>L'argent des gains vient du <strong>système</strong> — tu ne prends pas l'argent des perdants</li>
-          <li>Le créateur du pari empoche <strong>20% du pot total</strong> à la fermeture</li>
-          <li>Si personne n'a misé sur le bon choix, tout le monde est <strong>remboursé</strong></li>
-          <li>Tu peux <strong>retirer ta mise</strong> à tout moment tant que le pari est ouvert</li>
-          <li>Les paris non clôturés sont supprimés automatiquement après <strong>3 jours</strong></li>
-          <li>Les paris terminés disparaissent après <strong>24h</strong></li>
-        </ul>
+        <div class="info-item" id="info-live">
+          <button class="info-trigger" onclick="toggleInfo('live')">
+            <span class="info-trigger-icon">📡</span>
+            <span class="info-trigger-label">Pomel'Live & Proverbe du jour</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p><strong>Pomel'Live</strong> — poste un message court chaque jour à partir de 9h15.</p>
+            <ul>
+              <li>150 caractères max, un post par jour, remis à zéro chaque matin</li>
+              <li>Like 👍, dislike 👎 ou réponds aux posts</li>
+              <li>Un post avec 5 dislikes est supprimé automatiquement</li>
+            </ul>
+            <p style="margin-top:10px;"><strong>Proverbe du jour</strong> — chaque jour, un membre est tiré au sort pour partager une phrase.</p>
+            <ul>
+              <li>Si c'est ton tour, un champ s'affiche pour écrire ta phrase</li>
+              <li>Tout le monde peut réagir avec des émojis</li>
+              <li>Les 10 derniers proverbes sont conservés</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-chat">
+          <button class="info-trigger" onclick="toggleInfo('chat')">
+            <span class="info-trigger-icon">💬</span>
+            <span class="info-trigger-label">Chat</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Discussion ouverte en temps réel avec toute la communauté.</p>
+            <ul>
+              <li>200 caractères max par message</li>
+              <li>Historique remis à zéro chaque jour à minuit</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-profils">
+          <button class="info-trigger" onclick="toggleInfo('profils')">
+            <span class="info-trigger-icon">👤</span>
+            <span class="info-trigger-label">Profils & Classement</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Retrouve tous les joueurs via <strong>Social → Profils</strong>. Clique sur un pseudo pour voir son profil détaillé.</p>
+            <p>Le <strong>Classement</strong> compare les joueurs sur 3 critères : solde, tirages, ou total gagné. Les titres, badges et effets achetés s'y affichent.</p>
+          </div>
+        </div>
+
       </div>
 
-      <div class="info-divider"></div>
+      <!-- GROUPES -->
+      <div class="info-category-title">🏅 Groupes</div>
+      <div class="info-accordion">
 
-      <div class="info-card">
-        <h3>🎮 Pomel'Games</h3>
-        <p>Un espace dédié aux mini-jeux accessibles via le menu <strong>Pomel'Games</strong>. Deux jeux disponibles :</p>
-        <ul>
-          <li><strong>🐍 Serpent</strong> — +5 Pomels par fruit mangé, crédités à la fin de la partie. Le serpent grandit et accélère tous les 5 fruits. Espace pour mettre en pause.</li>
-          <li><strong>🔢 2048</strong> — Fusionne les tuiles identiques pour atteindre 2048. <strong>1 Pomel tous les 10 points</strong> gagnés (une bonne partie = ~500–2 000 🪙). Tu peux continuer après le 2048 pour un meilleur score.</li>
-          <li>Les deux jeux ont un <strong>leaderboard général</strong> (meilleur score all-time) et un <strong>classement hebdomadaire</strong> avec récompenses le lundi à 9h : 🥇 2 000 · 🥈 1 500 · 🥉 1 000 · autres 500 🪙</li>
-          <li>Contrôles : flèches ⬆⬇⬅➡, Z Q S D ou swipe sur mobile</li>
-        </ul>
+        <div class="info-item" id="info-groupes-base">
+          <button class="info-trigger" onclick="toggleInfo('groupes-base')">
+            <span class="info-trigger-icon">🏗️</span>
+            <span class="info-trigger-label">Créer & rejoindre un groupe</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <ul>
+              <li>Maximum <strong>5 groupes</strong> simultanés · <strong>5 membres</strong> par groupe</li>
+              <li>Créer un groupe : <strong>5 000 🪙</strong> — impossible deux mois de suite (roulement des capitaines)</li>
+              <li>Rejoindre un groupe : <strong>3 000 🪙</strong> reversés au créateur</li>
+              <li>Tu peux quitter à tout moment — si le dernier membre part, le groupe est supprimé</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-groupes-score">
+          <button class="info-trigger" onclick="toggleInfo('groupes-score')">
+            <span class="info-trigger-icon">📊</span>
+            <span class="info-trigger-label">Score & récompenses hebdomadaires</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Le score d'un groupe est calculé chaque semaine :</p>
+            <ul>
+              <li><strong>Pomels gagnés</strong> cette semaine par tous les membres</li>
+              <li>+ <strong>Graines récoltées</strong> cette semaine ÷ 5 (dépenser des graines ne pénalise pas)</li>
+              <li>+ <strong>Points PFC</strong> gagnés en Pierre Feuille Ciseaux</li>
+            </ul>
+            <p style="margin-top:10px;">Chaque lundi à 9h :</p>
+            <ul>
+              <li>🥇 1er : <strong>+2 000 🪙 / membre</strong> · <strong>1 000 💠 fixes + 500 💠 × membres</strong></li>
+              <li>🥈 2e : <strong>+2 000 🪙 / membre</strong> · <strong>750 💠 fixes + 500 💠 × membres</strong></li>
+              <li>🥉 3e : <strong>+2 000 🪙 / membre</strong> · <strong>500 💠 fixes + 500 💠 × membres</strong></li>
+              <li style="color:var(--red)">💥 4e et 5e : groupe dissous, membres expulsés</li>
+              <li>Tous les groupes sont remis à zéro chaque mois</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-groupes-pomcoins">
+          <button class="info-trigger" onclick="toggleInfo('groupes-pomcoins')">
+            <span class="info-trigger-icon">💠</span>
+            <span class="info-trigger-label">PomCoins & Boutique de groupe</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Les <strong>PomCoins (💠)</strong> sont la monnaie exclusive des groupes, gagnée chaque semaine selon le classement.</p>
+            <ul>
+              <li>Servent à acheter des cosmétiques pour le groupe : bannières, badges, effets de nom, style du tag</li>
+              <li>Seul le <strong>créateur</strong> peut acheter, via le bouton 🛍️ Boutique en haut de la page Groupes</li>
+              <li>Tous les membres bénéficient des cosmétiques achetés</li>
+              <li>Les PomCoins disparaissent à la dissolution mensuelle</li>
+              <li>Les <strong>achats sont sauvegardés sur ton compte</strong> — réappliqués gratuitement dans ton prochain groupe</li>
+            </ul>
+          </div>
+        </div>
+
       </div>
 
-      <div class="info-divider"></div>
+      <!-- COMMERCE -->
+      <div class="info-category-title">🛒 Commerce</div>
+      <div class="info-accordion">
 
-      <div class="info-card">
-        <h3>🛒 La Boutique</h3>
-        <p>Dépense tes Pomels pour acheter des titres, des badges, des effets visuels et des bannières. Active-les ensuite dans <strong>Mon profil → ⋯</strong>.</p>
-        <ul>
-          <li><strong>Titres</strong> — s'affichent à côté de ton nom dans le classement</li>
-          <li><strong>Couleur du pseudo</strong> — effet ou couleur fixe sur ton nom</li>
-          <li><strong>Badges</strong> — émojis affichés à côté de ton nom</li>
-          <li><strong>Bannières</strong> — changent le fond de ta carte dans le classement, les profils et les classements de jeux. Trois catégories : couleurs (5 000 🪙), motifs (25 000 🪙) et effets animés (75 000 🪙)</li>
-        </ul>
-      </div>
+        <div class="info-item" id="info-boutique">
+          <button class="info-trigger" onclick="toggleInfo('boutique')">
+            <span class="info-trigger-icon">🛒</span>
+            <span class="info-trigger-label">Boutique</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Dépense tes Pomels pour personnaliser ton apparence dans le classement et les profils. Active via <strong>Mon profil → ⋯</strong>.</p>
+            <ul>
+              <li><strong>Titres</strong> — s'affichent à côté de ton nom</li>
+              <li><strong>Couleur du pseudo</strong> — couleur fixe ou effet animé</li>
+              <li><strong>Badges</strong> — émoji affiché à côté de ton nom</li>
+              <li><strong>Bannières</strong> — fond de ta carte dans les classements</li>
+            </ul>
+          </div>
+        </div>
 
-      <div class="info-divider"></div>
+        <div class="info-item" id="info-hotel">
+          <button class="info-trigger" onclick="toggleInfo('hotel')">
+            <span class="info-trigger-icon">🏨</span>
+            <span class="info-trigger-label">Hôtel des Ventes</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Crée et vends tes propres titres personnalisés à la communauté.</p>
+            <ul>
+              <li>1 titre en vente par jour, au prix de ton choix</li>
+              <li>Expire après <strong>24h</strong> — les Pomels te sont versés à l'achat</li>
+              <li>Les titres achetés restent dans ton inventaire sans limite</li>
+            </ul>
+          </div>
+        </div>
 
-      <div class="info-card">
-        <h3>🏨 Hôtel des Ventes</h3>
-        <p>Crée et vends tes propres titres personnalisés à la communauté !</p>
-        <ul>
-          <li>Chaque joueur peut mettre <strong>1 titre en vente par jour</strong>, au prix qu'il choisit</li>
-          <li>Les titres expirent automatiquement après <strong>24h</strong></li>
-          <li>Quand quelqu'un achète ton titre, les Pomels te sont directement versés</li>
-          <li>Les titres achetés restent dans ton inventaire <strong>sans limite de temps</strong></li>
-          <li>Active-les dans Paramètres → section Titres</li>
-          <li>Les derniers titres en vente sont visibles directement sur la <strong>page d'accueil</strong></li>
-        </ul>
-      </div>
+        <div class="info-item" id="info-banque">
+          <button class="info-trigger" onclick="toggleInfo('banque')">
+            <span class="info-trigger-icon">💸</span>
+            <span class="info-trigger-label">Compteur — Transferts</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p>Envoie des Pomels à n'importe quel joueur directement. L'historique complet de tes transactions est conservé ici.</p>
+          </div>
+        </div>
 
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>⚔️ Les Quêtes</h3>
-        <p>Assigne une mission à un autre joueur et offre-lui des Pomels en récompense — les Pomels sont offerts par le système, pas prélevés sur toi !</p>
-        <ul>
-          <li>Choisis un joueur, décris sa mission et fixe la récompense (<strong>5 000 Pomels max</strong>)</li>
-          <li>Le joueur peut <strong>accepter ou refuser</strong> la quête</li>
-          <li>Une fois la mission accomplie, le créateur <strong>valide</strong> la quête : le joueur reçoit la récompense complète, et le créateur reçoit <strong>la moitié (arrondie au supérieur)</strong> en bonus</li>
-          <li>Les quêtes non terminées sont supprimées après <strong>3 jours</strong></li>
-          <li>Tes quêtes en attente s'affichent directement sur la <strong>page d'accueil</strong></li>
-        </ul>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>🏆 Le Classement</h3>
-        <p>Compare-toi aux autres joueurs sur 3 critères : solde, nombre de tirages, ou total gagné.</p>
-        <ul>
-          <li>Clique sur un pseudo pour voir le profil d'un joueur</li>
-          <li>Les titres, badges et effets achetés s'affichent dans le classement</li>
-        </ul>
-        <h3 style="margin-top:12px;">🏅 Groupes</h3>
-        <p>Crée ou rejoins un groupe pour participer au classement hebdomadaire !</p>
-        <ul>
-          <li><strong>Créer un groupe</strong> coûte <strong>15 000 Pomels</strong> — le créateur est le seul à pouvoir le supprimer</li>
-          <li><strong>Rejoindre un groupe</strong> coûte <strong>1 000 Pomels</strong> — tu peux quitter gratuitement à tout moment</li>
-          <li>Le classement hebdo est basé sur les <strong>Pomels + graines (÷5) gagnés sur la semaine</strong> par les membres</li>
-          <li>Le lundi à 9h, chaque membre du groupe en tête reçoit <strong>+2 000 Pomels</strong> !</li>
-        </ul>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>👥 Profils</h3>
-        <p>Retrouve tous les joueurs de la communauté en un seul endroit, dans l'onglet <strong>Social → Profils</strong>.</p>
-        <ul>
-          <li>Ton profil est mis en avant en haut de page avec tes stats complètes</li>
-          <li>Tous les autres joueurs sont affichés en grille, triés par solde</li>
-          <li>Clique sur un joueur pour voir son profil détaillé</li>
-        </ul>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>💸 Le Compteur</h3>
-        <p>Envoie des Pomels à n'importe quel joueur directement, en saisissant son pseudo et le montant. L'historique complet de tes transactions est conservé ici.</p>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>📜 Proverbe du Jour</h3>
-        <p>Chaque jour, un membre est tiré au sort pour partager un proverbe ou une phrase motivante.</p>
-        <ul>
-          <li>Si c'est ton tour, un champ s'affiche pour écrire ta phrase</li>
-          <li>Une fois publié, tout le monde peut réagir avec des <strong>émojis</strong> (❤️ 😂 🔥 etc.)</li>
-          <li>Les <strong>10 derniers proverbes</strong> sont conservés en grisé</li>
-          <li>Le proverbe du jour est affiché directement sur la <strong>page d'accueil</strong></li>
-        </ul>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>💬 Chat</h3>
-        <p>Un espace de discussion ouvert à tous les joueurs, accessible via le bouton <strong>💬 Chat</strong> dans la barre de navigation.</p>
-        <ul>
-          <li>Envoie des messages en temps réel avec toute la communauté</li>
-          <li>L'historique des messages est <strong>remis à zéro chaque jour à minuit</strong></li>
-          <li><strong>200 caractères max</strong> par message</li>
-        </ul>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>📡 Pomel'Live</h3>
-        <p>À partir de <strong>9h15</strong>, chaque membre peut poster un message court du jour.</p>
-        <ul>
-          <li><strong>150 caractères max</strong>, un seul post par personne par jour</li>
-          <li>Tu peux liker 👍 ou disliker 👎 ou répondre aux posts</li>
-          <li>Un post avec <strong>5 dislikes</strong> est supprimé automatiquement</li>
-          <li>Les posts sont remis à zéro chaque matin</li>
-        </ul>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>🌸 Jardin de Pomel'Land</h3>
-        <p>Un jardin communautaire partagé par tous les joueurs. Le jardin <strong>ferme le dimanche à 12h</strong> pour empêcher toute plantation avant l'annonce des résultats.</p>
-        <ul>
-          <li>Plante une fleur pour <strong>10 000 graines</strong> (monnaie du Clicker)</li>
-          <li>Chaque fleur a une forme et une couleur unique générée à partir de ton pseudo</li>
-          <li>Le classement de la semaine est visible directement dans le jardin</li>
-          <li>🥇 Le plus de fleurs : <strong>2 000 Pomels</strong></li>
-          <li>🥈 Deuxième : <strong>1 500 Pomels</strong></li>
-          <li>🥉 Troisième : <strong>1 000 Pomels</strong></li>
-          <li>Tous les autres participants : <strong>500 Pomels</strong> de consolation</li>
-          <li>Les récompenses sont distribuées automatiquement le <strong>lundi à 12h</strong></li>
-          <li>Le jardin <strong>rouvre le lundi à 12h30</strong></li>
-        </ul>
-      </div>
-
-      <div class="info-divider"></div>
-
-      <div class="info-card">
-        <h3>🌱 Le Clicker</h3>
-        <p>Un mini-jeu de clicker où tu génères des <strong>graines de Pomels</strong>, une monnaie propre à ce jeu, en cliquant sur un fruit.</p>
-        <ul>
-          <li>Clique sur le fruit pour générer <strong>1 graine</strong> par clic (2 graines avec le Second Fruit débloqué !)</li>
-          <li>Les graines servent à acheter des améliorations et à planter des fleurs dans le Jardin</li>
-          <li>Échange tes graines contre des Pomels : <strong>100 graines = 1 Pomel</strong></li>
-        </ul>
-        <p style="margin-top:8px;font-size:.85rem;color:var(--muted);font-weight:600;">Améliorations disponibles (les achetées disparaissent de la liste) :</p>
-        <ul>
-          <li><strong>🤖 Auto-Clicker (200 🌱)</strong> — génère des graines automatiquement, stockées jusqu'à la capacité max</li>
-          <li><strong>⚡ Turbo Auto-Clicker (1 000 🌱)</strong> — passe à 1 graine / 1 sec</li>
-          <li><strong>🚀 Hyper Auto-Clicker (10 000 🌱)</strong> — passe à 2 graines / 1 sec par fruit</li>
-          <li><strong>☄️ Ultra Auto-Clicker (100 000 🌱)</strong> — passe à 5 graines / 1 sec par fruit</li>
-          <li><strong>🗄️ Extension de stock (2 000 🌱)</strong> — stock auto porté à 2 000 graines</li>
-          <li><strong>🗄️🗄️ Grand Entrepôt (5 000 🌱)</strong> — stock auto porté à 5 000 graines</li>
-          <li><strong>🏭 Méga Entrepôt (100 000 🌱)</strong> — stock auto porté à 10 000 graines</li>
-          <li><strong>🍎 Second Fruit (10 000 🌱)</strong> — 2e fruit cliquable, l'auto-clicker génère des graines sur chaque fruit, stock auto +1 000</li>
-          <li>Quand ton stock est plein, un raccourci apparaît sur la <strong>page d'accueil</strong></li>
-        </ul>
       </div>
 
     </div>
@@ -2295,11 +2634,6 @@ async function dbGetAll(path) {
 
 // ── ACCOUNT HELPERS ──────────────────────────────
 async function getAccount(code) { return dbGet('accounts/' + code); }
-async function saveAccount(acc) {
-  // Limiter l'historique à 20 entrées avant toute sauvegarde
-  if (acc.history && acc.history.length > 20) acc.history = acc.history.slice(0, 20);
-  await dbSet('accounts/' + acc.code, acc);
-}
 async function getAllAccounts() { return dbGetAll('accounts'); }
 async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); }
 
@@ -2353,6 +2687,9 @@ function migrateAccount(acc) {
   if (!acc.customTitles) acc.customTitles = {};
   if (!acc.password) acc.password = acc.code;
   if (!acc.streak) acc.streak = { days: 0, lastClaim: null, cycleStart: null };
+  if (!acc.groupOwnedItems) acc.groupOwnedItems = [];
+  if (!acc.lastCreatedGroupMonth) acc.lastCreatedGroupMonth = null;
+  if (!acc.pfcLastPlayedDate) acc.pfcLastPlayedDate = null;
   // group = ID Firebase (string) ou null — anciens comptes avec nom de groupe textuel → reset
   // Les vrais IDs font toujours >= 8 chars (préfixe 'g' + base36 timestamp + random)
   if (acc.group && typeof acc.group === 'string' && acc.group.length < 8) acc.group = null;
@@ -2690,6 +3027,7 @@ function _onPageLoad(id) {
   if (id === 'clicker') renderClickerPage();
   if (id === 'jardin') renderJardin();
   if (id === 'profils') renderProfils();
+  if (id === 'pfc') renderPFC();
   if (id === 'discussion') { renderDiscussion(); markPageSeen('discussion'); }
   // Stop discussion listener when leaving the page
   if (id !== 'discussion') stopDiscussionListener();
@@ -2911,7 +3249,8 @@ async function renderLeaderboard(mode) {
     if (bannerCls) item.classList.add(bannerCls);
     // Resolve group from groups data (source of truth) instead of acc.group
     const accGroupId = acc.group || _lbGroupMap[acc.code] || null;
-    const groupBadge = accGroupId ? `<span class="lb-group-badge" data-gid="${accGroupId}">…</span>` : '';
+    const accGroup = accGroupId ? (groups || []).find(g => g.id === accGroupId) : null;
+    const groupBadge = accGroup ? buildGroupTag(accGroup, accGroup.name) : '';
     // Active titles badges — show only last 7, with +N indicator
     const allTitlesForLb = (acc.activeTitles || []).map(tid => {
       const t = resolveAnyTitleDef(tid, acc);
@@ -2942,13 +3281,6 @@ async function renderLeaderboard(mode) {
       <span class="lb-val">${display}</span>
     `;
     list.appendChild(item);
-  });
-  // Résoudre les noms de groupes en async (utilise le cache déjà chargé)
-  const groupsForBadges = await getGroupsCache();
-  const gNameMap = {};
-  (groupsForBadges || []).forEach(g => { gNameMap[g.id] = g.name; });
-  document.querySelectorAll('[data-gid]').forEach(el => {
-    el.textContent = gNameMap[el.dataset.gid] || '?';
   });
 }
 async function openProfileModal(code) {
@@ -2988,7 +3320,7 @@ async function openProfileModal(code) {
         <span class="${nameClass}">${migrated.name}${badgeHTMLM}${streakHTMLM}</span>
         <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button>
       </h2>
-      <div style="font-size:.78rem;color:var(--muted);">Membre depuis ${joined}${groupName ? ` · <span style="color:var(--primary);font-weight:700;">🏅 ${groupName}</span>` : ''}</div>
+      <div style="font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Membre depuis ${joined}${playerGroup ? ' · ' + buildGroupTag(playerGroup, playerGroup.name) : ''}</div>
 
       <div class="profil-me-stats">
         <div class="profil-stat">
@@ -3072,7 +3404,7 @@ function getGroupMonthKey() {
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 }
 
-// Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine par ses membres + graines / 5
+// Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine + graines récoltées cette semaine (via historique) + bonus PFC
 async function computeGroupWeekScore(group, allAccounts, allClicker) {
   const weekKey = getGroupWeekKey();
   const weekStart = new Date(weekKey);
@@ -3080,25 +3412,23 @@ async function computeGroupWeekScore(group, allAccounts, allClicker) {
   for (const code of (group.members || [])) {
     const acc = allAccounts.find(a => a.code === code);
     if (acc) {
-      // Pomels gagnés cette semaine = somme des entrées positives dans l'historique depuis weekStart
       (acc.history || []).forEach(h => {
-        if (h.amount > 0 && new Date(h.date) >= weekStart) pomels += h.amount;
+        if (new Date(h.date) < weekStart) return;
+        if (h.amount > 0) pomels += h.amount;
+        if (h.type === 'seeds' && h.seeds > 0) seeds += h.seeds;
       });
     }
-    // Graines actuelles du membre
-    const clicker = allClicker[code];
-    if (clicker) seeds += Math.floor(clicker.seeds || 0);
   }
-  return Math.round(pomels + seeds / 5);
+  const pfcBonus = group.pfcWeekBonus || 0;
+  return Math.round(pomels + seeds / 5 + pfcBonus);
 }
 
 async function renderGroupsOnPage() {
-  const [groups, allAccounts, clickerSnap] = await Promise.all([
+  const [groups, allAccounts] = await Promise.all([
     getAllGroups(),
     getAllAccounts(),
-    dbGet('clicker'),
   ]);
-  const allClicker = clickerSnap || {};
+  const allClicker = {}; // plus utilisé — les graines passent maintenant par l'historique
 
   // Mon groupe actuel (source de vérité = groups membership)
   const myGroup = groups.find(g => (g.members || []).includes(state.code));
@@ -3156,6 +3486,9 @@ async function renderGroupsOnPage() {
       const item = document.createElement('div');
       item.className = 'lb-item' + (isMyG ? ' me' : '');
 
+      // Appliquer bannière cosmétique
+      applyGroupBanner(item, g);
+
       // Ligne rouge séparatrice avant le 4e
       if (i === 3) {
         const separator = document.createElement('div');
@@ -3173,15 +3506,24 @@ async function renderGroupsOnPage() {
         item.style.opacity = '.75';
       }
 
+      // Cosmétiques nom
+      const cosm = g.cosmetics || {};
+      const nameCls = cosm.activeName ? (GROUP_SHOP.find(i => i.id === cosm.activeName) || {}).cls || '' : '';
+      const badgeEmoji = cosm.activeBadge ? (GROUP_SHOP.find(i => i.id === cosm.activeBadge) || {}).emoji || '' : '';
+      const pomcoinBadge = `<span style="font-size:.65rem;color:var(--yellow);font-weight:700;background:rgba(240,192,64,0.1);border:1px solid rgba(240,192,64,0.3);border-radius:4px;padding:2px 6px;">💠 ${(g.pomcoins||0).toLocaleString('fr-FR')}</span>`;
+      const shopBtn = '';
+
       item.innerHTML = `
         <span class="lb-rank ${rankClass}">${medals[i] || rank}</span>
         <span class="lb-medal">${medals[i] || ''}</span>
         <div class="lb-info">
-          <span class="lb-name" style="cursor:default">${g.name}</span>
+          <span class="lb-name" style="cursor:default">${badgeEmoji ? badgeEmoji + ' ' : ''}<span class="${nameCls}">${g.name}</span></span>
           <span class="lb-group-badge">${(g.members||[]).length}/5 membres</span>
           ${isMyG ? '<span class="lb-you-badge">Mon groupe</span>' : ''}
           ${rank === 1 ? '<span style="font-size:.65rem;color:var(--yellow);font-weight:700;background:rgba(240,192,64,0.1);border:1px solid rgba(240,192,64,0.3);border-radius:4px;padding:2px 6px;">👑 En tête</span>' : ''}
           ${inDanger ? '<span style="font-size:.65rem;color:var(--red);font-weight:700;background:rgba(235,88,70,0.1);border:1px solid rgba(235,88,70,0.3);border-radius:4px;padding:2px 6px;">💥 En danger</span>' : ''}
+          ${pomcoinBadge}
+          ${shopBtn}
         </div>
         <span class="group-item-score">${g.weekScore.toLocaleString('fr-FR')} pts</span>
       `;
@@ -3241,6 +3583,15 @@ async function handleCreateGroup() {
   if (!name) { setAlert('createGroupAlert', 'Donne un nom à ton groupe !', 'error'); return; }
   if (state.balance < 5000) { setAlert('createGroupAlert', 'Il te faut 5 000 Pomels pour créer un groupe !', 'error'); return; }
 
+  // Règle : pas 2 mois de suite
+  const currentMonthKey = getGroupMonthKey();
+  const prevMonth = new Date();
+  prevMonth.setMonth(prevMonth.getMonth() - 1);
+  const prevMonthKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth()+1).padStart(2,'0')}`;
+  if (state.lastCreatedGroupMonth && state.lastCreatedGroupMonth === prevMonthKey) {
+    setAlert('createGroupAlert', 'Tu as déjà créé un groupe le mois dernier — attends encore un mois !', 'error'); return;
+  }
+
   const groups = await getAllGroups();
   // Max 5 groupes au total
   if (groups.length >= 5) { setAlert('createGroupAlert', 'Le nombre maximum de groupes (5) est atteint !', 'error'); return; }
@@ -3255,6 +3606,7 @@ async function handleCreateGroup() {
 
   state.balance -= 5000;
   state.history.unshift({ type: 'group', desc: `Groupe créé : "${name}"`, amount: -5000, date: new Date().toISOString() });
+  state.lastCreatedGroupMonth = getGroupMonthKey();
 
   const id = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   const now = new Date();
@@ -3389,24 +3741,39 @@ async function checkGroupWeeklyReward() {
   const groups = await getAllGroups();
   if (!groups.length) return;
   const allAccounts = await getAllAccounts();
-  const allClicker = (await dbGet('clicker')) || {};
 
   // Calculer les scores hebdo
   const scored = await Promise.all(groups.map(async g => ({
     ...g,
-    score: await computeGroupWeekScore(g, allAccounts, allClicker),
+    score: await computeGroupWeekScore(g, allAccounts, {}),
   })));
   scored.sort((a, b) => b.score - a.score);
 
-  // Top 3 → chaque membre gagne 2 000 Pomels
+  // Top 3 → chaque membre gagne 2 000 Pomels + PomCoins au groupe
+  const pomcoinRewards = [1000, 750, 500];
   for (let i = 0; i < Math.min(3, scored.length); i++) {
     const g = scored[i];
+    const fixedPomcoins = pomcoinRewards[i];
+    const memberBonus   = (g.members || []).length * 500;
+    const totalPomcoins = fixedPomcoins + memberBonus;
+    // Mettre à jour le groupe avec les PomCoins
+    const groupToUpdate = await getGroup(g.id);
+    if (groupToUpdate) {
+      groupToUpdate.pomcoins = (groupToUpdate.pomcoins || 0) + totalPomcoins;
+      groupToUpdate.pfcWeekBonus = 0; // Reset bonus PFC hebdo
+      groupToUpdate.cosmetics = groupToUpdate.cosmetics || {};
+      const creatorAcc = await getAccount(groupToUpdate.creatorCode);
+      if (creatorAcc && creatorAcc.groupOwnedItems && creatorAcc.groupOwnedItems.length) {
+        // Les items déjà possédés sont dans state.groupOwnedItems — on ne touche pas aux cosmétiques actifs
+      }
+      await saveGroup(groupToUpdate);
+    }
     for (const code of (g.members || [])) {
       const acc = await getAccount(code);
       if (acc) {
         acc.balance += 2000;
         acc.history = acc.history || [];
-        acc.history.unshift({ type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo !`, amount: 2000, date: now.toISOString() });
+        acc.history.unshift({ type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo ! (+${totalPomcoins} PomCoins au groupe)`, amount: 2000, date: now.toISOString() });
         await saveAccount(acc);
         if (code === state.code) { state = migrateAccount(acc); refreshUI(); }
       }
@@ -3430,6 +3797,325 @@ async function checkGroupWeeklyReward() {
   }
 
   _groupCache = null;
+}
+
+// ── BOUTIQUE GROUPE ─────────────────────────────
+
+const GROUP_SHOP = [
+  // Bannières couleurs unies — 2 500 PomCoins
+  { id: 'gbanner_red',    cat: 'banner', name: '🟥 Bannière Rouge',    price: 2500, cls: 'group-banner-red',    preview: 'rgba(235,88,70,0.35)' },
+  { id: 'gbanner_green',  cat: 'banner', name: '🟩 Bannière Verte',    price: 2500, cls: 'group-banner-green',  preview: 'rgba(62,207,110,0.3)' },
+  { id: 'gbanner_blue',   cat: 'banner', name: '🟦 Bannière Bleue',    price: 2500, cls: 'group-banner-blue',   preview: 'rgba(91,141,239,0.3)' },
+  { id: 'gbanner_orange', cat: 'banner', name: '🟧 Bannière Orange',   price: 2500, cls: 'group-banner-orange', preview: 'rgba(240,160,64,0.3)' },
+  { id: 'gbanner_purple', cat: 'banner', name: '🟪 Bannière Violette', price: 2500, cls: 'group-banner-purple', preview: 'rgba(176,91,239,0.3)' },
+  { id: 'gbanner_black',  cat: 'banner', name: '⬛ Bannière Noire',    price: 2500, cls: 'group-banner-black',  preview: 'rgba(10,10,12,0.8)' },
+  { id: 'gbanner_gold',   cat: 'banner', name: '🟨 Bannière Dorée',    price: 2500, cls: 'group-banner-gold',   preview: 'rgba(240,192,64,0.3)' },
+  // Bannières motifs — 5 000 PomCoins
+  { id: 'gbanner_damier',      cat: 'banner', name: '🔲 Motif Damier',       price: 5000, cls: 'group-banner-damier',      preview: null },
+  { id: 'gbanner_vagues',      cat: 'banner', name: '〰️ Motif Vagues',        price: 5000, cls: 'group-banner-vagues',      preview: null },
+  { id: 'gbanner_constellation',cat:'banner', name: '✦ Constellation',        price: 5000, cls: 'group-banner-constellation',preview: null },
+  { id: 'gbanner_grille',      cat: 'banner', name: '🔳 Motif Grille',        price: 5000, cls: 'group-banner-grille',      preview: null },
+  { id: 'gbanner_diagonales',  cat: 'banner', name: '╱ Diagonales',           price: 5000, cls: 'group-banner-diagonales',  preview: null },
+  // Bannières effets animés — 5 000 PomCoins
+  { id: 'gbanner_rainbow', cat: 'banner', name: '🌈 Arc-en-ciel',  price: 5000, cls: 'group-banner-rainbow', preview: null },
+  { id: 'gbanner_aurora',  cat: 'banner', name: '🌌 Aurore',       price: 5000, cls: 'group-banner-aurora',  preview: null },
+  { id: 'gbanner_plasma',  cat: 'banner', name: '⚡ Plasma',       price: 5000, cls: 'group-banner-plasma',  preview: null },
+  { id: 'gbanner_feu',     cat: 'banner', name: '🔥 Feu',          price: 5000, cls: 'group-banner-feu',    preview: null },
+  { id: 'gbanner_glace',   cat: 'banner', name: '❄️ Glace',        price: 5000, cls: 'group-banner-glace',  preview: null },
+  // Badges de groupe — 1 000 PomCoins
+  { id: 'gbadge_sword',  cat: 'badge', name: '⚔️ Épée',       price: 1000, emoji: '⚔️' },
+  { id: 'gbadge_fire',   cat: 'badge', name: '🔥 Flamme',     price: 1000, emoji: '🔥' },
+  { id: 'gbadge_crown',  cat: 'badge', name: '👑 Couronne',   price: 1000, emoji: '👑' },
+  { id: 'gbadge_gem',    cat: 'badge', name: '💎 Diamant',    price: 1000, emoji: '💎' },
+  { id: 'gbadge_moon',   cat: 'badge', name: '🌙 Lune',       price: 1000, emoji: '🌙' },
+  { id: 'gbadge_bolt',   cat: 'badge', name: '⚡ Éclair',     price: 1000, emoji: '⚡' },
+  { id: 'gbadge_dragon', cat: 'badge', name: '🐉 Dragon',     price: 1000, emoji: '🐉' },
+  { id: 'gbadge_wave',   cat: 'badge', name: '🌊 Vague',      price: 1000, emoji: '🌊' },
+  { id: 'gbadge_target', cat: 'badge', name: '🎯 Cible',      price: 1000, emoji: '🎯' },
+  { id: 'gbadge_bow',    cat: 'badge', name: '🏹 Arc',        price: 1000, emoji: '🏹' },
+  { id: 'gbadge_flower', cat: 'badge', name: '🌺 Fleur',      price: 1000, emoji: '🌺' },
+  { id: 'gbadge_skull',  cat: 'badge', name: '☠️ Crâne',      price: 1000, emoji: '☠️' },
+  { id: 'gbadge_lion',   cat: 'badge', name: '🦁 Lion',       price: 1000, emoji: '🦁' },
+  { id: 'gbadge_wolf',   cat: 'badge', name: '🐺 Loup',       price: 1000, emoji: '🐺' },
+  { id: 'gbadge_star',   cat: 'badge', name: '🌟 Étoile',     price: 1000, emoji: '🌟' },
+  { id: 'gbadge_apple',  cat: 'badge', name: '🍎 Pomme',      price: 1000, emoji: '🍎' },
+  { id: 'gbadge_circus', cat: 'badge', name: '🎪 Cirque',     price: 1000, emoji: '🎪' },
+  { id: 'gbadge_mask',   cat: 'badge', name: '🎭 Masque',     price: 1000, emoji: '🎭' },
+  { id: 'gbadge_crystal',cat: 'badge', name: '🔮 Cristal',    price: 1000, emoji: '🔮' },
+  { id: 'gbadge_dagger', cat: 'badge', name: '🗡️ Dague',     price: 1000, emoji: '🗡️' },
+  // Effets nom de groupe — couleurs — 5 000 PomCoins
+  { id: 'gname_red',    cat: 'name', name: '🔴 Nom Rouge',   price: 5000, cls: 'gname-red' },
+  { id: 'gname_green',  cat: 'name', name: '🟢 Nom Vert',    price: 5000, cls: 'gname-green' },
+  { id: 'gname_blue',   cat: 'name', name: '🔵 Nom Bleu',    price: 5000, cls: 'gname-blue' },
+  { id: 'gname_gold',   cat: 'name', name: '🟡 Nom Doré',    price: 5000, cls: 'gname-gold' },
+  { id: 'gname_purple', cat: 'name', name: '🟣 Nom Violet',  price: 5000, cls: 'gname-purple' },
+  { id: 'gname_cyan',   cat: 'name', name: '🩵 Nom Cyan',    price: 5000, cls: 'gname-cyan' },
+  // Effets nom de groupe — animés — 5 000 PomCoins
+  { id: 'gname_rainbow',  cat: 'name', name: '🌈 Arc-en-ciel',    price: 5000, cls: 'gname-rainbow' },
+  { id: 'gname_fire',     cat: 'name', name: '🔥 Feu',             price: 5000, cls: 'gname-fire' },
+  { id: 'gname_neon',     cat: 'name', name: '💚 Néon',            price: 5000, cls: 'gname-neon' },
+  { id: 'gname_glitch',   cat: 'name', name: '📡 Glitch',          price: 5000, cls: 'gname-glitch' },
+  { id: 'gname_brillant', cat: 'name', name: '✨ Brillant',         price: 5000, cls: 'gname-brillant' },
+  // Tag groupe sur profil — couleur texte — 5 000 PomCoins
+  { id: 'gtag_color_red',    cat: 'tag', name: '🔴 Tag Rouge',    price: 5000, tagColor: 'gtag-color-red' },
+  { id: 'gtag_color_green',  cat: 'tag', name: '🟢 Tag Vert',     price: 5000, tagColor: 'gtag-color-green' },
+  { id: 'gtag_color_blue',   cat: 'tag', name: '🔵 Tag Bleu',     price: 5000, tagColor: 'gtag-color-blue' },
+  { id: 'gtag_color_gold',   cat: 'tag', name: '🟡 Tag Doré',     price: 5000, tagColor: 'gtag-color-gold' },
+  { id: 'gtag_color_purple', cat: 'tag', name: '🟣 Tag Violet',   price: 5000, tagColor: 'gtag-color-purple' },
+  { id: 'gtag_color_cyan',   cat: 'tag', name: '🩵 Tag Cyan',     price: 5000, tagColor: 'gtag-color-cyan' },
+  // Tag groupe sur profil — style — 5 000 PomCoins
+  { id: 'gtag_rounded',  cat: 'tag', name: '● Tag Arrondi',       price: 5000, tagStyle: 'gtag-rounded' },
+  { id: 'gtag_angular',  cat: 'tag', name: '■ Tag Angulaire',     price: 5000, tagStyle: 'gtag-angular' },
+  { id: 'gtag_outline',  cat: 'tag', name: '○ Tag Outline',       price: 5000, tagStyle: 'gtag-outline' },
+  { id: 'gtag_filled',   cat: 'tag', name: '◉ Tag Filled',        price: 5000, tagStyle: 'gtag-filled' },
+  { id: 'gtag_glass',    cat: 'tag', name: '◈ Tag Glassmorphism', price: 5000, tagStyle: 'gtag-glass' },
+  // Tag groupe sur profil — effets — 5 000 PomCoins
+  { id: 'gtag_fx_rainbow', cat: 'tag', name: '🌈 Tag Arc-en-ciel',    price: 5000, tagFx: 'gtag-fx-rainbow' },
+  { id: 'gtag_fx_holo',    cat: 'tag', name: '🔮 Tag Holographique',  price: 5000, tagFx: 'gtag-fx-holo' },
+  { id: 'gtag_fx_pulse',   cat: 'tag', name: '💫 Tag Pulsant',        price: 5000, tagFx: 'gtag-fx-pulse' },
+];
+
+// Construire le HTML du tag groupe selon les cosmétiques actifs du groupe
+function buildGroupTag(group, groupName) {
+  if (!group && !groupName) return '';
+  const name = groupName || (group && group.name) || '?';
+  const cosm = (group && group.cosmetics) || {};
+  const badge = cosm.activeBadge ? (GROUP_SHOP.find(i => i.id === cosm.activeBadge) || {}).emoji || '' : '';
+  const nameClass = cosm.activeName ? (GROUP_SHOP.find(i => i.id === cosm.activeName) || {}).cls || '' : '';
+  const tagStyle = cosm.activeTagStyle ? (GROUP_SHOP.find(i => i.id === cosm.activeTagStyle) || {}).tagStyle || 'gtag-default' : 'gtag-default';
+  const tagColor = cosm.activeTagColor ? (GROUP_SHOP.find(i => i.id === cosm.activeTagColor) || {}).tagColor || '' : '';
+  const tagFx    = cosm.activeTagFx    ? (GROUP_SHOP.find(i => i.id === cosm.activeTagFx)    || {}).tagFx    || '' : '';
+  return `<span class="group-tag ${tagStyle} ${tagColor} ${tagFx}">${badge ? badge + ' ' : ''}🏅 <span class="${nameClass}">${name}</span></span>`;
+}
+
+// Appliquer la bannière de groupe à un élément lb-item
+function applyGroupBanner(el, group) {
+  const cosm = (group && group.cosmetics) || {};
+  if (cosm.activeBanner) {
+    const item = GROUP_SHOP.find(i => i.id === cosm.activeBanner);
+    if (item && item.cls) el.classList.add(item.cls);
+  }
+}
+
+async function openGroupShopFromTop() {
+  const groups = await getGroupsCache();
+  const myGroup = (groups || []).find(g => (g.members || []).includes(state.code));
+  if (!myGroup) { alert('Tu n\'es dans aucun groupe !'); return; }
+  openGroupShop(myGroup.id);
+}
+
+function openGroupInfoModal() {
+  const existing = document.getElementById('groupInfoModal');
+  if (existing) { existing.remove(); return; }
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'groupInfoModal';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal-box" style="max-width:520px;">
+      <h2>🏅 Règles des Groupes <button class="modal-close" onclick="document.getElementById('groupInfoModal').remove()">✕</button></h2>
+
+      <div style="display:flex;flex-direction:column;gap:14px;font-size:.88rem;line-height:1.6;">
+
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">📋 Création & accès</div>
+          <ul style="display:flex;flex-direction:column;gap:4px;padding-left:18px;color:var(--text);">
+            <li>Maximum <strong>5 groupes</strong> au total · <strong>5 membres</strong> par groupe</li>
+            <li>Créer un groupe : <strong style="color:var(--primary);">5 000 🪙</strong> — les 3 000 🪙 de chaque membre rejoignant te sont reversés</li>
+            <li>Rejoindre un groupe : <strong style="color:var(--primary);">3 000 🪙</strong></li>
+            <li>Impossible de créer un groupe <strong>deux mois de suite</strong></li>
+            <li>Si le dernier membre quitte, le groupe est supprimé automatiquement</li>
+          </ul>
+        </div>
+
+        <div style="height:1px;background:var(--border);"></div>
+
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">📊 Score hebdomadaire</div>
+          <ul style="display:flex;flex-direction:column;gap:4px;padding-left:18px;color:var(--text);">
+            <li><strong>Pomels gagnés</strong> cette semaine par tous les membres</li>
+            <li>+ <strong>Graines récoltées</strong> cette semaine (clicker & auto) <strong>÷ 5</strong></li>
+            <li>Dépenser ses graines ne pénalise <strong>pas</strong> le groupe</li>
+          </ul>
+        </div>
+
+        <div style="height:1px;background:var(--border);"></div>
+
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">🏆 Récompenses — chaque lundi à 9h</div>
+          <ul style="display:flex;flex-direction:column;gap:4px;padding-left:18px;color:var(--text);">
+            <li>🥇 1er : <strong style="color:var(--green);">+2 000 🪙 / membre</strong> · <strong style="color:var(--yellow);">1 000 💠 fixes + 500 × membres</strong></li>
+            <li>🥈 2e : <strong style="color:var(--green);">+2 000 🪙 / membre</strong> · <strong style="color:var(--yellow);">750 💠 fixes + 500 × membres</strong></li>
+            <li>🥉 3e : <strong style="color:var(--green);">+2 000 🪙 / membre</strong> · <strong style="color:var(--yellow);">500 💠 fixes + 500 × membres</strong></li>
+            <li style="color:var(--red);">💥 4e et 5e : groupe <strong>dissous</strong>, tous les membres expulsés</li>
+          </ul>
+        </div>
+
+        <div style="height:1px;background:var(--border);"></div>
+
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">🔄 Remise à zéro mensuelle</div>
+          <ul style="display:flex;flex-direction:column;gap:4px;padding-left:18px;color:var(--text);">
+            <li>Tous les groupes sont <strong>dissous chaque mois</strong> — les PomCoins du groupe disparaissent</li>
+            <li>Tes achats cosmétiques restent sur ton compte et sont <strong>réappliqués gratuitement</strong> dans ton prochain groupe</li>
+          </ul>
+        </div>
+
+        <div style="height:1px;background:var(--border);"></div>
+
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">💠 PomCoins & boutique</div>
+          <ul style="display:flex;flex-direction:column;gap:4px;padding-left:18px;color:var(--text);">
+            <li>Les PomCoins appartiennent au groupe — ils servent à acheter des <strong>cosmétiques</strong> (bannières, badges, effets de nom, style du tag affiché sur les profils)</li>
+            <li>Seul le <strong>créateur</strong> peut acheter des améliorations, via le bouton <strong>🛍️ Boutique</strong> sur la carte du groupe</li>
+            <li>Tous les membres bénéficient des cosmétiques achetés</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+// Ouvrir la pop-up boutique du groupe
+async function openGroupShop(groupId) {
+  const [group, allGroups] = await Promise.all([getGroup(groupId), getAllGroups()]);
+  if (!group) return;
+  const isCreator = group.creatorCode === state.code;
+  const isMember  = (group.members || []).includes(state.code);
+  if (!isMember) return;
+
+  const cosm     = group.cosmetics || {};
+  const owned    = state.groupOwnedItems || [];
+  const pomcoins = group.pomcoins || 0;
+
+  // Sections du catalogue
+  const sections = [
+    { label: '🖼️ Bannières — Couleurs unies', items: GROUP_SHOP.filter(i => i.cat === 'banner' && i.price === 2500) },
+    { label: '🔲 Bannières — Motifs',         items: GROUP_SHOP.filter(i => i.cat === 'banner' && i.price === 5000 && !i.cls.includes('rainbow') && !i.cls.includes('aurora') && !i.cls.includes('plasma') && !i.cls.includes('feu') && !i.cls.includes('glace')) },
+    { label: '✨ Bannières — Effets animés',  items: GROUP_SHOP.filter(i => i.cat === 'banner' && i.price === 5000 && (i.cls.includes('rainbow') || i.cls.includes('aurora') || i.cls.includes('plasma') || i.cls.includes('feu') || i.cls.includes('glace'))) },
+    { label: '🏅 Badges de groupe',           items: GROUP_SHOP.filter(i => i.cat === 'badge') },
+    { label: '✍️ Effets nom — Couleurs',      items: GROUP_SHOP.filter(i => i.cat === 'name' && i.price === 5000 && !i.cls.includes('rainbow') && !i.cls.includes('fire') && !i.cls.includes('neon') && !i.cls.includes('glitch') && !i.cls.includes('brillant')) },
+    { label: '🎨 Effets nom — Animés',        items: GROUP_SHOP.filter(i => i.cat === 'name' && (i.cls.includes('rainbow') || i.cls.includes('fire') || i.cls.includes('neon') || i.cls.includes('glitch') || i.cls.includes('brillant'))) },
+    { label: '🏷️ Tag profil — Couleur',       items: GROUP_SHOP.filter(i => i.cat === 'tag' && i.tagColor) },
+    { label: '🏷️ Tag profil — Style',         items: GROUP_SHOP.filter(i => i.cat === 'tag' && i.tagStyle) },
+    { label: '🏷️ Tag profil — Effets',        items: GROUP_SHOP.filter(i => i.cat === 'tag' && i.tagFx) },
+  ];
+
+  function getActiveId(item) {
+    if (item.cat === 'banner') return cosm.activeBanner;
+    if (item.cat === 'badge')  return cosm.activeBadge;
+    if (item.cat === 'name')   return cosm.activeName;
+    if (item.cat === 'tag' && item.tagColor) return cosm.activeTagColor;
+    if (item.cat === 'tag' && item.tagStyle) return cosm.activeTagStyle;
+    if (item.cat === 'tag' && item.tagFx)    return cosm.activeTagFx;
+    return null;
+  }
+
+  function buildPreview(item) {
+    if (item.cat === 'badge') return `<div class="group-shop-item-preview" style="background:var(--surface2);font-size:1.2rem;">${item.emoji}</div>`;
+    if (item.cat === 'banner' && item.preview) return `<div class="group-shop-item-preview ${item.cls}" style="background:${item.preview};"></div>`;
+    if (item.cat === 'banner') return `<div class="group-shop-item-preview ${item.cls}" style="background:var(--surface2);border:1px solid var(--border);"></div>`;
+    if (item.cat === 'name') return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="${item.cls}" style="-webkit-text-fill-color:unset;">${group.name}</span></div>`;
+    if (item.cat === 'tag' && item.tagStyle) return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag ${item.tagStyle}">🏅 ${group.name}</span></div>`;
+    if (item.cat === 'tag' && item.tagColor) return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag gtag-default ${item.tagColor}">🏅 ${group.name}</span></div>`;
+    if (item.cat === 'tag' && item.tagFx)    return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag gtag-default ${item.tagFx}">🏅 ${group.name}</span></div>`;
+    return '';
+  }
+
+  let sectionsHTML = sections.map(sec => {
+    const itemsHTML = sec.items.map(item => {
+      const isOwned    = owned.includes(item.id);
+      const isEquipped = getActiveId(item) === item.id;
+      let btnHTML = '';
+      if (isCreator) {
+        if (!isOwned) {
+          btnHTML = `<button class="btn-gshop buy" onclick="buyGroupItem('${groupId}','${item.id}')" ${pomcoins < item.price ? 'disabled' : ''}>Acheter</button>`;
+        } else if (isEquipped) {
+          btnHTML = `<button class="btn-gshop equipped" disabled>✓ Équipé</button>`;
+        } else {
+          btnHTML = `<button class="btn-gshop equip" onclick="equipGroupItem('${groupId}','${item.id}')">Équiper</button>`;
+        }
+      } else {
+        btnHTML = isOwned ? `<span style="font-size:.72rem;color:var(--green);font-weight:700;">${isEquipped ? '✓ Équipé' : 'Possédé'}</span>` : '';
+      }
+      return `
+        <div class="group-shop-item ${isOwned ? 'owned' : ''} ${isEquipped ? 'active-item' : ''}">
+          <div class="group-shop-item-name">${item.name}</div>
+          ${buildPreview(item)}
+          <div class="group-shop-item-footer">
+            <span class="group-shop-item-price">${item.price.toLocaleString('fr-FR')} 💠</span>
+            ${btnHTML}
+          </div>
+        </div>`;
+    }).join('');
+    return `<div class="group-shop-section"><div class="group-shop-section-title">${sec.label}</div><div class="group-shop-grid">${itemsHTML}</div></div>`;
+  }).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'groupShopModal';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal-box group-shop-modal">
+      <div class="group-shop-header">
+        <h2 style="margin:0;">🛍️ Boutique — ${group.name}</h2>
+        <button class="modal-close" onclick="document.getElementById('groupShopModal').remove()">✕</button>
+      </div>
+      <div class="group-shop-coins">
+        <span style="font-size:.8rem;color:var(--muted);font-weight:600;">PomCoins du groupe</span>
+        <span class="group-shop-coins-val">${pomcoins.toLocaleString('fr-FR')} 💠</span>
+      </div>
+      ${!isCreator ? '<div style="font-size:.78rem;color:var(--muted);background:var(--surface2);border-radius:8px;padding:8px 14px;">Seul le créateur du groupe peut acheter des améliorations.</div>' : ''}
+      ${sectionsHTML}
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function buyGroupItem(groupId, itemId) {
+  const item = GROUP_SHOP.find(i => i.id === itemId);
+  if (!item) return;
+  const group = await getGroup(groupId);
+  if (!group || group.creatorCode !== state.code) return;
+  if ((group.pomcoins || 0) < item.price) { alert('Pas assez de PomCoins !'); return; }
+
+  group.pomcoins = (group.pomcoins || 0) - item.price;
+  group.cosmetics = group.cosmetics || {};
+
+  // Sauvegarder l'achat sur le compte du créateur (persistant)
+  state.groupOwnedItems = state.groupOwnedItems || [];
+  if (!state.groupOwnedItems.includes(itemId)) state.groupOwnedItems.push(itemId);
+
+  // Équiper automatiquement
+  equipCosmetic(group.cosmetics, item);
+
+  await saveGroup(group);
+  await saveAccount(state);
+  _groupCache = null;
+  document.getElementById('groupShopModal')?.remove();
+  openGroupShop(groupId);
+}
+
+async function equipGroupItem(groupId, itemId) {
+  const item = GROUP_SHOP.find(i => i.id === itemId);
+  if (!item) return;
+  const group = await getGroup(groupId);
+  if (!group) return;
+  group.cosmetics = group.cosmetics || {};
+  equipCosmetic(group.cosmetics, item);
+  await saveGroup(group);
+  _groupCache = null;
+  document.getElementById('groupShopModal')?.remove();
+  openGroupShop(groupId);
+}
+
+function equipCosmetic(cosm, item) {
+  if (item.cat === 'banner') cosm.activeBanner   = item.id;
+  if (item.cat === 'badge')  cosm.activeBadge    = item.id;
+  if (item.cat === 'name')   cosm.activeName     = item.id;
+  if (item.cat === 'tag' && item.tagColor) cosm.activeTagColor = item.id;
+  if (item.cat === 'tag' && item.tagStyle) cosm.activeTagStyle = item.id;
+  if (item.cat === 'tag' && item.tagFx)    cosm.activeTagFx    = item.id;
 }
 
 // ── BOUTIQUE / SHOP ─────────────────────────────
@@ -4607,6 +5293,13 @@ function clickFruit(fruitNum) {
   // 2 graines par clic si les 2 fruits sont débloqués, sinon 1
   const gain = clickerData.upgrades.secondFruit ? 2 : 1;
   clickerData.seeds += gain;
+  // Historique pour le score de groupe (regroupé toutes les 10 graines pour éviter le spam)
+  clickerData._pendingSeeds = (clickerData._pendingSeeds || 0) + gain;
+  if (clickerData._pendingSeeds >= 10) {
+    state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
+    clickerData._pendingSeeds = 0;
+    saveAccount(state);
+  }
 
   const fruit = document.getElementById('fruit' + fruitNum);
   fruit.classList.remove('clicker-fruit-pop');
@@ -4632,6 +5325,9 @@ function collectAutoStock() {
   const collected = Math.floor(clickerData.autoStock);
   clickerData.seeds += collected;
   clickerData.autoStock = 0;
+  // Historique pour le score de groupe
+  state.history.unshift({ type: 'seeds', desc: `🌱 ${collected.toLocaleString('fr-FR')} graines récoltées (auto)`, seeds: collected, amount: 0, date: new Date().toISOString() });
+  saveAccount(state);
   updateClickerUI();
   saveClickerData();
   showWinToast(`+${collected.toLocaleString('fr-FR')} 🌱 graines récupérées !`);
@@ -4930,9 +5626,10 @@ async function renderSnakeLb() {
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
     const bcS = await getAccBannerClass(e.code);
     if (bcS) div.classList.add(bcS);
+    const ccS = await getAccColorClass(e.code);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
-      <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-name ${ccS}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score} 🍎</span>
       <span class="snake-lb-pomels">+${(e.score * SNAKE_POMEL_PER_FRUIT).toLocaleString('fr-FR')} 🪙</span>
     `;
@@ -4985,9 +5682,10 @@ async function renderSnakeWeeklyLb() {
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
     const bcSW = await getAccBannerClass(e.code);
     if (bcSW) div.classList.add(bcSW);
+    const ccSW = await getAccColorClass(e.code);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
-      <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-name ${ccSW}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score} 🍎</span>
     `;
     list.appendChild(div);
@@ -5276,17 +5974,29 @@ async function g2048SaveScore(score) {
   }
 }
 
-// ── BANNER LB HELPER ─────────────────────────────
-// Cache léger des comptes pour la résolution de bannière dans les classements de jeux
+// ── BANNER & COLOR LB HELPER ─────────────────────────────
+// Cache léger des comptes pour la résolution de bannière et couleur dans les classements de jeux
 let _accBannerCache = null;
-async function getAccBannerClass(code) {
+async function _buildAccCache() {
   if (!_accBannerCache) {
     const all = await getAllAccounts();
     _accBannerCache = {};
-    all.forEach(a => { _accBannerCache[a.code] = getBannerClass(a.activeBanner); });
+    all.forEach(a => {
+      _accBannerCache[a.code] = {
+        banner: getBannerClass(a.activeBanner),
+        color:  getNameColorClass(a.activeColor),
+      };
+    });
     setTimeout(() => { _accBannerCache = null; }, 60000);
   }
-  return _accBannerCache[code] || '';
+}
+async function getAccBannerClass(code) {
+  await _buildAccCache();
+  return (_accBannerCache[code] || {}).banner || '';
+}
+async function getAccColorClass(code) {
+  await _buildAccCache();
+  return (_accBannerCache[code] || {}).color || '';
 }
 
 async function g2048RenderLb() {
@@ -5307,9 +6017,10 @@ async function g2048RenderLb() {
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
     const bc = await getAccBannerClass(e.code);
     if (bc) div.classList.add(bc);
+    const cc = await getAccColorClass(e.code);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medals[i] || rank}</span>
-      <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-name ${cc}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
       <span class="snake-lb-pomels"></span>
     `;
@@ -5349,9 +6060,10 @@ async function g2048RenderWeeklyLb() {
     div.className = 'snake-lb-item' + (isMe ? ' me' : '');
     const bc2 = await getAccBannerClass(e.code);
     if (bc2) div.classList.add(bc2);
+    const cc2 = await getAccColorClass(e.code);
     div.innerHTML = `
     <span class="snake-lb-rank ${rankClass}">${['🥇','🥈','🥉'][i] || rank}</span>
-    <span class="snake-lb-name">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+    <span class="snake-lb-name ${cc2}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
     <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
     `;
     list.appendChild(div);
@@ -6141,9 +6853,10 @@ function renderJardinLb(flowers) {
       div.className = 'snake-lb-item' + (isMe ? ' me' : '');
       const bcJ = await getAccBannerClass(p.code);
       if (bcJ) div.classList.add(bcJ);
+      const ccJ = await getAccColorClass(p.code);
       div.innerHTML = `
         <span class="snake-lb-rank ${i < 3 ? 'top'+(i+1) : ''}">${medals[i] || (i+1)}</span>
-        <span class="snake-lb-name">${p.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+        <span class="snake-lb-name ${ccJ}">${p.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
         <span class="snake-lb-score">${p.count} 🌸</span>
         <span class="snake-lb-pomels">→ ${prize.toLocaleString('fr-FR')} 🪙</span>
       `;
@@ -7412,6 +8125,396 @@ async function checkNotifUpdates() {
     }
   } catch(e) {}
   refreshAllBadges();
+}
+
+// ── PIERRE FEUILLE CISEAUX ──────────────────────
+
+const PFC_HANDS = { rock: '🪨', paper: '📄', scissors: '✂️' };
+const PFC_LABELS = { rock: 'Pierre', paper: 'Feuille', scissors: 'Ciseaux' };
+const PFC_WINS_AGAINST = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
+
+function getTodayKeyPFC() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// Firebase helpers PFC
+async function getPFCChallenge(id) { return dbGet('pfc/' + id); }
+async function savePFCChallenge(c) { await dbSet('pfc/' + c.id, c); }
+async function deletePFCChallenge(id) { await dbDelete('pfc/' + id); }
+async function getAllPFCChallenges() { return dbGetAll('pfc'); }
+
+// Vérifie si le joueur a déjà joué aujourd'hui (challenge résolu)
+function pfcHasPlayedToday() {
+  const today = getTodayKeyPFC();
+  return (state.pfcLastPlayedDate === today);
+}
+
+// Résoudre un duel
+function pfcResolve(myHand, oppHand) {
+  if (myHand === oppHand) return 'draw';
+  return PFC_WINS_AGAINST[myHand] === oppHand ? 'win' : 'lose';
+}
+
+// Appliquer les récompenses après résolution
+async function pfcApplyRewards(result, myGroupId, oppGroupId, oppName, myHand, oppHand) {
+  const today = getTodayKeyPFC();
+
+  // Marquer le joueur comme ayant joué aujourd'hui
+  state.pfcLastPlayedDate = today;
+  state.history = state.history || [];
+  const resultLabel = result === 'win' ? '🏆 Gagné' : result === 'lose' ? '💀 Perdu' : '🤝 Égalité';
+  state.history.unshift({
+    type: 'pfc',
+    desc: `PFC vs ${oppName} — ${resultLabel} (${PFC_LABELS[myHand]} vs ${PFC_LABELS[oppHand]})`,
+    amount: 0,
+    date: new Date().toISOString()
+  });
+  await saveAccount(state);
+
+  // PomCoins & points pour mon groupe
+  const myGroup = await getGroup(myGroupId);
+  if (myGroup) {
+    const pomcoins = result === 'win' ? 500 : result === 'draw' ? 500 : 200;
+    const pts = result !== 'lose' ? 1000 : 0;
+    myGroup.pomcoins = (myGroup.pomcoins || 0) + pomcoins;
+    myGroup.pfcWeekBonus = (myGroup.pfcWeekBonus || 0) + pts;
+    await saveGroup(myGroup);
+  }
+
+  // PomCoins & points pour le groupe adverse (en cas d'égalité seulement — la victoire de l'adversaire est gérée de son côté)
+  if (result === 'draw' && oppGroupId) {
+    const oppGroup = await getGroup(oppGroupId);
+    if (oppGroup) {
+      oppGroup.pomcoins = (oppGroup.pomcoins || 0) + 500;
+      oppGroup.pfcWeekBonus = (oppGroup.pfcWeekBonus || 0) + 1000;
+      await saveGroup(oppGroup);
+    }
+  }
+}
+
+// ── RENDER PRINCIPAL ──
+async function renderPFC() {
+  const el = document.getElementById('pfcContent');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Chargement…</div>';
+
+  // Vérifier appartenance à un groupe
+  const allGroups = await getGroupsCache();
+  const myGroup = (allGroups || []).find(g => (g.members || []).includes(state.code));
+
+  if (!myGroup) {
+    el.innerHTML = `
+      <div class="pfc-locked">
+        <div class="pfc-locked-icon">🔒</div>
+        <div class="pfc-locked-title">Réservé aux groupes</div>
+        <div class="pfc-locked-sub">Rejoins ou crée un groupe pour accéder au mode Pierre Feuille Ciseaux !</div>
+      </div>`;
+    return;
+  }
+
+  // Nettoyer les défis expirés
+  await pfcCleanExpired();
+
+  // Défis reçus (en attente de ma réponse)
+  const allChallenges = await getAllPFCChallenges() || {};
+  const challenges = Object.values(allChallenges);
+  const now = Date.now();
+
+  const receivedChallenges = challenges.filter(c =>
+    c.challengedCode === state.code && c.status === 'pending' && now < c.expiresAt
+  );
+  const sentChallenge = challenges.find(c =>
+    c.challengerCode === state.code && c.status === 'pending' && now < c.expiresAt
+  );
+
+  // Résultats récents (résolus aujourd'hui)
+  const today = getTodayKeyPFC();
+  const recentResults = challenges.filter(c =>
+    c.status === 'resolved' &&
+    (c.challengerCode === state.code || c.challengedCode === state.code) &&
+    c.resolvedDate === today
+  ).sort((a, b) => b.resolvedAt - a.resolvedAt).slice(0, 5);
+
+  const hasPlayed = pfcHasPlayedToday();
+  const allAccounts = await getAllAccounts();
+
+  // Construire la liste des joueurs défiables (autres groupes, pas joué aujourd'hui, pas déjà un défi en cours avec eux)
+  const otherMembers = [];
+  for (const g of allGroups) {
+    if (g.id === myGroup.id) continue;
+    for (const code of (g.members || [])) {
+      const acc = allAccounts.find(a => a.code === code);
+      if (!acc) continue;
+      const memberHasPlayed = acc.pfcLastPlayedDate === today;
+      const hasPendingWith = challenges.some(c =>
+        c.status === 'pending' && now < c.expiresAt &&
+        ((c.challengerCode === state.code && c.challengedCode === code) ||
+         (c.challengerCode === code && c.challengedCode === state.code))
+      );
+      otherMembers.push({ acc, group: g, hasPlayed: memberHasPlayed, hasPending: hasPendingWith });
+    }
+  }
+
+  // ── RENDU HTML ──
+  let html = `<div class="pfc-wrap">`;
+
+  // Statut du joueur
+  html += `
+    <div class="pfc-status-card">
+      <div class="pfc-status-left">
+        <div class="pfc-status-label">Mon statut aujourd'hui</div>
+        <div class="pfc-status-val ${hasPlayed ? 'used' : 'ok'}">${hasPlayed ? '✓ Partie jouée' : '✅ Disponible'}</div>
+      </div>
+      <div class="pfc-status-left">
+        <div class="pfc-status-label">Mon groupe</div>
+        <div class="pfc-status-val" style="color:var(--yellow);">💠 ${(myGroup.pomcoins||0).toLocaleString('fr-FR')} · +${(myGroup.pfcWeekBonus||0).toLocaleString('fr-FR')} pts</div>
+      </div>
+    </div>`;
+
+  // Défis reçus
+  if (receivedChallenges.length) {
+    html += `<div><div class="pfc-section-title">⚔️ Défis reçus</div><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">`;
+    for (const c of receivedChallenges) {
+      const remaining = Math.max(0, Math.ceil((c.expiresAt - now) / 60000));
+      const chalAcc = allAccounts.find(a => a.code === c.challengerCode);
+      const chalGroup = allGroups.find(g => g.id === c.challengerGroupId);
+      html += `
+        <div class="pfc-challenge-card">
+          <div class="pfc-challenge-header">
+            <div>
+              <div class="pfc-challenge-from">⚔️ ${c.challengerName} <span style="font-size:.72rem;color:var(--muted);">(${chalGroup ? chalGroup.name : '?'})</span> te défie !</div>
+            </div>
+            <div class="pfc-challenge-timer">⏱ ${remaining} min restantes</div>
+          </div>
+          ${hasPlayed
+            ? `<div style="font-size:.82rem;color:var(--muted);">Tu as déjà joué aujourd'hui — tu ne peux pas répondre.</div>`
+            : `<div>
+                <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;">Choisis ton coup :</div>
+                <div class="pfc-choices">
+                  <button class="pfc-choice-btn" onclick="pfcRespond('${c.id}','rock','${myGroup.id}')">🪨<span>Pierre</span></button>
+                  <button class="pfc-choice-btn" onclick="pfcRespond('${c.id}','paper','${myGroup.id}')">📄<span>Feuille</span></button>
+                  <button class="pfc-choice-btn" onclick="pfcRespond('${c.id}','scissors','${myGroup.id}')">✂️<span>Ciseaux</span></button>
+                </div>
+              </div>`
+          }
+        </div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // Défi envoyé en attente
+  if (sentChallenge) {
+    const remaining = Math.max(0, Math.ceil((sentChallenge.expiresAt - now) / 60000));
+    html += `
+      <div><div class="pfc-section-title">⏳ Défi envoyé</div>
+      <div class="pfc-challenge-card" style="margin-top:10px;">
+        <div class="pfc-challenge-header">
+          <div class="pfc-challenge-from">Tu as défié <strong>${sentChallenge.challengedName}</strong> — ${PFC_HANDS[sentChallenge.challengerHand]} ${PFC_LABELS[sentChallenge.challengerHand]}</div>
+          <div class="pfc-challenge-timer">⏱ ${remaining} min restantes</div>
+        </div>
+        <div style="font-size:.8rem;color:var(--muted);">En attente de sa réponse… Le défi expire automatiquement.</div>
+        <button class="btn-group leave" style="width:fit-content;" onclick="pfcCancelChallenge('${sentChallenge.id}')">Annuler le défi</button>
+      </div></div>`;
+  }
+
+  // Résultats récents
+  if (recentResults.length) {
+    html += `<div><div class="pfc-section-title">📜 Résultats du jour</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">`;
+    for (const c of recentResults) {
+      const iAmChallenger = c.challengerCode === state.code;
+      const myHand = iAmChallenger ? c.challengerHand : c.challengedHand;
+      const oppHand = iAmChallenger ? c.challengedHand : c.challengerHand;
+      const oppName = iAmChallenger ? c.challengedName : c.challengerName;
+      const result = iAmChallenger ? c.challengerResult : c.challengedResult;
+      const pomcoins = result === 'win' ? 500 : result === 'draw' ? 500 : 200;
+      const pts = result !== 'lose' ? 1000 : 0;
+      html += `
+        <div class="pfc-hist-item">
+          <span class="pfc-hist-result ${result}">${result === 'win' ? '🏆 Gagné' : result === 'lose' ? '💀 Perdu' : '🤝 Égalité'}</span>
+          <span class="pfc-hist-detail">${PFC_HANDS[myHand]} vs ${PFC_HANDS[oppHand]} contre <strong>${oppName}</strong></span>
+          <span class="pfc-hist-reward">+${pomcoins} 💠${pts ? ' · +'+pts+' pts' : ''}</span>
+        </div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // Liste des joueurs défiables
+  if (!hasPlayed && !sentChallenge) {
+    html += `<div><div class="pfc-section-title">🎯 Défier un joueur</div>`;
+    if (!otherMembers.length) {
+      html += `<div class="history-empty" style="margin-top:12px;">Aucun joueur disponible dans les autres groupes.</div>`;
+    } else {
+      html += `<div class="pfc-players-grid" style="margin-top:10px;">`;
+      for (const { acc, group, hasPlayed: memberPlayed, hasPending } of otherMembers) {
+        const canChallenge = !memberPlayed && !hasPending;
+        const statusLabel = hasPending ? 'Défi en cours' : memberPlayed ? 'A déjà joué' : 'Disponible';
+        const statusCls = hasPending ? 'pending' : memberPlayed ? 'played' : 'available';
+        html += `
+          <div class="pfc-player-row">
+            <div style="flex:1;min-width:0;">
+              <div class="pfc-player-name">${acc.name}</div>
+              <div class="pfc-player-group">🏅 ${group.name}</div>
+            </div>
+            <span class="pfc-player-status ${statusCls}">${statusLabel}</span>
+            ${canChallenge
+              ? `<button class="btn-primary" style="padding:7px 14px;font-size:.82rem;width:auto;" onclick="pfcOpenChallenge('${acc.code}','${acc.name}','${group.id}','${myGroup.id}')">Défier ⚔️</button>`
+              : `<button class="btn-primary" style="padding:7px 14px;font-size:.82rem;width:auto;opacity:.4;" disabled>Défier ⚔️</button>`
+            }
+          </div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+  } else if (hasPlayed && !receivedChallenges.length) {
+    html += `<div style="text-align:center;padding:24px;color:var(--muted);font-size:.88rem;">Tu as déjà joué aujourd'hui. Reviens demain !</div>`;
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+// Ouvrir le modal de défi (choisir son coup avant d'envoyer)
+function pfcOpenChallenge(challengedCode, challengedName, challengedGroupId, myGroupId) {
+  const existing = document.getElementById('pfcChallengeModal');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'pfcChallengeModal';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal-box" style="max-width:420px;text-align:center;">
+      <h2>⚔️ Défier ${challengedName} <button class="modal-close" onclick="document.getElementById('pfcChallengeModal').remove()">✕</button></h2>
+      <p style="color:var(--muted);font-size:.88rem;">Choisis ton coup — il sera révélé quand l'adversaire répond.</p>
+      <div class="pfc-choices" style="justify-content:center;margin-top:8px;">
+        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName}','${challengedGroupId}','${myGroupId}','rock')">🪨<span>Pierre</span></button>
+        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName}','${challengedGroupId}','${myGroupId}','paper')">📄<span>Feuille</span></button>
+        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName}','${challengedGroupId}','${myGroupId}','scissors')">✂️<span>Ciseaux</span></button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function pfcSendChallenge(challengedCode, challengedName, challengedGroupId, myGroupId, myHand) {
+  document.getElementById('pfcChallengeModal')?.remove();
+  const id = 'pfc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const now = Date.now();
+  await savePFCChallenge({
+    id,
+    challengerCode: state.code,
+    challengerName: state.name,
+    challengerGroupId: myGroupId,
+    challengerHand: myHand,
+    challengedCode,
+    challengedName,
+    challengedGroupId,
+    status: 'pending',
+    createdAt: now,
+    expiresAt: now + 60 * 60 * 1000, // 1h
+  });
+  showWinToast(`Défi envoyé à ${challengedName} ! ⚔️`);
+  renderPFC();
+}
+
+async function pfcRespond(challengeId, myHand, myGroupId) {
+  const c = await getPFCChallenge(challengeId);
+  if (!c || c.status !== 'pending') { renderPFC(); return; }
+  if (Date.now() > c.expiresAt) { renderPFC(); return; }
+
+  const result = pfcResolve(myHand, c.challengerHand);
+  const challengerResult = result === 'win' ? 'lose' : result === 'lose' ? 'win' : 'draw';
+  const today = getTodayKeyPFC();
+  const now = Date.now();
+
+  // Sauvegarder le résultat dans Firebase
+  await savePFCChallenge({
+    ...c,
+    challengedHand: myHand,
+    challengedResult: result,
+    challengerResult,
+    status: 'resolved',
+    resolvedAt: now,
+    resolvedDate: today,
+  });
+
+  // Appliquer mes récompenses
+  await pfcApplyRewards(result, myGroupId, c.challengerGroupId, c.challengerName, myHand, c.challengerHand);
+
+  // Appliquer les récompenses du challenger (sauf égalité déjà gérée dans pfcApplyRewards)
+  if (result !== 'draw') {
+    const chalAcc = await getAccount(c.challengerCode);
+    if (chalAcc) {
+      const chalResult = challengerResult;
+      const chalPomcoins = chalResult === 'win' ? 500 : 200;
+      const chalPts = chalResult !== 'lose' ? 1000 : 0;
+      const chalGroup = await getGroup(c.challengerGroupId);
+      if (chalGroup) {
+        chalGroup.pomcoins = (chalGroup.pomcoins || 0) + chalPomcoins;
+        chalGroup.pfcWeekBonus = (chalGroup.pfcWeekBonus || 0) + chalPts;
+        await saveGroup(chalGroup);
+      }
+      chalAcc.pfcLastPlayedDate = today;
+      chalAcc.history = chalAcc.history || [];
+      chalAcc.history.unshift({ type: 'pfc', desc: `PFC vs ${state.name} — ${chalResult === 'win' ? '🏆 Gagné' : '💀 Perdu'} (${PFC_LABELS[c.challengerHand]} vs ${PFC_LABELS[myHand]})`, amount: 0, date: new Date().toISOString() });
+      await saveAccount(chalAcc);
+    }
+  }
+
+  // Afficher le résultat
+  pfcShowResult(result, myHand, c.challengerHand, c.challengerName);
+}
+
+function pfcShowResult(result, myHand, oppHand, oppName) {
+  const el = document.getElementById('pfcContent');
+  if (!el) return;
+  const resultData = {
+    win:  { cls: 'win',  emoji: '🏆', title: 'Victoire !',   sub: `Tu gagnes 500 💠 et +1 000 pts pour ton groupe !` },
+    lose: { cls: 'lose', emoji: '💀', title: 'Défaite...',   sub: `Ton groupe gagne quand même 200 💠.` },
+    draw: { cls: 'draw', emoji: '🤝', title: 'Égalité !',    sub: `Les deux groupes gagnent 500 💠 et +1 000 pts !` },
+  }[result];
+
+  el.innerHTML = `
+    <div class="pfc-wrap">
+      <div class="pfc-result-card ${resultData.cls}">
+        <div class="pfc-result-emoji">${resultData.emoji}</div>
+        <div class="pfc-result-title">${resultData.title}</div>
+        <div class="pfc-result-hands">
+          <span title="Toi">${PFC_HANDS[myHand]}</span>
+          <span class="pfc-result-vs">vs</span>
+          <span title="${oppName}">${PFC_HANDS[oppHand]}</span>
+        </div>
+        <div class="pfc-result-sub">${resultData.sub}</div>
+        <button class="btn-primary" style="width:auto;padding:10px 28px;margin-top:8px;" onclick="renderPFC()">Retour</button>
+      </div>
+    </div>`;
+}
+
+async function pfcCancelChallenge(challengeId) {
+  await deletePFCChallenge(challengeId);
+  renderPFC();
+}
+
+// Nettoyer les défis expirés — les challengers récupèrent leur partie si expiré sans réponse
+async function pfcCleanExpired() {
+  const all = await getAllPFCChallenges() || {};
+  const now = Date.now();
+  for (const c of Object.values(all)) {
+    if (c.status === 'pending' && now > c.expiresAt) {
+      await deletePFCChallenge(c.id);
+      // Le challenger récupère sa partie (pfcLastPlayedDate n'est pas posé pour lui)
+      // Rien à faire — on ne l'avait pas marqué comme ayant joué à l'envoi
+    }
+    // Nettoyer les resolved de plus de 24h
+    if (c.status === 'resolved' && now - c.resolvedAt > 24 * 60 * 60 * 1000) {
+      await deletePFCChallenge(c.id);
+    }
+  }
+}
+
+function toggleInfo(id) {
+  const item = document.getElementById('info-' + id);
+  if (!item) return;
+  item.classList.toggle('open');
 }
 
 // ── BOOT ─────────────────────────────────────────
