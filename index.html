@@ -653,6 +653,21 @@
   .discussion-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .9rem; outline: none; transition: border .2s; }
   .discussion-input:focus { border-color: var(--primary); }
   .discussion-send-btn { width: auto; padding: 12px 24px; flex-shrink: 0; }
+  .discussion-msg-actions { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+  .discussion-msg-like-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: .78rem; font-weight: 600; cursor: pointer; color: var(--muted); display: flex; align-items: center; gap: 4px; transition: all .15s; font-family: 'Syne', sans-serif; }
+  .discussion-msg-like-btn:hover { border-color: var(--green); color: var(--green); }
+  .discussion-msg-like-btn.liked { background: rgba(62,207,110,0.12); border-color: var(--green); color: var(--green); }
+  .discussion-msg-reply-btn { background: none; border: none; font-size: .75rem; color: var(--muted); cursor: pointer; padding: 3px 6px; border-radius: 6px; font-family: 'Syne', sans-serif; font-weight: 600; transition: color .15s; }
+  .discussion-msg-reply-btn:hover { color: var(--primary); }
+  .discussion-msg-replies { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; padding-left: 12px; border-left: 2px solid var(--border); }
+  .discussion-msg-reply-item { display: flex; align-items: baseline; gap: 6px; font-size: .82rem; line-height: 1.4; }
+  .discussion-msg-reply-author { font-weight: 700; flex-shrink: 0; }
+  .discussion-msg-reply-text { color: var(--text); }
+  .discussion-reply-input-zone { display: flex; gap: 6px; margin-top: 6px; padding-left: 12px; }
+  .discussion-reply-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .82rem; outline: none; transition: border .2s; }
+  .discussion-reply-input:focus { border-color: var(--primary); }
+  .discussion-reply-send { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .discussion-reply-send:hover { filter: brightness(1.1); }
 
   /* POMEL'LIVE */
   .live-wrap { display: flex; flex-direction: column; gap: 24px; }
@@ -1384,7 +1399,6 @@
         <button class="nav-dropdown-item" onclick="goToFromDropdown('paris','social',this)">🎲 Paris</button>
         <div class="nav-dropdown-sep"></div>
         <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe du jour</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('live','social',this)">📡 Pomel'Live</button>
       </div>
     </div>
 
@@ -1464,9 +1478,9 @@
           <div id="homeBets" class="home-bets-zone"></div>
         </div>
 
-        <!-- 9. Pomel'Live du jour — 1 colonne -->
+        <!-- 9. Chat du jour — 1 colonne -->
         <div class="home-card">
-          <div class="home-card-title">📡 Pomel'Live</div>
+          <div class="home-card-title">💬 Chat</div>
           <div id="homeLivePost" class="home-live-zone"></div>
         </div>
 
@@ -2178,47 +2192,18 @@
     </div>
   </div>
 
-  <!-- POMEL'LIVE -->
-  <div class="page" id="page-live">
-    <div class="live-wrap">
-      <div>
-        <div class="section-title">📡 Pomel'Live</div>
-        <div class="section-sub">Posts du jour — chaque jour à partir de 9h15. Remis à zéro chaque matin.</div>
-      </div>
-      <div class="live-header-card">
-        <h3>Nouveau post</h3>
-        <div id="livePostZone">
-          <div class="live-locked" id="liveLocked">Les posts sont disponibles à partir de 9h15 !</div>
-          <div id="liveInputZone" style="display:none;" class="live-post-input">
-            <div class="form-group">
-              <textarea id="liveInput" placeholder="Ton message du jour… (150 car. max)" maxlength="150" rows="2" oninput="updateLiveCount()"></textarea>
-              <div class="live-char-count" id="liveCharCount">0 / 150</div>
-            </div>
-            <div id="livePostAlert" class="alert"></div>
-            <button class="btn-primary" onclick="submitLivePost()">Poster 📡</button>
-          </div>
-          <div class="proverbe-submitted" id="liveAlreadyPosted" style="display:none;">✅ Tu as déjà posté aujourd'hui !</div>
-        </div>
-      </div>
-      <div class="live-date-badge" id="liveDateBadge"></div>
-      <div class="live-posts-list" id="livePostsList">
-        <div class="live-empty">Aucun post aujourd'hui. Sois le premier !</div>
-      </div>
-    </div>
-  </div>
-
   <!-- CHAT -->
   <div class="page" id="page-discussion">
     <div class="discussion-wrap">
       <div>
         <div class="section-title">💬 Chat</div>
-        <div class="section-sub">Discute avec tout le monde — l'historique est remis à zéro chaque jour à minuit.</div>
+        <div class="section-sub">Discute avec tout le monde en temps réel — l'historique est remis à zéro chaque jour à minuit.</div>
       </div>
       <div class="discussion-messages" id="discussionMessages">
         <div class="live-empty">Aucun message aujourd'hui. Lance la conversation !</div>
       </div>
       <div class="discussion-input-bar">
-        <input type="text" class="discussion-input" id="discussionInput" placeholder="Ton message…" maxlength="200" onkeydown="if(event.key==='Enter')sendDiscussionMsg()" />
+        <input type="text" class="discussion-input" id="discussionInput" placeholder="Ton message…" maxlength="300" onkeydown="if(event.key==='Enter')sendDiscussionMsg()" />
         <button class="btn-primary discussion-send-btn" onclick="sendDiscussionMsg()">Envoyer</button>
       </div>
     </div>
@@ -2377,28 +2362,6 @@
       <div class="info-category-title">👥 Communauté</div>
       <div class="info-accordion">
 
-        <div class="info-item" id="info-live">
-          <button class="info-trigger" onclick="toggleInfo('live')">
-            <span class="info-trigger-icon">📡</span>
-            <span class="info-trigger-label">Pomel'Live & Proverbe du jour</span>
-            <span class="info-trigger-arrow">▼</span>
-          </button>
-          <div class="info-body">
-            <p><strong>Pomel'Live</strong> — poste un message court chaque jour à partir de 9h15.</p>
-            <ul>
-              <li>150 caractères max, un post par jour, remis à zéro chaque matin</li>
-              <li>Like 👍, dislike 👎 ou réponds aux posts</li>
-              <li>Un post avec 5 dislikes est supprimé automatiquement</li>
-            </ul>
-            <p style="margin-top:10px;"><strong>Proverbe du jour</strong> — chaque jour, un membre est tiré au sort pour partager une phrase.</p>
-            <ul>
-              <li>Si c'est ton tour, un champ s'affiche pour écrire ta phrase</li>
-              <li>Tout le monde peut réagir avec des émojis</li>
-              <li>Les 10 derniers proverbes sont conservés</li>
-            </ul>
-          </div>
-        </div>
-
         <div class="info-item" id="info-chat">
           <button class="info-trigger" onclick="toggleInfo('chat')">
             <span class="info-trigger-icon">💬</span>
@@ -2408,8 +2371,26 @@
           <div class="info-body">
             <p>Discussion ouverte en temps réel avec toute la communauté.</p>
             <ul>
-              <li>200 caractères max par message</li>
+              <li>300 caractères max par message, sans limite de messages</li>
+              <li>Like 👍 les messages et réponds directement à quelqu'un</li>
+              <li>Les couleurs et badges des pseudos s'affichent</li>
               <li>Historique remis à zéro chaque jour à minuit</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-item" id="info-live">
+          <button class="info-trigger" onclick="toggleInfo('live')">
+            <span class="info-trigger-icon">📜</span>
+            <span class="info-trigger-label">Proverbe du jour</span>
+            <span class="info-trigger-arrow">▼</span>
+          </button>
+          <div class="info-body">
+            <p><strong>Proverbe du jour</strong> — chaque jour, un membre est tiré au sort pour partager une phrase.</p>
+            <ul>
+              <li>Si c'est ton tour, un champ s'affiche pour écrire ta phrase</li>
+              <li>Tout le monde peut réagir avec des émojis</li>
+              <li>Les 10 derniers proverbes sont conservés</li>
             </ul>
           </div>
         </div>
@@ -3028,7 +3009,6 @@ function _onPageLoad(id) {
   if (id === 'boutique') { _shopCurrentTab = 'buy'; switchShopTab('buy'); }
   if (id === 'hotel') { renderHotel(); markPageSeen('hotel'); }
   if (id === 'proverbe') { renderProverbe(); markPageSeen('proverbe'); }
-  if (id === 'live') { renderLive(); markPageSeen('live'); }
   if (id === 'quetes') renderQuetes();
   if (id === 'snake') renderSnakePage();
   if (id === 'g2048') render2048Page();
@@ -5041,50 +5021,37 @@ async function renderHomeProverbe() {
 
 async function renderHomeLivePost() {
   const el = document.getElementById('homeLivePost');
+  if (!el) return;
   const today = getTodayKey();
-  const rawPosts = await getLivePosts() || {};
-  const posts = Object.values(rawPosts).filter(p => p.date === today);
-  if (!posts.length) {
-    el.innerHTML = '<div class="home-live-empty">Aucun post aujourd\'hui.</div>';
+  const rawData = await dbGet('discussion') || {};
+  const msgs = Object.values(rawData)
+    .filter(m => m.date === today)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 3);
+
+  if (!msgs.length) {
+    el.innerHTML = '<div class="home-live-empty">Aucun message aujourd\'hui.</div>';
     return;
   }
 
-  const byLikes = [...posts].sort((a,b) => (b.likes||[]).length - (a.likes||[]).length);
-  const byTime  = [...posts].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-  const topLiked  = byLikes[0];
-  const topRecent = byTime[0];
-  // They might be the same post
-  const samePost = topLiked.id === topRecent.id;
-
-  const buildPostHTML = (post, label) => {
-    const likes    = (post.likes||[]).length;
-    const dislikes = (post.dislikes||[]).length;
-    const time     = new Date(post.createdAt).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  el.innerHTML = msgs.map(msg => {
+    const nameClass = getNameColorClass(msg.authorColor || null);
+    const badgeDef = msg.authorBadge ? (resolveTitleDef(msg.authorBadge) || {}) : {};
+    const badge = badgeDef.emoji || '';
+    const likes = Object.keys(msg.likes || {}).length;
+    const time = new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     return `
-      <div class="home-live-label">${label}</div>
       <div class="home-live-post">
         <div class="home-live-post-meta">
-          <span><strong>${post.authorName}</strong></span>
+          <span class="${nameClass}">${badge ? badge + ' ' : ''}<strong>${escapeHTML(msg.authorName)}</strong></span>
           <span>${time}</span>
         </div>
-        <div class="home-live-post-text">${post.text}</div>
-        <div style="display:flex;gap:10px;margin-top:2px;">
-          <span class="home-live-post-likes">👍 ${likes}</span>
-          ${dislikes > 0 ? `<span style="font-size:.82rem;color:var(--muted);">👎 ${dislikes}</span>` : ''}
-        </div>
-      </div>
-    `;
-  };
-
-  if (samePost) {
-    el.innerHTML = buildPostHTML(topLiked, '⭐ Post le plus liké & le plus récent');
-  } else {
-    el.innerHTML =
-      buildPostHTML(topLiked,  '⭐ Le plus liké') +
-      buildPostHTML(topRecent, '🕐 Le plus récent');
-  }
+        <div class="home-live-post-text">${escapeHTML(msg.text)}</div>
+        ${likes > 0 ? `<span class="home-live-post-likes">👍 ${likes}</span>` : ''}
+      </div>`;
+  }).join('');
 }
+
 
 async function renderHomeBets() {
   const el = document.getElementById('homeBets');
@@ -7346,7 +7313,7 @@ async function submitReplyLive(postId) {
   renderLive();
 }
 
-// ── DISCUSSION GÉNÉRALE ─────────────────────────
+// ── DISCUSSION / CHAT ────────────────────────────
 let _discussionListener = null;
 let _discussionAutoScroll = true;
 
@@ -7378,7 +7345,7 @@ async function renderDiscussion() {
     db.ref('discussion').off('value', _discussionListener);
   }
   _discussionListener = db.ref('discussion').on('value', (snap) => {
-    const currentDay = getTodayKey(); // Fresh today key on each update
+    const currentDay = getTodayKey();
     const data = snap.val() || {};
     const messages = Object.values(data)
       .filter(m => m.date === currentDay)
@@ -7396,28 +7363,60 @@ async function renderDiscussion() {
       const nameClass = getNameColorClass(msg.authorColor || null);
       const rawName = msg.authorName || '?';
       const safeName = escapeHTML(rawName);
+      const badgeDef = msg.authorBadge ? (resolveTitleDef(msg.authorBadge) || {}) : {};
+      const badgeEmoji = badgeDef.emoji || '';
+      const likes = msg.likes || {};
+      const likeCount = Object.keys(likes).length;
+      const iLiked = !!likes[state.code];
+      const replies = msg.replies || {};
+      const repliesArr = Object.values(replies).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+      const repliesHTML = repliesArr.length ? `
+        <div class="discussion-msg-replies">
+          ${repliesArr.map(r => {
+            const rNameClass = getNameColorClass(r.authorColor || null);
+            const rBadgeDef = r.authorBadge ? (resolveTitleDef(r.authorBadge) || {}) : {};
+            const rBadge = rBadgeDef.emoji || '';
+            return `<div class="discussion-msg-reply-item">
+              <span class="discussion-msg-reply-author ${rNameClass}">${rBadge ? rBadge + ' ' : ''}${escapeHTML(r.authorName)}</span>
+              <span class="discussion-msg-reply-text">${escapeHTML(r.text)}</span>
+            </div>`;
+          }).join('')}
+        </div>` : '';
+
       const div = document.createElement('div');
       div.className = 'discussion-msg' + (isMe ? ' me' : '');
+      div.dataset.msgId = msg.id;
       div.innerHTML = `
         <div class="discussion-msg-avatar">${escapeHTML(rawName.charAt(0).toUpperCase())}</div>
         <div class="discussion-msg-body">
           <div class="discussion-msg-header">
-            <span class="discussion-msg-name ${nameClass}">${safeName}</span>
+            <span class="discussion-msg-name ${nameClass}">${badgeEmoji ? badgeEmoji + ' ' : ''}${safeName}</span>
             <span class="discussion-msg-time">${time}</span>
           </div>
           <div class="discussion-msg-text">${escapeHTML(msg.text)}</div>
+          <div class="discussion-msg-actions">
+            <button class="discussion-msg-like-btn ${iLiked ? 'liked' : ''}" onclick="likeDiscussionMsg('${msg.id}')">
+              👍 ${likeCount > 0 ? likeCount : ''}
+            </button>
+            ${!isMe ? `<button class="discussion-msg-reply-btn" onclick="toggleDiscussionReply('${msg.id}')">↩ Répondre</button>` : ''}
+          </div>
+          ${repliesHTML}
+          <div class="discussion-reply-input-zone" id="reply-zone-${msg.id}" style="display:none;">
+            <input class="discussion-reply-input" id="reply-input-${msg.id}" placeholder="Répondre à ${safeName}…" maxlength="150"
+              onkeydown="if(event.key==='Enter')sendDiscussionReply('${msg.id}')" />
+            <button class="discussion-reply-send" onclick="sendDiscussionReply('${msg.id}')">↩</button>
+          </div>
         </div>
       `;
       msgContainer.appendChild(div);
     });
 
-    // Auto-scroll to bottom
     if (_discussionAutoScroll) {
       msgContainer.scrollTop = msgContainer.scrollHeight;
     }
   });
 
-  // Track scroll: don't auto-scroll if user scrolled up
   msgContainer.onscroll = () => {
     const atBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 60;
     _discussionAutoScroll = atBottom;
@@ -7437,12 +7436,56 @@ function escapeHTML(str) {
   return div.innerHTML;
 }
 
+function toggleDiscussionReply(msgId) {
+  const zone = document.getElementById('reply-zone-' + msgId);
+  if (!zone) return;
+  const isOpen = zone.style.display !== 'none';
+  zone.style.display = isOpen ? 'none' : 'flex';
+  if (!isOpen) {
+    const input = document.getElementById('reply-input-' + msgId);
+    if (input) input.focus();
+  }
+}
+
+async function likeDiscussionMsg(msgId) {
+  const data = await dbGet('discussion/' + msgId);
+  if (!data) return;
+  const likes = data.likes || {};
+  if (likes[state.code]) {
+    delete likes[state.code];
+  } else {
+    likes[state.code] = true;
+  }
+  await dbSet('discussion/' + msgId + '/likes', likes);
+}
+
+async function sendDiscussionReply(msgId) {
+  const inputEl = document.getElementById('reply-input-' + msgId);
+  if (!inputEl) return;
+  const text = inputEl.value.trim();
+  if (!text) return;
+  const replyId = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
+  const reply = {
+    id: replyId,
+    authorCode: state.code,
+    authorName: state.name,
+    authorColor: state.activeColor || null,
+    authorBadge: state.activeBadge || null,
+    text,
+    createdAt: new Date().toISOString(),
+  };
+  await dbSet('discussion/' + msgId + '/replies/' + replyId, reply);
+  inputEl.value = '';
+  const zone = document.getElementById('reply-zone-' + msgId);
+  if (zone) zone.style.display = 'none';
+}
+
 async function sendDiscussionMsg() {
   const input = document.getElementById('discussionInput');
   if (!input) return;
   const text = input.value.trim();
   if (!text) return;
-  if (text.length > 200) return;
+  if (text.length > 300) return;
 
   const today = getTodayKey();
   const id = 'dm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -7453,6 +7496,9 @@ async function sendDiscussionMsg() {
     authorCode: state.code,
     authorName: state.name,
     authorColor: state.activeColor || null,
+    authorBadge: state.activeBadge || null,
+    likes: {},
+    replies: {},
     createdAt: new Date().toISOString(),
   };
 
@@ -8098,8 +8144,10 @@ function markPageSeen(page) {
 function setLatestContent(page, ts) {
   const stored = localStorage.getItem(notifLatestKey(page));
   const storedTs = stored ? parseInt(stored) : 0;
+  const seen = parseInt(localStorage.getItem(notifKey(page)) || '0');
   const newTs = new Date(ts).getTime();
-  if (newTs > storedTs) {
+  // Ne mettre à jour que si le contenu est plus récent que ce qu'on a déjà ET plus récent que la dernière visite
+  if (newTs > storedTs && newTs > seen) {
     localStorage.setItem(notifLatestKey(page), newTs.toString());
   }
 }
@@ -8145,15 +8193,12 @@ function refreshAllBadges() {
   // Paris → Communauté
   const parisItem      = findItem('social', 'paris');
   const proverbeItem   = findItem('social', 'proverbe');
-  const liveItem       = findItem('social', 'live');
   const socialTrigger  = document.querySelector('#dropdown-social .nav-dropdown-trigger');
   const parisUnread    = hasUnread('paris');
   const proverbeUnread = hasUnread('proverbe');
-  const liveUnread     = hasUnread('live');
   setBadge(parisItem, parisUnread);
   setBadge(proverbeItem, proverbeUnread);
-  setBadge(liveItem, liveUnread);
-  setBadge(socialTrigger, parisUnread || proverbeUnread || liveUnread);
+  setBadge(socialTrigger, parisUnread || proverbeUnread);
 
   // Discussion → Chat standalone
   const chatBtn = document.getElementById('navbtn-chat');
@@ -8195,14 +8240,6 @@ async function checkNotifUpdates() {
     } else {
       // Pas de proverbe aujourd'hui ou c'est le nôtre → effacer la pastille
       localStorage.removeItem('notif_latest_proverbe_date');
-    }
-    // Posts live du jour
-    const rawPosts = await getLivePosts() || {};
-    const todayPosts = Object.values(rawPosts)
-      .filter(p => p.date === today && p.authorCode !== state.code);
-    if (todayPosts.length) {
-      const latest = todayPosts.reduce((max, p) => Math.max(max, new Date(p.createdAt).getTime()), 0);
-      setLatestContent('live', new Date(latest).toISOString());
     }
     // Discussion générale — messages du jour par d'autres
     const discData = await dbGet('discussion') || {};
