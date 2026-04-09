@@ -771,11 +771,13 @@
   }
   .profil-dots-btn:hover { background: var(--border); color: var(--text); }
   .profil-dots-menu {
-    position: absolute; top: 46px; right: 14px; left: 14px;
+    position: fixed;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; padding: 14px 16px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.25); z-index: 10;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25); z-index: 1000;
     display: flex; flex-direction: column; gap: 10px;
+    max-height: 70vh; overflow-y: auto;
+    width: min(360px, calc(100vw - 32px));
   }
   .profil-dots-section-title {
     font-size: .68rem; font-weight: 700; color: var(--muted);
@@ -7622,7 +7624,28 @@ function toggleProfilMenu(e) {
   e.stopPropagation();
   const menu = document.getElementById('profilDotsMenu');
   const isOpen = menu.style.display !== 'none';
-  menu.style.display = isOpen ? 'none' : 'flex';
+  if (isOpen) {
+    menu.style.display = 'none';
+    return;
+  }
+  // Positionner le menu en fixed par rapport au bouton
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const menuWidth = Math.min(360, window.innerWidth - 32);
+  let left = rect.right - menuWidth;
+  if (left < 16) left = 16;
+  let top = rect.bottom + 8;
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+  menu.style.width = menuWidth + 'px';
+  menu.style.display = 'flex';
+  // Ajuster si le menu dépasse en bas
+  requestAnimationFrame(() => {
+    const mRect = menu.getBoundingClientRect();
+    if (mRect.bottom > window.innerHeight - 16) {
+      menu.style.top = (rect.top - mRect.height - 8) + 'px';
+    }
+  });
 }
 
 function closeProfilMenuOutside(e) {
