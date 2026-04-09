@@ -5043,7 +5043,7 @@ async function renderHomeLivePost() {
     return `
       <div class="home-live-post">
         <div class="home-live-post-meta">
-          <span class="${nameClass}">${badge ? badge + ' ' : ''}<strong>${escapeHTML(msg.authorName)}</strong></span>
+          <span class="${nameClass}"><strong>${escapeHTML(msg.authorName)}</strong>${badge ? ' ' + badge : ''}</span>
           <span>${time}</span>
         </div>
         <div class="home-live-post-text">${escapeHTML(msg.text)}</div>
@@ -7378,7 +7378,7 @@ async function renderDiscussion() {
             const rBadgeDef = r.authorBadge ? (resolveTitleDef(r.authorBadge) || {}) : {};
             const rBadge = rBadgeDef.emoji || '';
             return `<div class="discussion-msg-reply-item">
-              <span class="discussion-msg-reply-author ${rNameClass}">${rBadge ? rBadge + ' ' : ''}${escapeHTML(r.authorName)}</span>
+              <span class="discussion-msg-reply-author ${rNameClass}">${escapeHTML(r.authorName)}${rBadge ? ' ' + rBadge : ''}</span>
               <span class="discussion-msg-reply-text">${escapeHTML(r.text)}</span>
             </div>`;
           }).join('')}
@@ -7391,7 +7391,7 @@ async function renderDiscussion() {
         <div class="discussion-msg-avatar">${escapeHTML(rawName.charAt(0).toUpperCase())}</div>
         <div class="discussion-msg-body">
           <div class="discussion-msg-header">
-            <span class="discussion-msg-name ${nameClass}">${badgeEmoji ? badgeEmoji + ' ' : ''}${safeName}</span>
+            <span class="discussion-msg-name ${nameClass}">${safeName}${badgeEmoji ? ' ' + badgeEmoji : ''}</span>
             <span class="discussion-msg-time">${time}</span>
           </div>
           <div class="discussion-msg-text">${escapeHTML(msg.text)}</div>
