@@ -638,7 +638,7 @@
   .proverbe-waiting { color: var(--muted); font-size: .9rem; font-style: italic; padding: 8px 0; }
 
   /* DISCUSSION GÉNÉRALE */
-  .discussion-wrap { display: flex; flex-direction: column; gap: 16px; height: calc(100vh - 220px); min-height: 400px; }
+  .discussion-wrap { display: flex; flex-direction: column; gap: 16px; height: calc(100vh - 220px); height: calc(100dvh - 220px); min-height: 300px; }
   .discussion-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
   .discussion-msg { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 10px; transition: background .15s; }
   .discussion-msg:hover { background: var(--surface2); }
@@ -1042,9 +1042,14 @@
   }
 
   @media (max-width: 600px) {
-    header { padding: 12px 16px; }
+    header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    .wallet { padding: 6px 12px; }
+    .wallet .amount { font-size: .9rem; }
+    .streak-widget { padding: 6px 10px; }
+    .streak-day { width: 9px; height: 9px; }
+    .streak-day.final { width: 12px; height: 12px; }
     nav { padding: 12px 16px 0; gap: 4px; }
-    .nav-btn { padding: 8px 10px; font-size: .78rem; }
+    .nav-btn { padding: 10px 12px; font-size: .78rem; min-height: 44px; }
     .nav-sep { display: none; }
     .nav-dropdown-menu { left: 0; transform: none; }
     .nav-dropdown-menu::before { left: 24px; transform: rotate(45deg); }
@@ -1054,6 +1059,99 @@
     .bet-choices { flex-direction: column; }
     .bet-choice-block { min-width: 0; }
     .user-menu { right: -8px; }
+    #groupActionsGrid { grid-template-columns: 1fr !important; }
+
+    /* ── JEUX MOBILE ── */
+    /* Snake — plus grand, centré */
+    .snake-wrap { gap: 14px; }
+    .snake-header { gap: 10px; }
+    .snake-header .section-title { font-size: 1.1rem; }
+    .snake-header .section-sub { font-size: .78rem; }
+    .snake-score-box { min-width: 90px; padding: 10px 14px; }
+    .snake-score-val { font-size: 1.2rem; }
+    .snake-canvas-wrap { border-radius: 10px; border-width: 2px; touch-action: none; }
+    .snake-controls-hint { font-size: .72rem; gap: 12px; }
+
+    /* 2048 — tuiles adaptées */
+    .g2048-board-outer { border-radius: 10px; touch-action: none; }
+    .g2048-board { padding: 6px; gap: 6px; }
+    .g2048-tile { font-size: 1.3rem; border-radius: 4px; }
+    .t128, .t256, .t512 { font-size: 1.1rem; }
+    .t1024, .t2048 { font-size: .9rem; }
+    .t4096, .t8192 { font-size: .75rem; }
+    .g2048-header .section-title { font-size: 1.1rem; }
+    .g2048-score-box { min-width: 90px; padding: 10px 14px; }
+    .g2048-score-val { font-size: 1.2rem; }
+
+    /* Clicker — fruits plus gros, stats compactes */
+    .clicker-stat { min-width: 100px; padding: 10px 14px; }
+    .clicker-stat-val { font-size: 1.1rem; }
+    .clicker-fruit svg { width: 130px; height: 130px; }
+    .clicker-fruits-zone { gap: 24px; padding: 12px 0; }
+    .clicker-upgrade-card { padding: 14px; }
+    .clicker-upgrade-name { font-size: .88rem; }
+    .clicker-upgrade-desc { font-size: .75rem; }
+
+    /* Jardin — canvas responsive */
+    .jardin-canvas-wrap { border-radius: 10px; }
+    .jardin-action-bar { gap: 12px; padding: 12px 14px; }
+    .jardin-seeds-val { font-size: 1rem; }
+    .jardin-header { gap: 10px; }
+
+    /* PFC — boutons de choix plus gros */
+    .pfc-choices { gap: 10px; }
+    .pfc-choice-btn { padding: 16px 22px; font-size: 2.4rem; min-width: 90px; }
+    .pfc-result-hands { font-size: 2.4rem; }
+    .pfc-result-emoji { font-size: 2.4rem; }
+
+    /* Leaderboards compacts */
+    .snake-lb-item { padding: 8px 10px; gap: 8px; }
+    .snake-lb-name { font-size: .82rem; }
+    .snake-lb-score { font-size: .78rem; }
+    .snake-lb-pomels { font-size: .72rem; }
+  }
+
+  /* ── D-PAD MOBILE POUR SERPENT ── */
+  .snake-dpad {
+    display: none;
+    margin: 0 auto;
+    width: 180px; height: 180px;
+    position: relative; user-select: none;
+    -webkit-user-select: none;
+  }
+  .snake-dpad-btn {
+    position: absolute;
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all .1s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .snake-dpad-btn:active { background: var(--primary); border-color: var(--primary); transform: scale(.9); }
+  .snake-dpad-up    { top: 0;   left: 50%; transform: translateX(-50%); }
+  .snake-dpad-down  { bottom: 0;left: 50%; transform: translateX(-50%); }
+  .snake-dpad-left  { left: 0;  top: 50%;  transform: translateY(-50%); }
+  .snake-dpad-right { right: 0; top: 50%;  transform: translateY(-50%); }
+  .snake-dpad-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--surface2); border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 700; color: var(--muted);
+    cursor: pointer;
+  }
+  .snake-dpad-center:active { background: var(--yellow); border-color: var(--yellow); color: #000; }
+  @media (max-width: 600px) {
+    .snake-dpad { display: block; }
+    .snake-controls-hint { display: none; }
+  }
+  @media (min-width: 601px) {
+    .snake-dpad { display: none; }
   }
 
   /* ── BOUTIQUE GROUPE ── */
@@ -1808,6 +1906,15 @@
         <span>Espace pour pause</span>
       </div>
 
+      <!-- D-pad mobile -->
+      <div class="snake-dpad" id="snakeDpad">
+        <button class="snake-dpad-btn snake-dpad-up" ontouchstart="snakeDpadDir(0,-1);event.preventDefault();">▲</button>
+        <button class="snake-dpad-btn snake-dpad-left" ontouchstart="snakeDpadDir(-1,0);event.preventDefault();">◀</button>
+        <button class="snake-dpad-btn snake-dpad-center" ontouchstart="snakeTogglePause();event.preventDefault();">⏸</button>
+        <button class="snake-dpad-btn snake-dpad-right" ontouchstart="snakeDpadDir(1,0);event.preventDefault();">▶</button>
+        <button class="snake-dpad-btn snake-dpad-down" ontouchstart="snakeDpadDir(0,1);event.preventDefault();">▼</button>
+      </div>
+
       <div class="snake-lb-row">
       <div class="snake-lb-card">
         <div class="snake-lb-title">🏆 Meilleurs scores</div>
@@ -2251,7 +2358,6 @@
               <li>L'argent des gains vient du système — tu ne prends pas celui des perdants</li>
               <li>Le créateur empoche <strong>20% du pot</strong> à la fermeture</li>
               <li>Si personne n'a misé sur le bon choix → tout le monde est remboursé</li>
-              <li>Tu peux retirer ta mise à tout moment tant que le pari est ouvert</li>
               <li>Expire après <strong>3 jours</strong> sans clôture, résultats supprimés après <strong>24h</strong></li>
             </ul>
           </div>
@@ -2850,15 +2956,31 @@ function showConfirm(message, onConfirm) {
     </div>
   `;
   document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+  // Fermer avec Escape
+  overlay._escHandler = (e) => { if (e.key === 'Escape') closeConfirm(); };
+  document.addEventListener('keydown', overlay._escHandler);
 }
 function closeConfirm() {
   const el = document.getElementById('confirmOverlay');
-  if (el) el.remove();
+  if (el) {
+    if (el._escHandler) document.removeEventListener('keydown', el._escHandler);
+    el.remove();
+  }
+  document.body.style.overflow = '';
   confirmCallback = null;
 }
 function executeConfirm() {
   if (confirmCallback) confirmCallback();
 }
+
+// ── SCROLL LOCK GLOBAL POUR MODALES ──────────────
+// Verrouille le scroll quand une modal-overlay ou confirm-overlay est présente
+const _modalObserver = new MutationObserver(() => {
+  const hasModal = document.querySelector('.modal-overlay, .confirm-overlay');
+  document.body.style.overflow = hasModal ? 'hidden' : '';
+});
+_modalObserver.observe(document.body, { childList: true });
 
 // ── NAVIGATION ───────────────────────────────────
 // Pages that belong to a dropdown group
@@ -3261,7 +3383,7 @@ async function renderLeaderboard(mode) {
       <span class="lb-rank ${rankClass}">${rank}</span>
       <span class="lb-medal">${medal}</span>
       <div class="lb-info">
-        <span class="${nameClass}" onclick="openProfileModal('${safeCode}')">${acc.name}${badgeHTML}${streakHTML}</span>
+        <span class="${nameClass}" onclick="openProfileModal('${safeCode}')">${escapeHTML(acc.name)}${badgeHTML}${streakHTML}</span>
         ${titlesHTML}
         ${groupBadge}
         ${isMe ? '<span class="lb-you-badge">Moi</span>' : ''}
@@ -3395,12 +3517,15 @@ function getGroupMonthKey() {
 // Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine + graines récoltées cette semaine (via historique) + bonus PFC
 async function computeGroupWeekScore(group, allAccounts, allClicker) {
   const weekKey = getGroupWeekKey();
-  const weekStart = new Date(weekKey);
+  // Créer la date de début en heure locale (pas UTC) pour éviter le décalage de fuseau
+  const parts = weekKey.split('-');
+  const weekStart = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0, 0);
   let pomels = 0, seeds = 0;
   for (const code of (group.members || [])) {
     const acc = allAccounts.find(a => a.code === code);
     if (acc) {
       (acc.history || []).forEach(h => {
+        if (!h.date) return;
         if (new Date(h.date) < weekStart) return;
         if (h.amount > 0) pomels += h.amount;
         if (h.type === 'seeds' && h.seeds > 0) seeds += h.seeds;
@@ -3428,7 +3553,7 @@ async function renderGroupsOnPage() {
   const createSection = document.getElementById('createGroupSection');
 
   if (myGroup) {
-    currentEl.innerHTML = `Tu es dans le groupe <strong>${myGroup.name}</strong> (${myGroup.members.length}/5 membre${myGroup.members.length > 1 ? 's' : ''}).`;
+    currentEl.innerHTML = `Tu es dans le groupe <strong>${escapeHTML(myGroup.name)}</strong> (${myGroup.members.length}/5 membre${myGroup.members.length > 1 ? 's' : ''}).`;
     actionsEl.innerHTML = '';
     const leaveBtn = document.createElement('button');
     leaveBtn.className = 'btn-group leave';
@@ -3505,7 +3630,7 @@ async function renderGroupsOnPage() {
         <span class="lb-rank ${rankClass}">${medals[i] || rank}</span>
         <span class="lb-medal">${medals[i] || ''}</span>
         <div class="lb-info">
-          <span class="lb-name" style="cursor:default">${badgeEmoji ? badgeEmoji + ' ' : ''}<span class="${nameCls}">${g.name}</span></span>
+          <span class="lb-name" style="cursor:default">${badgeEmoji ? badgeEmoji + ' ' : ''}<span class="${nameCls}">${escapeHTML(g.name)}</span></span>
           <span class="lb-group-badge">${(g.members||[]).length}/5 membres</span>
           ${isMyG ? '<span class="lb-you-badge">Mon groupe</span>' : ''}
           ${rank === 1 ? '<span style="font-size:.65rem;color:var(--yellow);font-weight:700;background:rgba(240,192,64,0.1);border:1px solid rgba(240,192,64,0.3);border-radius:4px;padding:2px 6px;">👑 En tête</span>' : ''}
@@ -3542,12 +3667,12 @@ async function renderGroupsOnPage() {
         const canKick = isCreator && !isOwner; // le créateur peut expulser tout le monde sauf lui-même
         return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;white-space:nowrap;">
           ${isOwner ? '👑 ' : ''}${name}
-          ${canKick ? `<button onclick="kickGroupMember('${g.id}','${code}','${name}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0 0 0 2px;line-height:1;" title="Expulser ${name}">✕</button>` : ''}
+          ${canKick ? `<button onclick="kickGroupMember('${g.id}','${code}','${name.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0 0 0 2px;line-height:1;" title="Expulser ${escapeHTML(name)}">✕</button>` : ''}
         </span>`;
       }).join('');
       item.innerHTML = `
         <div style="flex:1;min-width:0;">
-          <div class="group-item-name">${g.name}${isCreator ? ' <span style="font-size:.65rem;color:var(--muted);">(Créateur)</span>' : ''}</div>
+          <div class="group-item-name">${escapeHTML(g.name)}${isCreator ? ' <span style="font-size:.65rem;color:var(--muted);">(Créateur)</span>' : ''}</div>
           <div class="group-item-meta" style="margin-bottom:6px;">
             <span>${(g.members || []).length}/5 membre${(g.members||[]).length>1?'s':''}</span>
             <span>Score semaine : <strong style="color:var(--yellow)">${weekScore.toLocaleString('fr-FR')} pts</strong></span>
@@ -3743,13 +3868,22 @@ async function checkGroupWeeklyReward() {
   }
 
   // ── Récompenses hebdomadaires ────────────────────────
+  // Clé = lundi de la semaine PRÉCÉDENTE (celle qu'on récompense)
   const prevMon = new Date(now);
   prevMon.setDate(now.getDate() - 7);
+  // Recaler sur le lundi de cette semaine-là
+  const prevDay = prevMon.getDay();
+  const prevDiff = prevDay === 0 ? -6 : 1 - prevDay;
+  prevMon.setDate(prevMon.getDate() + prevDiff);
   const prevKey = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
 
   const distributed = await dbGet('group_weekly_distributed/' + prevKey);
   if (distributed) return;
+  // Anti-race : marquer immédiatement puis re-vérifier
   await dbSet('group_weekly_distributed/' + prevKey, true);
+  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+  const recheck = await dbGet('group_weekly_distributed/' + prevKey);
+  if (recheck !== true) return; // un autre client a pu écraser
 
   const groups = await getAllGroups();
   if (!groups.length) return;
@@ -4029,10 +4163,10 @@ async function openGroupShop(groupId) {
     if (item.cat === 'badge') return `<div class="group-shop-item-preview" style="background:var(--surface2);font-size:1.2rem;">${item.emoji}</div>`;
     if (item.cat === 'banner' && item.preview) return `<div class="group-shop-item-preview ${item.cls}" style="background:${item.preview};"></div>`;
     if (item.cat === 'banner') return `<div class="group-shop-item-preview ${item.cls}" style="background:var(--surface2);border:1px solid var(--border);"></div>`;
-    if (item.cat === 'name') return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="${item.cls}" style="-webkit-text-fill-color:unset;">${group.name}</span></div>`;
-    if (item.cat === 'tag' && item.tagStyle) return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag ${item.tagStyle}">🏅 ${group.name}</span></div>`;
-    if (item.cat === 'tag' && item.tagColor) return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag gtag-default ${item.tagColor}">🏅 ${group.name}</span></div>`;
-    if (item.cat === 'tag' && item.tagFx)    return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag gtag-default ${item.tagFx}">🏅 ${group.name}</span></div>`;
+    if (item.cat === 'name') return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="${item.cls}" style="-webkit-text-fill-color:unset;">${escapeHTML(group.name)}</span></div>`;
+    if (item.cat === 'tag' && item.tagStyle) return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag ${item.tagStyle}">🏅 ${escapeHTML(group.name)}</span></div>`;
+    if (item.cat === 'tag' && item.tagColor) return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag gtag-default ${item.tagColor}">🏅 ${escapeHTML(group.name)}</span></div>`;
+    if (item.cat === 'tag' && item.tagFx)    return `<div class="group-shop-item-preview" style="background:var(--surface2);"><span class="group-tag gtag-default ${item.tagFx}">🏅 ${escapeHTML(group.name)}</span></div>`;
     return '';
   }
 
@@ -4072,7 +4206,7 @@ async function openGroupShop(groupId) {
   overlay.innerHTML = `
     <div class="modal-box group-shop-modal">
       <div class="group-shop-header">
-        <h2 style="margin:0;">🛍️ Boutique — ${group.name}</h2>
+        <h2 style="margin:0;">🛍️ Boutique — ${escapeHTML(group.name)}</h2>
         <button class="modal-close" onclick="document.getElementById('groupShopModal').remove()">✕</button>
       </div>
       <div class="group-shop-coins">
@@ -4475,6 +4609,7 @@ async function placeBet(betId, choice) {
 }
 
 async function closeBet(betId, winnerOption) {
+  // Relire depuis Firebase pour éviter double-fermeture
   const bet = await getBet(betId);
   if (!bet || bet.status !== 'open') return;
   if (bet.creator !== state.code) return;
@@ -4494,6 +4629,7 @@ async function closeBet(betId, winnerOption) {
   // Commission créateur : 20% du pot
   const creatorCut = Math.floor(totalPot * 0.20);
 
+  // Marquer 'closed' IMMÉDIATEMENT pour bloquer tout autre client
   bet.status = 'closed';
   bet.winnerOption = winnerOption;
   bet.finalOdds1 = bet.initOdds1;
@@ -4501,6 +4637,10 @@ async function closeBet(betId, winnerOption) {
   bet.closedAt = new Date().toISOString();
   bet.creatorCut = creatorCut;
   await saveBet(bet);
+
+  // Re-vérifier anti-race
+  const freshBet = await getBet(betId);
+  if (!freshBet || freshBet.status !== 'closed' || freshBet.closedAt !== bet.closedAt) return;
 
   // Payer les gagnants (argent système)
   for (const w of winners) {
@@ -4529,7 +4669,7 @@ async function closeBet(betId, winnerOption) {
     }
   }
 
-  // Commission créateur
+  // Commission créateur — relire le compte FRAIS (il a pu être modifié si le créateur était aussi gagnant via console)
   if (creatorCut > 0) {
     const creator = await getAccount(bet.creator);
     if (creator) {
@@ -4572,7 +4712,13 @@ async function cleanupBets() {
   for (const bet of all) {
     const age = now - new Date(bet.createdAt).getTime();
     if (bet.status === 'open' && age > 3 * 24 * 3600 * 1000) {
-      const bettors = bet.bettors || [];
+      // Marquer comme expiré AVANT de rembourser (anti-race : un autre client verra 'expired')
+      bet.status = 'expired';
+      await saveBet(bet);
+      // Re-vérifier que c'est bien nous qui avons gagné la course
+      const freshBet = await getBet(bet.id);
+      if (!freshBet || freshBet.status !== 'expired') continue;
+      const bettors = freshBet.bettors || [];
       for (const b of bettors) {
         const acc = await getAccount(b.code);
         if (acc) {
@@ -4584,7 +4730,7 @@ async function cleanupBets() {
         }
       }
       await deleteBet(bet.id);
-    } else if (bet.status === 'closed') {
+    } else if (bet.status === 'closed' || bet.status === 'expired') {
       const closedAge = bet.closedAt ? now - new Date(bet.closedAt).getTime() : age;
       if (closedAge > 24 * 3600 * 1000) await deleteBet(bet.id);
     }
@@ -4592,10 +4738,14 @@ async function cleanupBets() {
 }
 
 async function renderBets() {
-  await cleanupBets();
-  const all = await getAllBets();
+  // Afficher un indicateur de chargement pendant le nettoyage
   const openList   = document.getElementById('betsList');
   const closedList = document.getElementById('betsClosedList');
+  openList.innerHTML = '<div class="bet-empty">Chargement…</div>';
+  closedList.innerHTML = '';
+
+  await cleanupBets();
+  const all = await getAllBets();
   openList.innerHTML = '';
   closedList.innerHTML = '';
 
@@ -4644,7 +4794,7 @@ function buildBetCard(bet) {
   let choice1Actions = '', choice2Actions = '';
   if (bet.status === 'open') {
     if (iJoined) {
-      // déjà parié, plus rien à faire
+      // déjà parié
       const lockedMsg = `<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:4px 0;">✅ Misé</div>`;
       if (myBet.choice === 1) choice1Actions = lockedMsg;
       else choice2Actions = lockedMsg;
@@ -4672,8 +4822,8 @@ function buildBetCard(bet) {
     closeActions = `
       <div class="bet-actions" style="margin-top:8px;flex-wrap:wrap;gap:8px;">
         ${canClose ? `
-          <button class="btn-bet close1" onclick="closeBet('${bet.id}', 1)">✅ "${bet.option1}" gagne</button>
-          <button class="btn-bet close2" onclick="closeBet('${bet.id}', 2)">✅ "${bet.option2}" gagne</button>` : ''}
+          <button class="btn-bet close1" onclick="closeBet('${bet.id}', 1)">✅ "${escapeHTML(bet.option1)}" gagne</button>
+          <button class="btn-bet close2" onclick="closeBet('${bet.id}', 2)">✅ "${escapeHTML(bet.option2)}" gagne</button>` : ''}
         <button class="btn-bet delete" onclick="deleteBetByCreator('${bet.id}')">🗑️ Supprimer</button>
       </div>`;
   }
@@ -4704,16 +4854,16 @@ function buildBetCard(bet) {
       <span class="bet-status ${bet.status}">${bet.status === 'open' ? '🟢 Ouvert' : '⬜ Terminé'}</span>
       <span style="font-size:.75rem;color:var(--muted)">${date}</span>
     </div>
-    <div class="bet-desc">${bet.desc}</div>
+    <div class="bet-desc">${escapeHTML(bet.desc)}</div>
     <div class="bet-meta">
-      <span>Par <strong>${bet.creatorName}</strong></span>
+      <span>Par <strong>${escapeHTML(bet.creatorName)}</strong></span>
       <span>Pot : <span class="bet-stake">${totalPot.toLocaleString('fr-FR')} 🪙</span></span>
       ${totalPot > 0 ? creatorCutDisplay : ''}
     </div>
     <div class="bet-choices">
       <div class="bet-choice-block${win1}">
         <div class="bet-choice-title">
-          ${bet.option1}
+          ${escapeHTML(bet.option1)}
           <span style="float:right;font-family:'Space Mono',monospace;font-size:.82rem;color:var(--yellow);font-weight:700;">×${odds1}</span>
         </div>
         <div class="bet-choice-bettors">${renderBettorList(bettors1)}</div>
@@ -4722,7 +4872,7 @@ function buildBetCard(bet) {
       </div>
       <div class="bet-choice-block${win2}">
         <div class="bet-choice-title">
-          ${bet.option2}
+          ${escapeHTML(bet.option2)}
           <span style="float:right;font-family:'Space Mono',monospace;font-size:.82rem;color:var(--yellow);font-weight:700;">×${odds2}</span>
         </div>
         <div class="bet-choice-bettors">${renderBettorList(bettors2)}</div>
@@ -4859,9 +5009,9 @@ async function renderHomeQuetes() {
       const div = document.createElement('div');
       div.className = 'home-bet-row';
       div.innerHTML = `
-        <div class="home-bet-desc">${q.desc}</div>
+        <div class="home-bet-desc">${escapeHTML(q.desc)}</div>
         <div class="home-bet-meta">
-          <span>De <strong>${q.creatorName}</strong></span>
+          <span>De <strong>${escapeHTML(q.creatorName)}</strong></span>
           <span style="color:var(--green);font-weight:700;">+${q.reward.toLocaleString('fr-FR')} 🪙</span>
           <span style="color:${statusColor};font-weight:600;">${statusLabel}</span>
         </div>
@@ -4893,9 +5043,9 @@ async function renderHomeQuetes() {
       const div = document.createElement('div');
       div.className = 'home-bet-row';
       div.innerHTML = `
-        <div class="home-bet-desc">${q.desc}</div>
+        <div class="home-bet-desc">${escapeHTML(q.desc)}</div>
         <div class="home-bet-meta">
-          <span>Pour <strong>${q.targetName}</strong></span>
+          <span>Pour <strong>${escapeHTML(q.targetName)}</strong></span>
           <span style="color:var(--green);font-weight:700;">${q.reward.toLocaleString('fr-FR')} 🪙 + ${creatorBonus} 🪙 pour toi</span>
           <span style="color:${s.color};font-weight:600;">${s.label}</span>
         </div>
@@ -4984,12 +5134,12 @@ async function renderHomeHotel() {
     div.className = 'home-bet-row';
     div.innerHTML = `
       <div class="home-bet-desc">
-        <span class="title-badge">${item.titleName}</span>
+        <span class="title-badge">${escapeHTML(item.titleName)}</span>
         ${isMine ? ' <span style="font-size:.7rem;color:var(--muted);">(mon titre)</span>' : ''}
         ${owned && !isMine ? ' <span style="font-size:.7rem;color:var(--green);">✅ Possédé</span>' : ''}
       </div>
       <div class="home-bet-meta">
-        <span>Par <strong>${item.creatorName}</strong></span>
+        <span>Par <strong>${escapeHTML(item.creatorName)}</strong></span>
         <span style="color:var(--primary);font-weight:700;">${item.price.toLocaleString('fr-FR')} 🪙</span>
         <span>${timeLeft(item.createdAt)}</span>
         ${!isMine && !owned ? `<span style="color:${canAfford ? 'var(--green)' : 'var(--muted)'};font-size:.78rem;font-weight:600;">${canAfford ? '✓ Tu peux acheter' : '✗ Solde insuffisant'}</span>` : ''}
@@ -5014,8 +5164,8 @@ async function renderHomeProverbe() {
     return;
   }
   el.innerHTML = `
-    <div class="home-proverbe-text">"${data.today.text}"</div>
-    <div class="home-proverbe-author">— <strong>${data.today.authorName}</strong></div>
+    <div class="home-proverbe-text">"${escapeHTML(data.today.text)}"</div>
+    <div class="home-proverbe-author">— <strong>${escapeHTML(data.today.authorName)}</strong></div>
   `;
 }
 
@@ -5074,13 +5224,13 @@ async function renderHomeBets() {
     const div = document.createElement('div');
     div.className = 'home-bet-row';
     div.innerHTML = `
-      <div class="home-bet-desc">${bet.desc}</div>
+      <div class="home-bet-desc">${escapeHTML(bet.desc)}</div>
       <div class="home-bet-options">
-        <span class="home-bet-option">${bet.option1} <span style="color:var(--yellow);font-family:'Space Mono',monospace;font-weight:700;">×${odds1}</span></span>
-        <span class="home-bet-option">${bet.option2} <span style="color:var(--yellow);font-family:'Space Mono',monospace;font-weight:700;">×${odds2}</span></span>
+        <span class="home-bet-option">${escapeHTML(bet.option1)} <span style="color:var(--yellow);font-family:'Space Mono',monospace;font-weight:700;">×${odds1}</span></span>
+        <span class="home-bet-option">${escapeHTML(bet.option2)} <span style="color:var(--yellow);font-family:'Space Mono',monospace;font-weight:700;">×${odds2}</span></span>
       </div>
       <div class="home-bet-meta">
-        <span>Par <strong>${bet.creatorName}</strong></span>
+        <span>Par <strong>${escapeHTML(bet.creatorName)}</strong></span>
         <span>Pot : <strong style="color:var(--primary)">${pot.toLocaleString('fr-FR')} 🪙</strong></span>
         <span>${bettors.length} parieur${bettors.length > 1 ? 's' : ''}</span>
       </div>
@@ -5191,6 +5341,12 @@ function stopClickerPage() {
   if (!clickerActive) return; // ne rien faire si le clicker n'était pas ouvert
   clickerActive = false;
   if (clickerAutoInterval) { clearInterval(clickerAutoInterval); clickerAutoInterval = null; }
+  // Flush les graines pendantes pour le score de groupe
+  if (clickerData._pendingSeeds > 0) {
+    state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
+    clickerData._pendingSeeds = 0;
+    saveAccount(state);
+  }
   // Flush le debounce en attente et sauvegarder avec timestamp pour le calcul offline
   flushClickerSave();
   if (clickerData.upgrades && clickerData.upgrades.autoClicker) saveClickerData();
@@ -5629,7 +5785,7 @@ async function renderSnakeLb() {
     const ccS = await getAccColorClass(e.code);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
-      <span class="snake-lb-name ${ccS}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-name ${ccS}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score} 🍎</span>
       <span class="snake-lb-pomels">+${(e.score * SNAKE_POMEL_PER_FRUIT).toLocaleString('fr-FR')} 🪙</span>
     `;
@@ -5685,7 +5841,7 @@ async function renderSnakeWeeklyLb() {
     const ccSW = await getAccColorClass(e.code);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
-      <span class="snake-lb-name ${ccSW}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-name ${ccSW}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score} 🍎</span>
     `;
     list.appendChild(div);
@@ -5697,14 +5853,23 @@ async function checkSnakeWeeklyReset() {
   const now = new Date();
   if (now.getDay() !== 1 || now.getHours() < 9) return;
 
-  const weekKey = getSnakeWeekKey();
+  // Clé = lundi de la semaine PRÉCÉDENTE (celle qu'on récompense)
+  const prevMon = new Date(now);
+  prevMon.setDate(now.getDate() - 7);
+  const pDay = prevMon.getDay();
+  const pDiff = pDay === 0 ? -6 : 1 - pDay;
+  prevMon.setDate(prevMon.getDate() + pDiff);
+  const prevWeekKey = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
 
-  // Vérifier si déjà distribué cette semaine
-  const distributed = await dbGet('snake_weekly_distributed/' + weekKey);
+  // Vérifier si déjà distribué pour la semaine précédente
+  const distributed = await dbGet('snake_weekly_distributed/' + prevWeekKey);
   if (distributed) return;
 
-  // Marquer immédiatement (anti-race condition)
-  await dbSet('snake_weekly_distributed/' + weekKey, true);
+  // Marquer immédiatement (anti-race condition) puis re-vérifier
+  await dbSet('snake_weekly_distributed/' + prevWeekKey, true);
+  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+  const recheck = await dbGet('snake_weekly_distributed/' + prevWeekKey);
+  if (recheck !== true) return;
 
   // Lire le classement actuel (même logique que renderSnakeWeeklyLb)
   const snap = await dbGet('snake_weekly_lb');
@@ -5754,6 +5919,60 @@ function renderSnakePage() {
   renderSnakeWeeklyLb();
   checkSnakeWeeklyReset().catch(() => {});
 }
+
+// ── SNAKE MOBILE CONTROLS ───────────────────────
+// D-pad buttons
+function snakeDpadDir(x, y) {
+  if (!snakeState) return;
+  const cur = snakeState.dir;
+  // Ne pas autoriser le demi-tour
+  if (x === -cur.x && y === -cur.y) return;
+  snakeState.nextDir = { x, y };
+}
+function snakeTogglePause() {
+  if (!snakeState) return;
+  snakePaused = !snakePaused;
+  if (!snakePaused) scheduleSnakeTick();
+  const centerBtn = document.querySelector('.snake-dpad-center');
+  if (centerBtn) centerBtn.textContent = snakePaused ? '▶' : '⏸';
+}
+
+// Swipe pour serpent sur mobile (touchstart/touchend sur le canvas uniquement)
+let _snakeTouchStart = null;
+(function() {
+  const canvasWrap = () => document.querySelector('.snake-canvas-wrap');
+  document.addEventListener('touchstart', e => {
+    if (!snakeState) return;
+    const wrap = canvasWrap();
+    if (!wrap || !wrap.contains(e.target)) return;
+    _snakeTouchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (!snakeState || !_snakeTouchStart) return;
+    const dx = e.changedTouches[0].clientX - _snakeTouchStart.x;
+    const dy = e.changedTouches[0].clientY - _snakeTouchStart.y;
+    _snakeTouchStart = null;
+    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return; // tap, not swipe
+    const dir = Math.abs(dx) > Math.abs(dy)
+      ? { x: dx > 0 ? 1 : -1, y: 0 }
+      : { x: 0, y: dy > 0 ? 1 : -1 };
+    const cur = snakeState.dir;
+    if (dir.x === -cur.x && dir.y === -cur.y) return;
+    snakeState.nextDir = dir;
+  }, { passive: true });
+})();
+
+// Empêcher le scroll de la page pendant le jeu sur mobile
+document.addEventListener('touchmove', e => {
+  if (!snakeState && !g2048Running) return;
+  // Si on touche le canvas ou le d-pad, empêcher le scroll
+  const target = e.target;
+  if (target.closest('.snake-canvas-wrap') || target.closest('.snake-dpad') ||
+      target.closest('.g2048-board-outer')) {
+    e.preventDefault();
+  }
+}, { passive: false });
 
 // ── 2048 GAME ENGINE ─────────────────────────────
 let g2048Grid = [];
@@ -5871,13 +6090,22 @@ function g2048Has2048() {
 }
 
 const G2048_DAILY_LIMIT = 20;
-const G2048_LIMIT_KEY = () => `g2048_plays_${getTodayKey()}`;
 
 function g2048TodayPlays() {
-  try { return parseInt(localStorage.getItem(G2048_LIMIT_KEY()) || '0'); } catch { return 0; }
+  // Utiliser state pour la limite (synchronisé avec Firebase)
+  const today = getTodayKey();
+  if (!state._g2048PlaysDate || state._g2048PlaysDate !== today) return 0;
+  return state._g2048PlaysCount || 0;
 }
 function g2048IncrPlays() {
-  try { localStorage.setItem(G2048_LIMIT_KEY(), String(g2048TodayPlays() + 1)); } catch {}
+  const today = getTodayKey();
+  if (!state._g2048PlaysDate || state._g2048PlaysDate !== today) {
+    state._g2048PlaysDate = today;
+    state._g2048PlaysCount = 1;
+  } else {
+    state._g2048PlaysCount = (state._g2048PlaysCount || 0) + 1;
+  }
+  saveAccount(state);
 }
 
 function start2048() {
@@ -6020,7 +6248,7 @@ async function g2048RenderLb() {
     const cc = await getAccColorClass(e.code);
     div.innerHTML = `
       <span class="snake-lb-rank ${rankClass}">${medals[i] || rank}</span>
-      <span class="snake-lb-name ${cc}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+      <span class="snake-lb-name ${cc}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
       <span class="snake-lb-pomels"></span>
     `;
@@ -6063,7 +6291,7 @@ async function g2048RenderWeeklyLb() {
     const cc2 = await getAccColorClass(e.code);
     div.innerHTML = `
     <span class="snake-lb-rank ${rankClass}">${['🥇','🥈','🥉'][i] || rank}</span>
-    <span class="snake-lb-name ${cc2}">${e.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+    <span class="snake-lb-name ${cc2}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
     <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
     `;
     list.appendChild(div);
@@ -6073,10 +6301,19 @@ async function g2048RenderWeeklyLb() {
 async function checkG2048WeeklyReset() {
   const now = new Date();
   if (now.getDay() !== 1 || now.getHours() < 9) return;
-  const weekKey = getSnakeWeekKey();
-  const distributed = await dbGet('g2048_weekly_distributed/' + weekKey);
+  // Clé = lundi de la semaine PRÉCÉDENTE (celle qu'on récompense)
+  const prevMon = new Date(now);
+  prevMon.setDate(now.getDate() - 7);
+  const pDay2 = prevMon.getDay();
+  const pDiff2 = pDay2 === 0 ? -6 : 1 - pDay2;
+  prevMon.setDate(prevMon.getDate() + pDiff2);
+  const prevWeekKey2048 = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
+  const distributed = await dbGet('g2048_weekly_distributed/' + prevWeekKey2048);
   if (distributed) return;
-  await dbSet('g2048_weekly_distributed/' + weekKey, true);
+  await dbSet('g2048_weekly_distributed/' + prevWeekKey2048, true);
+  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+  const recheck2048 = await dbGet('g2048_weekly_distributed/' + prevWeekKey2048);
+  if (recheck2048 !== true) return;
   const snap = await dbGet('g2048_weekly_lb');
   if (!snap) return;
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
@@ -6313,11 +6550,11 @@ async function renderHotel() {
     div.innerHTML = `
       <div class="hotel-item-info">
         <div class="hotel-item-name">
-          <span class="title-badge">${item.titleName}</span>
+          <span class="title-badge">${escapeHTML(item.titleName)}</span>
           ${isMine ? '<span class="hotel-badge-mine">Moi</span>' : ''}
           ${owned && !isMine ? '<span class="hotel-badge-owned">Possédé</span>' : ''}
         </div>
-        <div class="hotel-item-creator">Par <strong>${item.creatorName}</strong> · ${(item.buyers||[]).length} acheteur${(item.buyers||[]).length > 1 ? 's' : ''}</div>
+        <div class="hotel-item-creator">Par <strong>${escapeHTML(item.creatorName)}</strong> · ${(item.buyers||[]).length} acheteur${(item.buyers||[]).length > 1 ? 's' : ''}</div>
         <div class="hotel-item-expires">${timeLeft(item.createdAt)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
@@ -6339,6 +6576,23 @@ async function renderQuetes() {
   for (const q of allRaw) {
     const age = now - new Date(q.createdAt).getTime();
     if (age > 3 * 24 * 3600 * 1000 && q.status !== 'done') {
+      // Si la quête était acceptée, notifier les deux parties
+      if (q.status === 'accepted') {
+        const target = await getAccount(q.targetCode);
+        if (target) {
+          target.history = target.history || [];
+          target.history.unshift({ type: 'quete', desc: `⚔️ Quête expirée : "${q.desc}"`, amount: 0, date: new Date().toISOString() });
+          await saveAccount(target);
+          if (q.targetCode === state.code) { state = migrateAccount(target); refreshUI(); }
+        }
+        const creator = await getAccount(q.creatorCode);
+        if (creator) {
+          creator.history = creator.history || [];
+          creator.history.unshift({ type: 'quete', desc: `⚔️ Quête expirée (non validée) : "${q.desc}"`, amount: 0, date: new Date().toISOString() });
+          await saveAccount(creator);
+          if (q.creatorCode === state.code) { state = migrateAccount(creator); refreshUI(); }
+        }
+      }
       await deleteQuete(q.id);
     }
   }
@@ -6456,9 +6710,9 @@ function buildQueteCard(q, role) {
       <span class="quete-status ${statusClass}">${statusLabels[q.status] || q.status}</span>
       <span style="font-size:.72rem;color:var(--muted);">${date}</span>
     </div>
-    <div class="quete-desc">${q.desc}</div>
+    <div class="quete-desc">${escapeHTML(q.desc)}</div>
     <div class="quete-meta">
-      <span>De <strong>${q.creatorName}</strong> → <strong>${q.targetName}</strong></span>
+      <span>De <strong>${escapeHTML(q.creatorName)}</strong> → <strong>${escapeHTML(q.targetName)}</strong></span>
       <span class="quete-reward">+${q.reward.toLocaleString('fr-FR')} 🪙 offerts</span>
     </div>
     ${actionsHTML}
@@ -6514,10 +6768,21 @@ async function respondQuete(queteId, accept) {
 }
 
 async function validateQuete(queteId) {
+  // Relire depuis Firebase (pas le cache local) pour éviter double-validation
   const q = await getQuete(queteId);
   if (!q || q.creatorCode !== state.code || q.status !== 'accepted') return;
 
+  // Marquer 'done' IMMÉDIATEMENT pour bloquer tout autre client
+  q.status = 'done';
+  q.updatedAt = new Date().toISOString();
+  await saveQuete(q);
+
+  // Re-vérifier (anti-race : un autre client a pu valider entre-temps)
+  const freshQ = await getQuete(queteId);
+  if (!freshQ || freshQ.status !== 'done') return; // un autre client a gagné la course
+
   const creatorBonus = Math.ceil(q.reward / 2);
+  const isSamePerson = q.targetCode === q.creatorCode;
 
   // Award Pomels to target
   const target = await getAccount(q.targetCode);
@@ -6530,29 +6795,38 @@ async function validateQuete(queteId) {
       amount: q.reward,
       date: new Date().toISOString(),
     });
+    if (isSamePerson) {
+      // Cas edge : créateur = cible → ajouter aussi le bonus créateur dans le même save
+      target.balance += creatorBonus;
+      target.history.unshift({
+        type: 'quete',
+        desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`,
+        amount: creatorBonus,
+        date: new Date().toISOString(),
+      });
+    }
     await saveAccount(target);
     if (target.code === state.code) { state = migrateAccount(target); refreshUI(); }
   }
 
-  // Award bonus to creator (half, rounded up)
-  const creator = await getAccount(q.creatorCode);
-  if (creator) {
-    creator.balance += creatorBonus;
-    creator.history = creator.history || [];
-    creator.history.unshift({
-      type: 'quete',
-      desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`,
-      amount: creatorBonus,
-      date: new Date().toISOString(),
-    });
-    await saveAccount(creator);
-    if (creator.code === state.code) { state = migrateAccount(creator); refreshUI(); }
+  // Award bonus to creator (sauf si déjà fait ci-dessus car même personne)
+  if (!isSamePerson) {
+    const creator = await getAccount(q.creatorCode);
+    if (creator) {
+      creator.balance += creatorBonus;
+      creator.history = creator.history || [];
+      creator.history.unshift({
+        type: 'quete',
+        desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`,
+        amount: creatorBonus,
+        date: new Date().toISOString(),
+      });
+      await saveAccount(creator);
+      if (creator.code === state.code) { state = migrateAccount(creator); refreshUI(); }
+    }
   }
 
-  q.status = 'done';
-  q.updatedAt = new Date().toISOString();
-  await saveQuete(q);
-  setAlert('queteCreateAlert', `🏆 Quête validée ! ${target ? target.name : ''} reçoit ${q.reward.toLocaleString('fr-FR')} 🪙 et tu reçois ${creatorBonus.toLocaleString('fr-FR')} 🪙 en bonus !`, 'success');
+  setAlert('queteCreateAlert', `🏆 Quête validée ! ${target ? escapeHTML(target.name) : ''} reçoit ${q.reward.toLocaleString('fr-FR')} 🪙 et tu reçois ${creatorBonus.toLocaleString('fr-FR')} 🪙 en bonus !`, 'success');
   setTimeout(() => { document.getElementById('queteCreateAlert').className = 'alert'; }, 5000);
   renderQuetes();
 }
@@ -6856,7 +7130,7 @@ function renderJardinLb(flowers) {
       const ccJ = await getAccColorClass(p.code);
       div.innerHTML = `
         <span class="snake-lb-rank ${i < 3 ? 'top'+(i+1) : ''}">${medals[i] || (i+1)}</span>
-        <span class="snake-lb-name ${ccJ}">${p.name}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
+        <span class="snake-lb-name ${ccJ}">${escapeHTML(p.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
         <span class="snake-lb-score">${p.count} 🌸</span>
         <span class="snake-lb-pomels">→ ${prize.toLocaleString('fr-FR')} 🪙</span>
       `;
@@ -7005,28 +7279,32 @@ async function renderProverbe() {
   const all = await getAllAccounts();
   if (!all.length) return;
 
-  // Determine today's assigned user (deterministic from date seed)
-  const dateHash = today.split('-').reduce((s, n) => s + parseInt(n), 0);
-  const chosenAcc = all[dateHash % all.length];
+  // Tri par code pour que l'ordre soit stable (les nouveaux comptes ne décalent pas tout)
+  const sortedAll = [...all].sort((a, b) => a.code.localeCompare(b.code));
+  // Hash déterministe plus robuste basé sur la date
+  let dateHash = 0;
+  for (let i = 0; i < today.length; i++) dateHash = (dateHash * 31 + today.charCodeAt(i)) | 0;
+  dateHash = Math.abs(dateHash);
+  const chosenAcc = sortedAll[dateHash % sortedAll.length];
   const isMyTurn = chosenAcc && chosenAcc.code === state.code;
 
   if (data.today && data.today.date === today) {
     // Proverbe already submitted today
     todayCard.innerHTML = `
-      <div style="font-size:1.1rem;font-style:italic;line-height:1.6;">"${data.today.text}"</div>
-      <div class="proverbe-today-author">— <strong>${data.today.authorName}</strong></div>
+      <div style="font-size:1.1rem;font-style:italic;line-height:1.6;">"${escapeHTML(data.today.text)}"</div>
+      <div class="proverbe-today-author">— <strong>${escapeHTML(data.today.authorName)}</strong></div>
     `;
     inputZone.style.display = 'none';
     renderProvReactions(data.today);
   } else if (isMyTurn) {
     // It's my turn to write
-    todayCard.innerHTML = `<div class="proverbe-waiting">C'est ton tour aujourd'hui, <strong>${state.name}</strong> ! Partage une phrase inspirante ✨</div>`;
+    todayCard.innerHTML = `<div class="proverbe-waiting">C'est ton tour aujourd'hui, <strong>${escapeHTML(state.name)}</strong> ! Partage une phrase inspirante ✨</div>`;
     inputZone.style.display = 'block';
     document.getElementById('provReactionsZone').style.display = 'none';
   } else {
     // Waiting for the chosen person
     const waitName = chosenAcc ? chosenAcc.name : '?';
-    todayCard.innerHTML = `<div class="proverbe-waiting">En attente du proverbe de <strong>${waitName}</strong> pour aujourd'hui…</div>`;
+    todayCard.innerHTML = `<div class="proverbe-waiting">En attente du proverbe de <strong>${escapeHTML(waitName)}</strong> pour aujourd'hui…</div>`;
     inputZone.style.display = 'none';
     document.getElementById('provReactionsZone').style.display = 'none';
   }
@@ -7043,8 +7321,8 @@ async function renderProverbe() {
       div.className = 'proverbe-history-item';
       div.innerHTML = `
         <div class="phi-date">${new Date(h.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        <div class="phi-text">"${h.text}"</div>
-        <div class="phi-author">— ${h.authorName}</div>
+        <div class="phi-text">"${escapeHTML(h.text)}"</div>
+        <div class="phi-author">— ${escapeHTML(h.authorName)}</div>
       `;
       histEl.appendChild(div);
     });
@@ -7184,7 +7462,7 @@ async function renderLive() {
         ${repliesArr.map(r => `
           <div class="live-reply-item">
             <span class="live-reply-author">${r.authorName}</span>
-            <span class="live-reply-text">${r.text}</span>
+            <span class="live-reply-text">${escapeHTML(r.text)}</span>
           </div>`).join('')}
       </div>` : '';
 
@@ -7196,10 +7474,10 @@ async function renderLive() {
 
     card.innerHTML = `
       <div class="live-post-header">
-        <span class="live-post-author">${post.authorName}</span>
+        <span class="live-post-author">${escapeHTML(post.authorName)}</span>
         <span class="live-post-time">${time}</span>
       </div>
-      <div class="live-post-text">${post.text}</div>
+      <div class="live-post-text">${escapeHTML(post.text)}</div>
       <div class="live-post-actions">
         <button class="live-react-btn ${myLike ? 'liked' : ''}" onclick="reactLive('${post.id}', 'like')">👍 ${likes}</button>
         <button class="live-react-btn ${myDislike ? 'disliked' : ''}" onclick="reactLive('${post.id}', 'dislike')">👎 ${dislikes}</button>
@@ -7527,6 +7805,7 @@ async function handleTransfer() {
   await saveAccount(state);
 
   recipient.balance += amount;
+  recipient.history = recipient.history || [];
   recipient.history.unshift({ type: 'transfer', desc: `Reçu de ${state.name}`, amount: amount, date: new Date().toISOString() });
   await saveAccount(recipient);
 
@@ -7620,7 +7899,7 @@ async function renderMonProfil() {
   const myGroupMP = (allGroupsMP || []).find(g => (g.members || []).includes(state.code));
   const myGroupName = myGroupMP ? myGroupMP.name : null;
   const groupDisplay = myGroupName
-    ? ` · <span style="color:var(--primary);font-weight:700;">🏅 ${myGroupName}</span>`
+    ? ` · <span style="color:var(--primary);font-weight:700;">🏅 ${escapeHTML(myGroupName)}</span>`
     : ` · <span style="color:var(--muted);">Aucun groupe</span>`;
 
   document.getElementById('monProfilCardContent').innerHTML = `
@@ -7899,8 +8178,10 @@ async function saveAccount(acc) {
   // Pas de gain unitaire aberrant dans l'historique
   if (Array.isArray(acc.history)) {
     acc.history = acc.history.filter(h =>
-      h && typeof h.amount === 'number' && Math.abs(h.amount) <= MAX_SINGLE_GAIN
+      h && typeof h.amount === 'number' && (Math.abs(h.amount) <= MAX_SINGLE_GAIN || h.amount === 0)
     );
+    // Limiter la taille de l'historique pour éviter les comptes trop lourds
+    if (acc.history.length > 500) acc.history = acc.history.slice(0, 500);
   }
   // Les ownedTitles ne peuvent contenir que des strings
   if (acc.ownedTitles) {
@@ -7909,18 +8190,12 @@ async function saveAccount(acc) {
   await dbSet('accounts/' + acc.code, acc);
 }
 
-// Vérification d'intégrité au chargement : recalcule le solde depuis l'historique
-// et signale toute anomalie (sans bloquer — on ne peut pas forcer, mais on peut détecter)
+// Vérification d'intégrité au chargement : détecte les anomalies sans recaler
+// (l'historique est tronqué à 500 entrées donc le recalcul serait faux)
 function checkBalanceIntegrity(acc) {
-  if (!acc || !Array.isArray(acc.history)) return;
-  const computed = acc.history.reduce((sum, h) => sum + (h.amount || 0), 0);
-  const declared = acc.balance;
-  const diff = Math.abs(computed - declared);
-  // Si la différence est > 2000 Pomels, c'est suspect — on recale sur le calculé
-  if (diff > 2000) {
-    console.warn(`[Pomel] Anomalie solde détectée : déclaré ${declared}, calculé ${computed}. Recalage.`);
-    acc.balance = Math.max(0, computed);
-  }
+  // Désactivé : l'historique tronqué rend le recalcul impossible
+  // On se fie au solde stocké dans Firebase qui est toujours à jour
+  return;
 }
 
 // Surveillance de l'objet state (détecte les modifications directes via console)
@@ -8001,6 +8276,7 @@ function canClaimStreak() {
 
 function streakDayIndex() {
   // Retourne le nombre de jours validés dans le cycle actuel (0..4)
+  // Si days >= 5 : le cycle est fini, on repart de 0
   const s = getStreakState();
   const today = getTodayKey();
   if (!s.lastClaim) return 0; // pas encore commencé
@@ -8008,7 +8284,8 @@ function streakDayIndex() {
   const now  = new Date(today);
   const diffDays = Math.round((now - last) / 86400000);
   if (diffDays > 1) return 0; // série cassée, on repart de 0
-  return s.days; // 1..5 (nombre de jours déjà validés)
+  if (s.days >= 5) return 0;  // cycle terminé, nouveau cycle
+  return s.days; // 1..4 (nombre de jours déjà validés)
 }
 
 function renderStreakWidget() {
@@ -8087,9 +8364,10 @@ async function claimStreak() {
   const reward = STREAK_REWARDS[currentDay];
   const newDays = currentDay + 1; // 1..5 après claim
 
-  // Reset du cycle si on arrive au jour 5
+  // Reset du cycle : garder days=5 après le 5e jour pour que le badge 🔥 reste visible
+  // Le reset à 0 se fera automatiquement au prochain claim (streakDayIndex verra days>=5 → currentDay=0)
   state.streak = {
-    days: newDays >= 5 ? 0 : newDays, // 0 après le 5e pour repartir
+    days: newDays,
     lastClaim: today,
     cycleStart: (newDays === 1 || !s.cycleStart) ? today : s.cycleStart,
   };
@@ -8266,7 +8544,7 @@ async function checkNotifUpdates() {
         pfcCard.style.display = '';
         pfcStatus.innerHTML = pendingChallenges.map(c => {
           const remaining = Math.max(0, Math.ceil((c.expiresAt - now) / 60000));
-          return `<div style="font-size:.85rem;color:var(--text);">⚔️ <strong>${c.challengerName}</strong> te défie ! <span style="color:var(--muted);font-size:.78rem;">⏱ ${remaining} min</span></div>`;
+          return `<div style="font-size:.85rem;color:var(--text);">⚔️ <strong>${escapeHTML(c.challengerName)}</strong> te défie ! <span style="color:var(--muted);font-size:.78rem;">⏱ ${remaining} min</span></div>`;
         }).join('');
       } else {
         pfcCard.style.display = 'none';
@@ -8394,7 +8672,13 @@ async function renderPFC() {
     c.resolvedDate === today
   ).sort((a, b) => b.resolvedAt - a.resolvedAt).slice(0, 5);
 
-  const hasPlayed = pfcHasPlayedToday();
+  const hasPlayedState = pfcHasPlayedToday();
+  // Vérifier aussi si un défi résolu existe aujourd'hui (le challenger peut ne pas avoir pfcLastPlayedDate)
+  const hasResolvedToday = challenges.some(c =>
+    c.status === 'resolved' && c.resolvedDate === today &&
+    (c.challengerCode === state.code || c.challengedCode === state.code)
+  );
+  const hasPlayed = hasPlayedState || hasResolvedToday;
   const allAccounts = await getAllAccounts();
 
   // Construire la liste des joueurs défiables (autres groupes, pas joué aujourd'hui, pas déjà un défi en cours avec eux)
@@ -8404,7 +8688,10 @@ async function renderPFC() {
     for (const code of (g.members || [])) {
       const acc = allAccounts.find(a => a.code === code);
       if (!acc) continue;
-      const memberHasPlayed = acc.pfcLastPlayedDate === today;
+      const memberHasPlayed = acc.pfcLastPlayedDate === today || challenges.some(c =>
+        c.status === 'resolved' && c.resolvedDate === today &&
+        (c.challengerCode === code || c.challengedCode === code)
+      );
       const hasPendingWith = challenges.some(c =>
         c.status === 'pending' && now < c.expiresAt &&
         ((c.challengerCode === state.code && c.challengedCode === code) ||
@@ -8425,10 +8712,11 @@ async function renderPFC() {
 
   // Si le challenger a un résultat non vu → afficher la carte de résultat
   if (justResolved && !hasPlayed) {
-    // Marquer comme vu pour ne pas boucler
+    // Marquer comme vu pour ne pas boucler — sauvegarder dans Firebase
     state.pfcSeenResults = state.pfcSeenResults || [];
     if (!state.pfcSeenResults.includes(justResolved.id)) {
       state.pfcSeenResults.push(justResolved.id);
+      await saveAccount(state);
     }
     pfcShowResult(
       justResolved.challengerResult,
@@ -8466,7 +8754,7 @@ async function renderPFC() {
         <div class="pfc-challenge-card">
           <div class="pfc-challenge-header">
             <div>
-              <div class="pfc-challenge-from">⚔️ ${c.challengerName} <span style="font-size:.72rem;color:var(--muted);">(${chalGroup ? chalGroup.name : '?'})</span> te défie !</div>
+              <div class="pfc-challenge-from">⚔️ ${escapeHTML(c.challengerName)} <span style="font-size:.72rem;color:var(--muted);">(${escapeHTML(chalGroup ? chalGroup.name : '?')})</span> te défie !</div>
             </div>
             <div class="pfc-challenge-timer">⏱ ${remaining} min restantes</div>
           </div>
@@ -8493,7 +8781,7 @@ async function renderPFC() {
       <div><div class="pfc-section-title">⏳ Défi envoyé</div>
       <div class="pfc-challenge-card" style="margin-top:10px;">
         <div class="pfc-challenge-header">
-          <div class="pfc-challenge-from">Tu as défié <strong>${sentChallenge.challengedName}</strong> — ${PFC_HANDS[sentChallenge.challengerHand]} ${PFC_LABELS[sentChallenge.challengerHand]}</div>
+          <div class="pfc-challenge-from">Tu as défié <strong>${escapeHTML(sentChallenge.challengedName)}</strong> — ${PFC_HANDS[sentChallenge.challengerHand]} ${PFC_LABELS[sentChallenge.challengerHand]}</div>
           <div class="pfc-challenge-timer">⏱ ${remaining} min restantes</div>
         </div>
         <div style="font-size:.8rem;color:var(--muted);">En attente de sa réponse… Le défi expire automatiquement.</div>
@@ -8538,12 +8826,12 @@ async function renderPFC() {
         html += `
           <div class="pfc-player-row">
             <div style="flex:1;min-width:0;">
-              <div class="pfc-player-name">${acc.name}</div>
-              <div class="pfc-player-group">🏅 ${group.name}</div>
+              <div class="pfc-player-name">${escapeHTML(acc.name)}</div>
+              <div class="pfc-player-group">🏅 ${escapeHTML(group.name)}</div>
             </div>
             <span class="pfc-player-status ${statusCls}">${statusLabel}</span>
             ${canChallenge
-              ? `<button class="btn-primary" style="padding:7px 14px;font-size:.82rem;width:auto;" onclick="pfcOpenChallenge('${acc.code}','${acc.name}','${group.id}','${myGroup.id}')">Défier ⚔️</button>`
+              ? `<button class="btn-primary" style="padding:7px 14px;font-size:.82rem;width:auto;" onclick="pfcOpenChallenge('${acc.code}','${acc.name.replace(/'/g, "\\'")}','${group.id}','${myGroup.id}')">Défier ⚔️</button>`
               : `<button class="btn-primary" style="padding:7px 14px;font-size:.82rem;width:auto;opacity:.4;" disabled>Défier ⚔️</button>`
             }
           </div>`;
@@ -8569,12 +8857,12 @@ function pfcOpenChallenge(challengedCode, challengedName, challengedGroupId, myG
   overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
   overlay.innerHTML = `
     <div class="modal-box" style="max-width:420px;text-align:center;">
-      <h2>⚔️ Défier ${challengedName} <button class="modal-close" onclick="document.getElementById('pfcChallengeModal').remove()">✕</button></h2>
+      <h2>⚔️ Défier ${escapeHTML(challengedName)} <button class="modal-close" onclick="document.getElementById('pfcChallengeModal').remove()">✕</button></h2>
       <p style="color:var(--muted);font-size:.88rem;">Choisis ton coup — il sera révélé quand l'adversaire répond.</p>
       <div class="pfc-choices" style="justify-content:center;margin-top:8px;">
-        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName}','${challengedGroupId}','${myGroupId}','rock')">🪨<span>Pierre</span></button>
-        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName}','${challengedGroupId}','${myGroupId}','paper')">📄<span>Feuille</span></button>
-        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName}','${challengedGroupId}','${myGroupId}','scissors')">✂️<span>Ciseaux</span></button>
+        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName.replace(/'/g, "\\'")}','${challengedGroupId}','${myGroupId}','rock')">🪨<span>Pierre</span></button>
+        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName.replace(/'/g, "\\'")}','${challengedGroupId}','${myGroupId}','paper')">📄<span>Feuille</span></button>
+        <button class="pfc-choice-btn" onclick="pfcSendChallenge('${challengedCode}','${challengedName.replace(/'/g, "\\'")}','${challengedGroupId}','${myGroupId}','scissors')">✂️<span>Ciseaux</span></button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
@@ -8582,6 +8870,30 @@ function pfcOpenChallenge(challengedCode, challengedName, challengedGroupId, myG
 
 async function pfcSendChallenge(challengedCode, challengedName, challengedGroupId, myGroupId, myHand) {
   document.getElementById('pfcChallengeModal')?.remove();
+
+  // ── Vérification 1 partie/jour côté serveur ──
+  const freshAcc = await getAccount(state.code);
+  if (freshAcc) {
+    const today = getTodayKeyPFC();
+    if (freshAcc.pfcLastPlayedDate === today) {
+      alert('Tu as déjà joué aujourd\'hui !');
+      renderPFC();
+      return;
+    }
+  }
+
+  // Vérifier qu'aucun défi envoyé n'a déjà été résolu aujourd'hui
+  const allChallenges = await getAllPFCChallenges() || {};
+  const today = getTodayKeyPFC();
+  const alreadyResolved = Object.values(allChallenges).some(c =>
+    c.challengerCode === state.code && c.status === 'resolved' && c.resolvedDate === today
+  );
+  if (alreadyResolved) {
+    alert('Tu as déjà un défi résolu aujourd\'hui !');
+    renderPFC();
+    return;
+  }
+
   const id = 'pfc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   const now = Date.now();
   await savePFCChallenge({
@@ -8605,6 +8917,19 @@ async function pfcRespond(challengeId, myHand, myGroupId) {
   const c = await getPFCChallenge(challengeId);
   if (!c || c.status !== 'pending') { renderPFC(); return; }
   if (Date.now() > c.expiresAt) { renderPFC(); return; }
+
+  // ── Vérification 1 partie/jour côté serveur ──
+  const freshAcc = await getAccount(state.code);
+  if (freshAcc) {
+    const todayCheck = getTodayKeyPFC();
+    if (freshAcc.pfcLastPlayedDate === todayCheck) {
+      alert('Tu as déjà joué aujourd\'hui !');
+      renderPFC();
+      return;
+    }
+    // Mettre à jour le state local pour refléter l'état Firebase
+    state.pfcLastPlayedDate = freshAcc.pfcLastPlayedDate;
+  }
 
   const result = pfcResolve(myHand, c.challengerHand);
   const challengerResult = result === 'win' ? 'lose' : result === 'lose' ? 'win' : 'draw';
@@ -8706,6 +9031,12 @@ function toggleInfo(id) {
 window.addEventListener('beforeunload', () => {
   // Flush tout debounce en attente
   flushClickerSave();
+  // Flush les graines pendantes pour le score de groupe
+  if (clickerData._pendingSeeds > 0) {
+    state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
+    clickerData._pendingSeeds = 0;
+    saveAccount(state);
+  }
   // Tenter une dernière sauvegarde async (best-effort, le navigateur peut l'ignorer)
   if (clickerData.loaded && clickerData.upgrades && clickerData.upgrades.autoClicker) {
     saveClickerData();
@@ -8716,6 +9047,12 @@ window.addEventListener('beforeunload', () => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     flushClickerSave();
+    // Flush les graines pendantes pour le score de groupe
+    if (clickerData._pendingSeeds > 0) {
+      state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
+      clickerData._pendingSeeds = 0;
+      saveAccount(state);
+    }
     if (clickerData.loaded && clickerData.upgrades && clickerData.upgrades.autoClicker) {
       saveClickerData();
     }
