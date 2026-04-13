@@ -2647,13 +2647,13 @@
 
 // ── FIREBASE CONFIG ─────────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyBWc4QHeEcajmWUprfp0IacO_K6bYSgMYw",
-  authDomain: "pomles.firebaseapp.com",
-  databaseURL: "https://pomles-default-rtdb.europe-west1.firebasedatabase.app/",
-  projectId: "pomles",
-  storageBucket: "pomles.firebasestorage.app",
-  messagingSenderId: "1081302715813",
-  appId: "1:1081302715813:web:0543fb2a470f3c9c456c4c"
+  apiKey: "AIzaSyAuEmdCmBpQeJh-irDQbD-J9QBAcxpXOXE",
+  authDomain: "pomel-new.firebaseapp.com",
+  databaseURL: "https://pomel-new-default-rtdb.firebaseio.com/",
+  projectId: "pomel-new",
+  storageBucket: "pomel-new.firebasestorage.app",
+  messagingSenderId: "215621664482",
+  appId: "1:215621664482:web:c4719c811e5969320d28bb"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -2788,7 +2788,52 @@ function migrateAccount(acc) {
   // group = ID Firebase (string) ou null — anciens comptes avec nom de groupe textuel → reset
   // Les vrais IDs font toujours >= 8 chars (préfixe 'g' + base36 timestamp + random)
   if (acc.group && typeof acc.group === 'string' && acc.group.length < 8) acc.group = null;
+  // Compteurs persistants de gains/dépenses (ne dépendent plus de l'historique tronqué)
+  if (typeof acc.totalEarned !== 'number') {
+    // Migration : recalculer depuis l'historique existant
+    acc.totalEarned = (acc.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+  }
+  if (typeof acc.totalSpent !== 'number') {
+    acc.totalSpent = (acc.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
+  }
+  if (typeof acc.totalSpins !== 'number') {
+    acc.totalSpins = (acc.history || []).filter(h => h.type === 'roulette').length;
+  }
+  // Compteur de graines récoltées cette semaine (persistant, reset hebdo)
+  if (typeof acc.weekSeedsEarned !== 'number') acc.weekSeedsEarned = 0;
+  if (!acc.weekSeedsKey) acc.weekSeedsKey = null;
+  // Compteur de pomels gagnés cette semaine (persistant, reset hebdo)
+  if (typeof acc.weekPomelsEarned !== 'number') acc.weekPomelsEarned = 0;
+  if (!acc.weekPomelsKey) acc.weekPomelsKey = null;
   return acc;
+}
+
+// ── TRACKING HELPERS ─────────────────────────────
+// Incrémente les compteurs persistants quand un joueur gagne des Pomels
+function trackEarning(acc, amount) {
+  if (amount > 0) {
+    acc.totalEarned = (acc.totalEarned || 0) + amount;
+    // Tracking hebdo pour le score de groupe
+    const weekKey = getGroupWeekKey();
+    if (acc.weekPomelsKey !== weekKey) {
+      acc.weekPomelsKey = weekKey;
+      acc.weekPomelsEarned = 0;
+    }
+    acc.weekPomelsEarned = (acc.weekPomelsEarned || 0) + amount;
+  } else if (amount < 0) {
+    acc.totalSpent = (acc.totalSpent || 0) + Math.abs(amount);
+  }
+}
+
+// Incrémente les graines récoltées cette semaine (pour le score de groupe)
+function trackSeedsEarned(acc, seeds) {
+  if (seeds <= 0) return;
+  const weekKey = getGroupWeekKey();
+  if (acc.weekSeedsKey !== weekKey) {
+    acc.weekSeedsKey = weekKey;
+    acc.weekSeedsEarned = 0;
+  }
+  acc.weekSeedsEarned = (acc.weekSeedsEarned || 0) + seeds;
 }
 
 // ── INIT ─────────────────────────────────────────
@@ -2899,6 +2944,9 @@ function launchApp() {
   // S'exécute en arrière-plan sans bloquer le chargement
   checkJardinReset().catch(() => {});
   checkGroupWeeklyReward().catch(() => {});
+  // Vérifier les récompenses hebdomadaires des jeux (snake et 2048)
+  checkSnakeWeeklyReset().catch(() => {});
+  checkG2048WeeklyReset().catch(() => {});
   // Initialiser les pastilles de notification
   checkNotifUpdates();
   setInterval(checkNotifUpdates, 60000);
@@ -3230,6 +3278,8 @@ function spin() {
     spinning = false;
     state.balance += prize;
     state.lastSpin = new Date().toISOString();
+    state.totalSpins = (state.totalSpins || 0) + 1;
+    trackEarning(state, prize);
     state.history.unshift({ type: 'roulette', desc: 'Roulette quotidienne', amount: prize, date: new Date().toISOString() });
     saveAccount(state); refreshUI();
     document.getElementById('wheelValue').textContent = prize.toLocaleString('fr-FR');
@@ -3338,8 +3388,9 @@ async function renderLeaderboard(mode) {
   if (!all.length) { list.innerHTML = '<div class="history-empty">Aucun compte trouvé.</div>'; return; }
   const getValue = (acc) => {
     if (mode === 'balance') return acc.balance;
-    if (mode === 'spins') return (acc.history || []).filter(h => h.type === 'roulette').length;
-    return (acc.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+    if (mode === 'spins') return acc.totalSpins || (acc.history || []).filter(h => h.type === 'roulette').length;
+    // 'earned' mode: use persistent counter, fallback to history
+    return acc.totalEarned || (acc.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
   };
   const sorted = [...all].sort((a, b) => getValue(b) - getValue(a));
   sorted.forEach((acc, i) => {
@@ -3399,9 +3450,9 @@ async function openProfileModal(code) {
   const migrated = migrateAccount(acc);
 
   const joined     = new Date(migrated.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const earned     = (migrated.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
-  const spent      = (migrated.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
-  const spins      = (migrated.history || []).filter(h => h.type === 'roulette').length;
+  const earned     = migrated.totalEarned || (migrated.history || []).filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
+  const spent      = migrated.totalSpent || (migrated.history || []).filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
+  const spins      = migrated.totalSpins || (migrated.history || []).filter(h => h.type === 'roulette').length;
   const snakeGames = (migrated.history || []).filter(h => h.type === 'snake').length;
 
   const titlesHTML = (migrated.activeTitles || []).map(tid => {
@@ -3514,22 +3565,20 @@ function getGroupMonthKey() {
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 }
 
-// Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine + graines récoltées cette semaine (via historique) + bonus PFC
+// Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine + graines récoltées cette semaine (via compteurs persistants) + bonus PFC
 async function computeGroupWeekScore(group, allAccounts, allClicker) {
   const weekKey = getGroupWeekKey();
-  // Créer la date de début en heure locale (pas UTC) pour éviter le décalage de fuseau
-  const parts = weekKey.split('-');
-  const weekStart = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0, 0);
   let pomels = 0, seeds = 0;
   for (const code of (group.members || [])) {
     const acc = allAccounts.find(a => a.code === code);
     if (acc) {
-      (acc.history || []).forEach(h => {
-        if (!h.date) return;
-        if (new Date(h.date) < weekStart) return;
-        if (h.amount > 0) pomels += h.amount;
-        if (h.type === 'seeds' && h.seeds > 0) seeds += h.seeds;
-      });
+      // Utiliser les compteurs persistants hebdomadaires
+      if (acc.weekPomelsKey === weekKey) {
+        pomels += (acc.weekPomelsEarned || 0);
+      }
+      if (acc.weekSeedsKey === weekKey) {
+        seeds += (acc.weekSeedsEarned || 0);
+      }
     }
   }
   const pfcBonus = group.pfcWeekBonus || 0;
@@ -3743,6 +3792,7 @@ async function handleCreateGroup() {
   }
 
   state.balance -= 5000;
+  trackEarning(state, -5000);
   state.history.unshift({ type: 'group', desc: `Groupe créé : "${name}"`, amount: -5000, date: new Date().toISOString() });
   state.lastCreatedGroupMonth = getGroupMonthKey();
 
@@ -3771,6 +3821,7 @@ async function joinGroup(groupId) {
 
   // Débiter le nouveau membre
   state.balance -= 3000;
+  trackEarning(state, -3000);
   state.history.unshift({ type: 'group', desc: `Groupe rejoint : "${group.name}"`, amount: -3000, date: new Date().toISOString() });
   state.group = groupId;
   await saveAccount(state);
@@ -3780,6 +3831,7 @@ async function joinGroup(groupId) {
     const creator = await getAccount(group.creatorCode);
     if (creator) {
       creator.balance += 3000;
+      trackEarning(creator, 3000);
       creator.history = creator.history || [];
       creator.history.unshift({ type: 'group', desc: `🏅 "${state.name}" a rejoint ton groupe "${group.name}"`, amount: 3000, date: new Date().toISOString() });
       await saveAccount(creator);
@@ -3919,6 +3971,7 @@ async function checkGroupWeeklyReward() {
       const acc = await getAccount(code);
       if (acc) {
         acc.balance += 2000;
+        trackEarning(acc, 2000);
         acc.history = acc.history || [];
         acc.history.unshift({ type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo ! (+${totalPomcoins} PomCoins au groupe)`, amount: 2000, date: now.toISOString() });
         await saveAccount(acc);
@@ -4494,6 +4547,7 @@ async function buyTitle(titleId) {
   if (!state.ownedTitles) state.ownedTitles = [];
   state.ownedTitles.push(titleId);
   if (title.price > 0) {
+    trackEarning(state, -title.price);
     state.history.unshift({ type: 'shop', desc: `Titre acheté : "${title.name}"`, amount: -title.price, date: new Date().toISOString() });
   }
   await saveAccount(state);
@@ -4598,6 +4652,7 @@ async function placeBet(betId, choice) {
   if (amount > state.balance) { alert(`Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`); return; }
 
   state.balance -= amount;
+  trackEarning(state, -amount);
   state.history.unshift({ type: 'bet', desc: `Pari : "${bet.desc}" — ${choice === 1 ? bet.option1 : bet.option2}`, amount: -amount, date: new Date().toISOString() });
   await saveAccount(state);
 
@@ -4648,6 +4703,7 @@ async function closeBet(betId, winnerOption) {
     const acc = await getAccount(w.code);
     if (acc) {
       acc.balance += gain;
+      trackEarning(acc, gain);
       acc.history = acc.history || [];
       acc.history.unshift({ type: 'bet', desc: `Pari gagné ×${winnerOdds} : "${bet.desc}"`, amount: gain, date: new Date().toISOString() });
       await saveAccount(acc);
@@ -4661,6 +4717,7 @@ async function closeBet(betId, winnerOption) {
       const acc = await getAccount(l.code);
       if (acc) {
         acc.balance += l.amount;
+        trackEarning(acc, l.amount);
         acc.history = acc.history || [];
         acc.history.unshift({ type: 'bet', desc: `Pari remboursé : "${bet.desc}"`, amount: l.amount, date: new Date().toISOString() });
         await saveAccount(acc);
@@ -4674,6 +4731,7 @@ async function closeBet(betId, winnerOption) {
     const creator = await getAccount(bet.creator);
     if (creator) {
       creator.balance += creatorCut;
+      trackEarning(creator, creatorCut);
       creator.history = creator.history || [];
       creator.history.unshift({ type: 'bet', desc: `Commission pari : "${bet.desc}"`, amount: creatorCut, date: new Date().toISOString() });
       await saveAccount(creator);
@@ -4694,6 +4752,7 @@ async function deleteBetByCreator(betId) {
       const acc = await getAccount(b.code);
       if (acc) {
         acc.balance += b.amount;
+        trackEarning(acc, b.amount);
         acc.history = acc.history || [];
         acc.history.unshift({ type: 'bet', desc: `Pari annulé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
         await saveAccount(acc);
@@ -4723,6 +4782,7 @@ async function cleanupBets() {
         const acc = await getAccount(b.code);
         if (acc) {
           acc.balance += b.amount;
+          trackEarning(acc, b.amount);
           acc.history = acc.history || [];
           acc.history.unshift({ type: 'bet', desc: `Pari expiré remboursé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
           await saveAccount(acc);
@@ -5343,6 +5403,7 @@ function stopClickerPage() {
   if (clickerAutoInterval) { clearInterval(clickerAutoInterval); clickerAutoInterval = null; }
   // Flush les graines pendantes pour le score de groupe
   if (clickerData._pendingSeeds > 0) {
+    trackSeedsEarned(state, clickerData._pendingSeeds);
     state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
     clickerData._pendingSeeds = 0;
     saveAccount(state);
@@ -5452,6 +5513,7 @@ function clickFruit(fruitNum) {
   // Historique pour le score de groupe (regroupé toutes les 10 graines pour éviter le spam)
   clickerData._pendingSeeds = (clickerData._pendingSeeds || 0) + gain;
   if (clickerData._pendingSeeds >= 10) {
+    trackSeedsEarned(state, clickerData._pendingSeeds);
     state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
     clickerData._pendingSeeds = 0;
     saveAccount(state);
@@ -5482,6 +5544,7 @@ function collectAutoStock() {
   clickerData.seeds += collected;
   clickerData.autoStock = 0;
   // Historique pour le score de groupe
+  trackSeedsEarned(state, collected);
   state.history.unshift({ type: 'seeds', desc: `🌱 ${collected.toLocaleString('fr-FR')} graines récoltées (auto)`, seeds: collected, amount: 0, date: new Date().toISOString() });
   saveAccount(state);
   updateClickerUI();
@@ -5538,6 +5601,7 @@ async function exchangeSeeds() {
   if (pomels <= 0 || clickerData.seeds < cost) return;
   clickerData.seeds -= cost;
   state.balance += pomels;
+  trackEarning(state, pomels);
   state.history.unshift({ type: 'clicker', desc: `🌱 Échange : ${cost} graines → ${pomels} Pomels`, amount: pomels, date: new Date().toISOString() });
   await saveAccount(state);
   await saveClickerData();
@@ -5728,6 +5792,7 @@ async function gameOverSnake() {
   // Award Pomels
   if (finalPomels > 0) {
     state.balance += finalPomels;
+    trackEarning(state, finalPomels);
     state.history.unshift({ type: 'snake', desc: `🐍 Serpent — score ${finalScore}`, amount: finalPomels, date: new Date().toISOString() });
     await saveAccount(state);
     refreshUI();
@@ -5883,6 +5948,7 @@ async function checkSnakeWeeklyReset() {
     const acc = await getAccount(e.code);
     if (acc) {
       acc.balance += prize;
+      trackEarning(acc, prize);
       acc.history = acc.history || [];
       acc.history.unshift({ type: 'snake', desc: `🐍 Classement hebdo Serpent — #${i+1}`, amount: prize, date: new Date().toISOString() });
       await saveAccount(acc);
@@ -6137,6 +6203,7 @@ async function g2048GameOver() {
 
   if (pomels > 0) {
     state.balance += pomels;
+    trackEarning(state, pomels);
     state.history.unshift({ type: '2048', desc: `🔢 2048 — ${finalScore.toLocaleString('fr-FR')} pts`, amount: pomels, date: new Date().toISOString() });
     await saveAccount(state);
     refreshUI();
@@ -6323,6 +6390,7 @@ async function checkG2048WeeklyReset() {
     const acc = await getAccount(e.code);
     if (acc) {
       acc.balance += prize;
+      trackEarning(acc, prize);
       acc.history = acc.history || [];
       acc.history.unshift({ type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: prize, date: new Date().toISOString() });
       await saveAccount(acc);
@@ -6459,6 +6527,7 @@ async function buyHotelListing(listingId) {
 
   // Deduct from buyer
   state.balance -= listing.price;
+  trackEarning(state, -listing.price);
   state.history.unshift({ type: 'hotel', desc: `Titre acheté : "${listing.titleName}" (Hôtel des Ventes)`, amount: -listing.price, date: new Date().toISOString() });
 
   // Add custom title to buyer's owned titles
@@ -6476,6 +6545,7 @@ async function buyHotelListing(listingId) {
   const creator = await getAccount(listing.creatorCode);
   if (creator) {
     creator.balance += listing.price;
+    trackEarning(creator, listing.price);
     creator.history = creator.history || [];
     creator.history.unshift({ type: 'hotel', desc: `Titre vendu : "${listing.titleName}"`, amount: listing.price, date: new Date().toISOString() });
     await saveAccount(creator);
@@ -6788,6 +6858,7 @@ async function validateQuete(queteId) {
   const target = await getAccount(q.targetCode);
   if (target) {
     target.balance += q.reward;
+    trackEarning(target, q.reward);
     target.history = target.history || [];
     target.history.unshift({
       type: 'quete',
@@ -6798,6 +6869,7 @@ async function validateQuete(queteId) {
     if (isSamePerson) {
       // Cas edge : créateur = cible → ajouter aussi le bonus créateur dans le même save
       target.balance += creatorBonus;
+      trackEarning(target, creatorBonus);
       target.history.unshift({
         type: 'quete',
         desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`,
@@ -6814,6 +6886,7 @@ async function validateQuete(queteId) {
     const creator = await getAccount(q.creatorCode);
     if (creator) {
       creator.balance += creatorBonus;
+      trackEarning(creator, creatorBonus);
       creator.history = creator.history || [];
       creator.history.unshift({
         type: 'quete',
@@ -7196,6 +7269,7 @@ async function distributeJardinRewards(flowers) {
     const acc = await getAccount(p.code);
     if (acc) {
       acc.balance += prize;
+      trackEarning(acc, prize);
       acc.history = acc.history || [];
       acc.history.unshift({ type: 'jardin', desc: `🌸 Jardin de Pomel'Land — ${i < 3 ? `#${i+1}` : 'participant'}`, amount: prize, date: new Date().toISOString() });
       await saveAccount(acc);
@@ -7801,10 +7875,12 @@ async function handleTransfer() {
   if (recipient.code === state.code) { alertEl.textContent = 'Tu ne peux pas t\'envoyer des Pomels à toi-même !'; alertEl.className = 'alert error visible'; return; }
 
   state.balance -= amount;
+  trackEarning(state, -amount);
   state.history.unshift({ type: 'transfer', desc: `Envoyé à ${recipient.name}`, amount: -amount, date: new Date().toISOString() });
   await saveAccount(state);
 
   recipient.balance += amount;
+  trackEarning(recipient, amount);
   recipient.history = recipient.history || [];
   recipient.history.unshift({ type: 'transfer', desc: `Reçu de ${state.name}`, amount: amount, date: new Date().toISOString() });
   await saveAccount(recipient);
@@ -8375,6 +8451,7 @@ async function claimStreak() {
   const displayDays = newDays;
 
   state.balance += reward;
+  trackEarning(state, reward);
   state.history.unshift({
     type: 'streak',
     desc: `🔥 Série quotidienne — Jour ${displayDays}/5`,
@@ -9033,6 +9110,7 @@ window.addEventListener('beforeunload', () => {
   flushClickerSave();
   // Flush les graines pendantes pour le score de groupe
   if (clickerData._pendingSeeds > 0) {
+    trackSeedsEarned(state, clickerData._pendingSeeds);
     state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
     clickerData._pendingSeeds = 0;
     saveAccount(state);
@@ -9049,6 +9127,7 @@ document.addEventListener('visibilitychange', () => {
     flushClickerSave();
     // Flush les graines pendantes pour le score de groupe
     if (clickerData._pendingSeeds > 0) {
+      trackSeedsEarned(state, clickerData._pendingSeeds);
       state.history.unshift({ type: 'seeds', desc: `🌱 ${clickerData._pendingSeeds} graines récoltées (clicker)`, seeds: clickerData._pendingSeeds, amount: 0, date: new Date().toISOString() });
       clickerData._pendingSeeds = 0;
       saveAccount(state);
