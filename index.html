@@ -10,43 +10,71 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0d0f;
-    --surface: #16161a;
-    --surface2: #1e1e24;
-    --border: #2a2a35;
+    --bg: #080810;
+    --surface: #0f0f1a;
+    --surface2: #161624;
+    --surface3: #1e1e2e;
+    --surface-glass: rgba(255,255,255,0.04);
+    --border: #252535;
+    --border-soft: #1c1c2a;
+    --border-subtle: rgba(255,255,255,0.06);
     --primary: #EB5846;
     --primary-dim: #c03c2c;
-    --primary-glow: rgba(235,88,70,0.2);
-    --text: #eeeef0;
-    --muted: #7a7a8c;
-    --green: #3ecf6e;
+    --primary-glow: rgba(235,88,70,0.15);
+    --primary-subtle: rgba(235,88,70,0.08);
+    --text: #f0f0f4;
+    --text-soft: #a8a8c0;
+    --muted: #58586e;
+    --green: #34c768;
+    --green-glow: rgba(52,199,104,0.12);
+    --blue: #4d8de8;
     --red: #EB5846;
-    --yellow: #f0c040;
+    --yellow: #f5c842;
     --radius: 14px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --radius-sm: 8px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 28px rgba(0,0,0,0.5);
+    --shadow-lg: 0 8px 48px rgba(0,0,0,0.65);
+    --transition: .18s cubic-bezier(.4,0,.2,1);
+    /* Nav */
+    --nav-w: 220px;
+    --nav-w-collapsed: 64px;
+    --topbar-h: 56px;
   }
   @media (prefers-color-scheme: light) {
     :root {
-      --bg: #f5f5f7;
+      --bg: #f0f0f5;
       --surface: #ffffff;
-      --surface2: #efefef;
-      --border: #e0e0e8;
+      --surface2: #f0f0f6;
+      --surface3: #e6e6ee;
+      --surface-glass: rgba(255,255,255,0.7);
+      --border: #dcdce8;
+      --border-soft: #e8e8f2;
+      --border-subtle: rgba(0,0,0,0.06);
       --primary: #EB5846;
       --primary-dim: #c03c2c;
-      --primary-glow: rgba(235,88,70,0.15);
-      --text: #111115;
-      --muted: #888899;
+      --primary-glow: rgba(235,88,70,0.10);
+      --primary-subtle: rgba(235,88,70,0.06);
+      --text: #0a0a14;
+      --text-soft: #44445a;
+      --muted: #88889a;
       --green: #1fa854;
+      --green-glow: rgba(31,168,84,0.1);
+      --blue: #3a6fd8;
       --red: #EB5846;
-      --yellow: #d4a520;
-      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --yellow: #c49b00;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 36px rgba(0,0,0,0.10);
     }
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  .site-footer { width: 100%; text-align: center; padding: 18px 24px; font-size: .7rem; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.6; opacity: .6; }
+  .site-footer { width: 100%; text-align: center; padding: 14px 24px; font-size: .68rem; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.6; opacity: .5; }
 
   /* LOGIN */
   #loginScreen { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -60,89 +88,333 @@
   .tabs-login button.active { background: var(--primary); color: #fff; }
   .form-group { display: flex; flex-direction: column; gap: 8px; }
   .form-group label { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
-  .form-group input, .form-group textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'Space Mono', monospace; font-size: .9rem; outline: none; transition: border .2s; width: 100%; }
-  .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+  .form-group input, .form-group textarea {
+    background: var(--surface2); border: 1px solid var(--border-subtle);
+    border-radius: 10px; padding: 11px 14px; color: var(--text);
+    font-family: 'Space Mono', monospace; font-size: .88rem; outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition); width: 100%;
+  }
+  .form-group input:focus, .form-group textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-subtle);
+  }
   .form-group textarea { resize: vertical; min-height: 80px; font-size: .75rem; }
-  .btn-primary { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 14px 24px; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all .2s; width: 100%; }
-  .btn-primary:hover { background: var(--primary-dim); transform: translateY(-1px); box-shadow: 0 6px 24px var(--primary-glow); }
-  .btn-primary:active { transform: translateY(0); }
+  .btn-primary {
+    background: var(--primary); color: #fff; border: none;
+    border-radius: 10px; padding: 13px 24px;
+    font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+    cursor: pointer; transition: all var(--transition); width: 100%;
+    letter-spacing: -.01em;
+  }
+  .btn-primary:hover { background: var(--primary-dim); box-shadow: 0 4px 20px var(--primary-glow); }
+  .btn-primary:active { transform: scale(.98); }
   .login-panel { display: flex; flex-direction: column; gap: 16px; }
   .login-panel.hidden { display: none; }
 
-  /* APP */
-  #app { display: none; flex-direction: column; align-items: center; width: 100%; min-height: 100vh; }
-  #app.visible { display: flex; }
-  header { width: 100%; background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); box-shadow: var(--shadow); }
-  .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
-  .logo span { color: var(--text); }
-  .wallet { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 8px 16px; }
-  .wallet .coin { font-size: 1.1rem; }
-  .wallet .amount { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--primary); }
-  .wallet .label { font-size: .75rem; color: var(--muted); }
-  .user-badge { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); position: relative; cursor: pointer; padding: 6px 10px; border-radius: 10px; transition: background .15s; user-select: none; }
-  .user-badge:hover { background: var(--surface2); }
-  .user-badge strong { color: var(--text); }
-  .user-badge-arrow { font-size: .65rem; color: var(--muted); transition: transform .2s; }
-  .user-badge.open .user-badge-arrow { transform: rotate(180deg); }
-  .user-menu { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 6px; flex-direction: column; gap: 2px; min-width: 190px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 200; }
-  .user-badge.open .user-menu { display: flex; }
-  .user-menu::before { content: ''; position: absolute; top: -6px; right: 18px; width: 10px; height: 10px; background: var(--surface); border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
-  .user-menu-item { background: transparent; border: none; border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; text-align: left; transition: background .15s; width: 100%; }
+
+  /* ══════════════════════════════════════════════
+     LAYOUT PRINCIPAL — sidebar gauche + topbar
+  ══════════════════════════════════════════════ */
+  #app { display: none; min-height: 100vh; }
+  #app.visible { display: flex; flex-direction: column; }
+
+  /* ── TOPBAR ─────────────────────────────────── */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    background: rgba(8,8,16,0.75);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px 0 calc(var(--nav-w) + 16px);
+    z-index: 60; backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    transition: padding-left .3s ease;
+  }
+  @media (prefers-color-scheme: light) {
+    #topbar { background: rgba(240,240,245,0.80); }
+  }
+  #topbar.nav-collapsed { padding-left: calc(var(--nav-w-collapsed) + 16px); }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .topbar-page-title {
+    font-size: 1rem; font-weight: 700; color: var(--text);
+    letter-spacing: -.02em;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  /* Solde dans la topbar */
+  .topbar-wallet {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 100px; padding: 6px 14px; cursor: default;
+    white-space: nowrap;
+  }
+  .wallet-coin { font-size: .9rem; line-height: 1; flex-shrink: 0; }
+  .topbar-wallet .amount {
+    font-family: 'Space Mono', monospace; font-size: .88rem;
+    font-weight: 700; color: var(--primary); line-height: 1;
+  }
+  .wallet-label { font-size: .75rem; color: var(--muted); line-height: 1; }
+
+  /* Streak dans la topbar — compact */
+  .streak-widget {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 100px; padding: 5px 12px;
+    cursor: pointer; user-select: none; transition: all .2s;
+  }
+  .streak-widget.ready { border-color: var(--yellow); box-shadow: 0 0 10px rgba(240,192,64,0.2); }
+  .streak-widget:hover { background: var(--surface3); }
+
+  /* Avatar utilisateur + menu */
+  .topbar-user {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; padding: 4px 8px; border-radius: 10px;
+    transition: background .15s; position: relative; user-select: none;
+  }
+  .topbar-user:hover { background: var(--surface2); }
+  .topbar-user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary-glow); border: 2px solid var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 700; color: var(--primary);
+    overflow: hidden; flex-shrink: 0;
+  }
+  .topbar-user-name { font-size: .82rem; font-weight: 700; color: var(--text); }
+  .topbar-user-arrow { font-size: .6rem; color: var(--muted); transition: transform .2s; }
+  .topbar-user.open .topbar-user-arrow { transform: rotate(180deg); }
+  .user-menu {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 6px; flex-direction: column; gap: 2px;
+    min-width: 200px; box-shadow: var(--shadow-lg); z-index: 200;
+  }
+  .topbar-user.open .user-menu { display: flex; }
+  .user-menu-item {
+    background: transparent; border: none; border-radius: 8px;
+    padding: 10px 14px; color: var(--text); font-family: 'Syne', sans-serif;
+    font-size: .85rem; font-weight: 600; cursor: pointer; text-align: left;
+    transition: background .15s; width: 100%;
+    display: flex; align-items: center; gap: 10px;
+  }
   .user-menu-item:hover { background: var(--surface2); }
   .user-menu-item.danger { color: var(--red); }
   .user-menu-item.danger:hover { background: rgba(235,88,70,0.1); }
+  .nav-dropdown-sep { height: 1px; background: var(--border); margin: 4px 6px; }
 
-  nav { width: 100%; display: flex; justify-content: center; padding: 16px 32px 0; gap: 6px; flex-wrap: wrap; align-items: center; }
-  .nav-btn { background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 9px 16px; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; position: relative; }
-  .nav-btn:hover { color: var(--text); border-color: var(--border); background: var(--surface2); }
-  .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  /* ── SIDEBAR NAV GAUCHE ──────────────────────── */
+  #sidenav {
+    position: fixed; top: 0; left: 0; width: var(--nav-w); height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column;
+    z-index: 70; transition: width .28s cubic-bezier(.4,0,.2,1); overflow: hidden;
+  }
+  #sidenav.collapsed { width: var(--nav-w-collapsed); }
 
-  /* Séparateur visuel entre groupes nav */
-  .nav-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; opacity: .6; align-self: center; }
+  .sidenav-logo {
+    height: var(--topbar-h); display: flex; align-items: center;
+    padding: 0 18px; gap: 10px; border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0; cursor: pointer; text-decoration: none;
+    transition: opacity var(--transition);
+  }
+  .sidenav-logo:hover { opacity: .8; }
+  .sidenav-logo-icon { font-size: 1.35rem; font-weight: 800; color: var(--primary); flex-shrink: 0; }
+  .sidenav-logo-text { font-size: 1.2rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; white-space: nowrap; overflow: hidden; }
+  .sidenav-logo-text span { color: var(--text-soft); }
 
-  /* Roulette standalone — doré */
-  .nav-btn-roulette { background: rgba(240,192,64,0.12); border-color: rgba(240,192,64,0.4) !important; color: var(--yellow) !important; font-weight: 700; }
-  .nav-btn-roulette:hover { background: rgba(240,192,64,0.2); border-color: var(--yellow) !important; }
-  .nav-btn-roulette.active { background: var(--yellow); color: #1a1200 !important; border-color: var(--yellow) !important; }
+  .sidenav-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .sidenav-scroll::-webkit-scrollbar { width: 4px; }
+  .sidenav-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-  /* Chat standalone — rouge primaire */
-  .nav-btn-chat { background: rgba(235,88,70,0.1); border-color: rgba(235,88,70,0.3) !important; color: var(--primary) !important; font-weight: 700; }
-  .nav-btn-chat:hover { background: rgba(235,88,70,0.18); border-color: var(--primary) !important; }
-  .nav-btn-chat.active { background: var(--primary); color: #fff !important; border-color: var(--primary) !important; }
+  /* Section label */
+  .sidenav-section {
+    font-size: .62rem; font-weight: 700; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 10px 10px 4px; white-space: nowrap; overflow: hidden;
+    transition: opacity .2s;
+  }
+  #sidenav.collapsed .sidenav-section { opacity: 0; height: 0; padding: 0; }
 
-  /* DROPDOWNS */
-  .nav-dropdown { position: relative; }
-  .nav-dropdown-trigger { white-space: nowrap; }
-  .nav-dropdown-trigger.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 8px; flex-direction: column; gap: 2px; min-width: 200px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); z-index: 100; }
-  .nav-dropdown-menu.open { display: flex; }
-  .nav-dropdown-menu::before { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(45deg); width: 10px; height: 10px; background: var(--surface); border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
-  .nav-dropdown-item { background: transparent; border: none; border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; text-align: left; transition: background .15s; white-space: nowrap; display: flex; align-items: center; gap: 10px; }
-  .nav-dropdown-item:hover { background: var(--surface2); color: var(--primary); }
-  .nav-dropdown-item.active { background: rgba(235,88,70,0.08); color: var(--primary); }
-  .nav-dropdown-sep { height: 1px; background: var(--border); margin: 4px 8px; opacity: .7; }
-  .page { display: none; width: 100%; max-width: 700px; padding: 40px 24px 80px; }
+  /* Item nav */
+  .sidenav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 10px;
+    background: transparent; border: none; width: 100%;
+    font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600;
+    color: var(--muted); cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    text-align: left; position: relative; white-space: nowrap;
+  }
+  .sidenav-item:hover { background: var(--surface-glass); color: var(--text-soft); }
+  .sidenav-item.active { background: var(--primary-subtle); color: var(--primary); }
+  .sidenav-item.active .sidenav-item-icon { color: var(--primary); }
+  .sidenav-item-icon { font-size: 1.05rem; flex-shrink: 0; width: 22px; text-align: center; }
+  .sidenav-item-label { flex: 1; overflow: hidden; text-overflow: ellipsis; transition: opacity .2s, width .3s; }
+  #sidenav.collapsed .sidenav-item-label { opacity: 0; width: 0; overflow: hidden; }
+  #sidenav.collapsed .sidenav-item { justify-content: center; padding: 10px; }
+
+  /* Pastilles notif (compat ancienne nav → sur sidenav-badge) */
+  .notif-badge, .notif-badge-item {
+    min-width: 8px; height: 8px; border-radius: 50%;
+    background: var(--primary); display: inline-block;
+    margin-left: 4px; flex-shrink: 0; vertical-align: middle;
+  }
+
+  /* Badge notif sur item */
+  .sidenav-badge {
+    min-width: 18px; height: 18px; border-radius: 9px;
+    background: var(--primary); color: #fff;
+    font-size: .6rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    display: flex; align-items: center; justify-content: center; padding: 0 4px;
+    flex-shrink: 0;
+  }
+  #sidenav.collapsed .sidenav-badge {
+    position: absolute; top: 4px; right: 4px;
+    min-width: 14px; height: 14px; font-size: .5rem;
+  }
+
+  /* Couleurs spéciales */
+  .sidenav-item.nav-roulette { color: var(--yellow); }
+  .sidenav-item.nav-roulette:hover { background: rgba(240,192,64,0.1); color: var(--yellow); }
+  .sidenav-item.nav-roulette.active { background: rgba(240,192,64,0.15); color: var(--yellow); }
+  .sidenav-item.nav-chat { color: var(--primary); }
+  .sidenav-item.nav-chat:hover { background: rgba(235,88,70,0.1); }
+  .sidenav-item.nav-chat.active { background: rgba(235,88,70,0.15); color: var(--primary); }
+
+  /* Collapse toggle en bas */
+  .sidenav-footer {
+    padding: 10px 8px; border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+  .sidenav-collapse-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 10px; width: 100%;
+    background: transparent; border: none; color: var(--muted);
+    font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 600;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .sidenav-collapse-btn:hover { background: var(--surface2); color: var(--text); }
+  .sidenav-collapse-icon { font-size: 1rem; flex-shrink: 0; width: 22px; text-align: center; transition: transform .3s; }
+  #sidenav.collapsed .sidenav-collapse-icon { transform: rotate(180deg); }
+  .sidenav-collapse-label { transition: opacity .2s; }
+  #sidenav.collapsed .sidenav-collapse-label { opacity: 0; width: 0; overflow: hidden; }
+
+  /* ── CONTENU PRINCIPAL ───────────────────────── */
+  #main-content {
+    margin-left: var(--nav-w);
+    margin-top: var(--topbar-h);
+    min-height: calc(100vh - var(--topbar-h));
+    transition: margin-left .3s ease;
+    display: flex; flex-direction: column; align-items: center;
+    width: calc(100% - var(--nav-w));
+  }
+  #main-content.nav-collapsed { margin-left: var(--nav-w-collapsed); width: calc(100% - var(--nav-w-collapsed)); }
+
+  /* Pages */
+  .page { display: none; width: 100%; max-width: 760px; padding: 28px 28px 100px; }
   .page.active { display: block; }
-  #page-home { max-width: 1100px; }
-  #page-classement { max-width: 1100px; }
-  #page-boutique { max-width: 960px; }
-  .home-wrap { display: flex; flex-direction: column; gap: 24px; }
+  #page-home { max-width: 1000px; }
+  #page-classement { max-width: 1000px; }
+  #page-boutique { max-width: 920px; }
+  @media (max-width: 768px) {
+    .page { padding: 20px 16px 100px; }
+  }
+
+  /* ── MOBILE ─────────────────────────────────── */
+  @media (max-width: 768px) {
+    :root { --nav-w: 0px; --nav-w-collapsed: 0px; }
+    #sidenav {
+      width: 260px !important; transform: translateX(-100%);
+      transition: transform .3s ease; box-shadow: var(--shadow-lg);
+    }
+    #sidenav.mobile-open { transform: translateX(0); }
+    #topbar { padding-left: 16px; }
+    #main-content { margin-left: 0 !important; width: 100% !important; }
+    .topbar-wallet .label { display: none; }
+    /* Overlay quand sidenav ouvert */
+    #sidenav-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 65; backdrop-filter: blur(2px);
+    }
+    #sidenav-overlay.visible { display: block; }
+    /* Bouton hamburger */
+    #hamburger-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 1rem; cursor: pointer;
+      transition: all .15s;
+    }
+    #hamburger-btn:hover { background: var(--surface3); }
+    /* Bottom bar mobile */
+    #mobile-bottom-nav {
+      display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+      z-index: 60; justify-content: space-around;
+    }
+    .mobile-nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 6px 12px; border-radius: 10px; background: none; border: none;
+      color: var(--muted); font-family: 'Syne', sans-serif; font-size: .58rem;
+      font-weight: 700; cursor: pointer; transition: color .15s; position: relative;
+    }
+    .mobile-nav-btn .mbn-icon { font-size: 1.2rem; }
+    .mobile-nav-btn.active { color: var(--primary); }
+  }
+  @media (min-width: 769px) {
+    #hamburger-btn { display: none; }
+    #mobile-bottom-nav { display: none; }
+    #sidenav-overlay { display: none !important; }
+  }
+
+  /* Compat — garde les anciens sélecteurs qui restent ailleurs */
+  .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+  .logo span { color: var(--text); }
+  .nav-dropdown-item { display: none; } /* plus utilisé */
+  .nav-btn { display: none; }           /* plus utilisé */
+  /* ── HOME ───────────────────────────────────── */
+  .home-wrap { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Section d'alertes urgentes */
+  .home-alerts { display: flex; flex-direction: column; gap: 8px; }
+
+  /* Section titre avec ligne */
+  .home-section-header {
+    display: flex; align-items: center; gap: 12px;
+    font-size: .65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .1em;
+    margin: 4px 0 2px;
+  }
+  .home-section-header::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* Home card urgente — plus visible */
+  .home-card-urgent {
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: all .2s;
+    border: 1px solid;
+  }
+  .home-card-urgent:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+  .home-card-urgent-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .home-card-urgent-body { flex: 1; min-width: 0; }
+  .home-card-urgent-title { font-size: .82rem; font-weight: 800; letter-spacing: -.01em; }
+  .home-card-urgent-desc { font-size: .75rem; color: var(--text-soft); margin-top: 2px; line-height: 1.4; }
+
   .home-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    gap: 12px;
   }
-  /* full = 3 colonnes, half = 1 colonne sur 3 (soit 1/3), span2 = 2 colonnes sur 3 */
   .home-card-full  { grid-column: 1 / -1; }
   .home-card-span2 { grid-column: span 2; }
 
-  /* Sur tablette (< 900px) : 2 colonnes */
   @media (max-width: 900px) {
     #page-home { max-width: 100%; }
     .home-grid { grid-template-columns: repeat(2, 1fr); }
     .home-card-span2 { grid-column: 1 / -1; }
   }
-  /* Sur mobile (< 600px) : 1 colonne */
   @media (max-width: 600px) {
     #page-home { max-width: 100%; }
     .home-grid { grid-template-columns: 1fr; }
@@ -207,12 +479,12 @@
 
   /* Carte produit compacte */
   .shop-item {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px;
+    background: var(--surface); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius); padding: 14px;
     display: flex; flex-direction: column; gap: 8px;
-    transition: border-color .2s, box-shadow .2s;
+    transition: all var(--transition);
   }
-  .shop-item:hover { border-color: var(--primary); box-shadow: 0 0 12px var(--primary-glow); }
+  .shop-item:hover { border-color: rgba(235,88,70,0.3); box-shadow: 0 4px 16px var(--primary-glow); transform: translateY(-1px); }
   .shop-item.owned { border-color: var(--green); opacity: .75; }
   .shop-item-name { font-weight: 700; font-size: .92rem; line-height: 1.3; }
   .shop-item-desc { font-size: .75rem; color: var(--muted); line-height: 1.4; }
@@ -388,8 +660,8 @@
   .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
 
   /* PROFILE MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: flex-start; justify-content: center; animation: fadeIn .2s; overflow-y: auto; padding: 24px 16px; }
-  .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; width: 100%; max-width: 400px; margin: auto; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 60px rgba(0,0,0,0.4); animation: slideUp .3s; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; animation: fadeIn .18s; overflow-y: auto; padding: 24px 16px; }
+  .modal-box { background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 28px; width: 100%; max-width: 400px; margin: auto; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-lg); animation: slideUp .22s cubic-bezier(.4,0,.2,1); }
   .modal-box h2 { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
   .modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; transition: color .2s; }
   .modal-close:hover { color: var(--text); }
@@ -403,31 +675,52 @@
   .confirm-buttons { display: flex; gap: 10px; justify-content: center; }
 
   /* ALERTS */
-  .alert { padding: 10px 16px; border-radius: 8px; font-size: .85rem; font-weight: 600; display: none; }
-  .alert.visible { display: block; }
-  .alert.error { background: rgba(235,88,70,0.1); color: var(--red); border: 1px solid rgba(235,88,70,0.3); }
-  .alert.success { background: rgba(62,207,110,0.1); color: var(--green); border: 1px solid rgba(62,207,110,0.3); }
+  .alert { padding: 10px 14px; border-radius: 10px; font-size: .82rem; font-weight: 600; display: none; line-height: 1.4; }
+  .alert.visible { display: block; animation: alertIn .18s ease; }
+  @keyframes alertIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+  .alert.error { background: rgba(235,88,70,0.08); color: var(--red); border: 1px solid rgba(235,88,70,0.2); }
+  .alert.success { background: rgba(52,199,104,0.08); color: var(--green); border: 1px solid rgba(52,199,104,0.2); }
 
   /* TOAST */
-  .win-toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: #fff; padding: 16px 32px; border-radius: 50px; font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; box-shadow: 0 8px 40px var(--primary-glow); transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s; opacity: 0; z-index: 200; pointer-events: none; white-space: nowrap; }
+  .win-toast {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border-subtle);
+    padding: 12px 24px; border-radius: 100px;
+    font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+    box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.06);
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+    opacity: 0; z-index: 200; pointer-events: none; white-space: nowrap;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  }
   .win-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .sparkle-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 150; }
 
   /* LOADING */
-  .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+  .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
   .loading-overlay.hidden { display: none; }
-  .loader-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: lspin .8s linear infinite; }
+  .loader-spinner { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: lspin .7s linear infinite; }
   @keyframes lspin { to { transform: rotate(360deg); } }
-  .loader-text { font-size: .9rem; color: var(--muted); }
+  .loader-text { font-size: .82rem; color: var(--muted); letter-spacing: .02em; }
 
   /* HOME */
   .home-greeting { font-size: 1.8rem; font-weight: 800; letter-spacing: -.5px; }
   .home-sub { font-size: .9rem; color: var(--muted); margin-top: -16px; }
-  .home-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: border-color .2s; }
-  .home-card:hover { border-color: rgba(235,88,70,0.3); }
+  .home-card {
+    background: var(--surface); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  }
+  .home-card:hover {
+    border-color: var(--border); box-shadow: var(--shadow);
+    transform: translateY(-1px);
+  }
   .home-card-title { font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
   .home-card-list { display: flex; flex-direction: column; gap: 8px; }
-  .home-rank-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--surface2); border-radius: 8px; }
+  .home-rank-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface2); border-radius: var(--radius-sm); transition: background var(--transition); }
+  .home-rank-row:hover { background: var(--surface3); }
   .home-rank-num { font-family: 'Space Mono', monospace; font-weight: 700; font-size: .85rem; width: 22px; flex-shrink: 0; }
   .home-rank-num.top1 { color: #FFD700; }
   .home-rank-num.top2 { color: #C0C0C0; }
@@ -471,7 +764,7 @@
   .quete-select:focus { border-color: var(--primary); }
   .quete-section-label { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; }
   .quetes-list { display: flex; flex-direction: column; gap: 12px; }
-  .quete-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: border-color .2s; }
+  .quete-card { background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: all var(--transition); }
   .quete-card.mine { border-color: var(--primary); }
   .quete-card.incoming { border-color: #5b8def; box-shadow: 0 0 16px rgba(91,141,239,0.15); }
   .quete-card.done { opacity: .65; }
@@ -570,8 +863,9 @@
   .snake-lb-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
   .snake-lb-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; }
   .snake-lb-list { display: flex; flex-direction: column; gap: 8px; }
-  .snake-lb-item { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: 8px; padding: 10px 14px; }
-  .snake-lb-item.me { border: 1px solid var(--primary); background: rgba(235,88,70,0.05); }
+  .snake-lb-item { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 14px; transition: all var(--transition); }
+  .snake-lb-item:hover { background: var(--surface3); }
+  .snake-lb-item.me { border: 1px solid rgba(235,88,70,0.3); background: var(--primary-subtle); }
   .snake-lb-rank { font-family: 'Space Mono', monospace; font-weight: 700; width: 24px; color: var(--muted); flex-shrink: 0; }
   .snake-lb-rank.top1 { color: #FFD700; }
   .snake-lb-rank.top2 { color: #C0C0C0; }
@@ -745,8 +1039,8 @@
   .profil-me-titles { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
   .profils-section-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
   .profils-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-  .profil-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; cursor: pointer; transition: border-color .2s, box-shadow .2s; display: flex; flex-direction: column; gap: 8px; }
-  .profil-card:hover { border-color: var(--primary); box-shadow: 0 0 14px var(--primary-glow); }
+  .profil-card { background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: all var(--transition); display: flex; flex-direction: column; gap: 8px; }
+  .profil-card:hover { border-color: var(--border); box-shadow: var(--shadow); transform: translateY(-2px); }
   .profil-card-name { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
   .profil-card-group { font-size: .72rem; color: var(--muted); font-weight: 600; }
   .profil-card-stats { display: flex; gap: 10px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
@@ -1370,6 +1664,342 @@
   .pfc-hist-result.draw { color: var(--yellow); }
   .pfc-hist-detail { flex: 1; color: var(--muted); }
   .pfc-hist-reward { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--yellow); }
+
+  /* ── SIDEBAR JOUEURS (droite) ────────────────── */
+  #playerSidebar {
+    position: fixed; top: var(--topbar-h); right: 0;
+    width: 220px; height: calc(100vh - var(--topbar-h));
+    background: var(--surface); border-left: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column; z-index: 40;
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  #playerSidebar.hidden { transform: translateX(100%); }
+  .sidebar-header {
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: .65rem; font-weight: 700; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sidebar-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .sidebar-player {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 12px; cursor: pointer; transition: background .15s;
+    border-radius: 0;
+  }
+  .sidebar-player:hover { background: var(--surface2); }
+  .sidebar-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; color: var(--muted); flex-shrink: 0;
+  }
+  .sidebar-avatar canvas { width: 30px; height: 30px; }
+  .sidebar-player-info { flex: 1; min-width: 0; }
+  .sidebar-player-name { font-size: .78rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-player-val { font-family: 'Space Mono', monospace; font-size: .65rem; color: var(--muted); }
+  /* Push main-content quand sidebar visible */
+  @media (min-width: 1440px) {
+    #main-content { padding-right: 220px; }
+    #playerSidebar { transform: translateX(0) !important; }
+    #sidebarToggle { display: none; }
+  }
+  @media (max-width: 1439px) {
+    #sidebarToggle {
+      position: fixed; bottom: 70px; right: 14px; z-index: 45;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 1.1rem; cursor: pointer;
+      box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    #sidebarToggle:hover { background: var(--surface3); }
+  }
+  @media (max-width: 768px) { #sidebarToggle { bottom: 80px; } }
+
+  /* ── AVATAR CANVAS ───────────────────────────── */
+  .avatar-canvas { border-radius: 50%; display: block; }
+  .profil-me-avatar canvas { width: 52px; height: 52px; }
+
+  /* ── ÉDITEUR D'AVATAR ────────────────────────── */
+  .avatar-editor-wrap { display: flex; flex-direction: column; gap: 16px; }
+  .avatar-editor-canvas-area {
+    position: relative; width: 200px; height: 200px;
+    margin: 0 auto; border-radius: 50%;
+    border: 2px solid var(--primary); overflow: hidden;
+    background: #1a1a20; cursor: crosshair;
+    box-shadow: 0 0 24px var(--primary-glow);
+  }
+  #avatarEditorCanvas { display: block; border-radius: 50%; }
+  .avatar-editor-toolbar {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .avatar-tool-row {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+  .avatar-tool-label {
+    font-size: .68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .08em; width: 100%;
+  }
+  .avatar-shape-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; color: var(--text);
+    font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .avatar-shape-btn:hover, .avatar-shape-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .avatar-size-slider { flex: 1; accent-color: var(--primary); }
+  .avatar-color-swatch {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer; transition: border-color .15s;
+  }
+  .avatar-color-swatch.active { border-color: var(--primary); }
+  .avatar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .avatar-action-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; color: var(--text);
+    font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .avatar-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .avatar-action-btn.primary-btn { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .avatar-action-btn.primary-btn:hover { background: var(--primary-dim); }
+  .avatar-action-btn.danger-btn { color: var(--red); border-color: rgba(235,88,70,.3); }
+  .avatar-action-btn.danger-btn:hover { background: rgba(235,88,70,.1); }
+
+  /* ── NOTIFICATIONS TOAST ─────────────────────── */
+  /* ── NOTIFICATIONS ───────────────────────────── */
+  #notifContainer {
+    position: fixed; top: 72px; left: 16px; z-index: 9999;
+    display: flex; flex-direction: column; gap: 10px;
+    pointer-events: none; max-width: 340px;
+  }
+  .notif-toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
+    min-width: 280px; max-width: 340px;
+    animation: notifIn .35s cubic-bezier(.22,1,.36,1);
+    pointer-events: all; cursor: pointer;
+    position: relative;
+  }
+  .notif-toast.closing { animation: notifOut .25s ease forwards; }
+  @keyframes notifIn  { from { opacity:0; transform:translateX(-32px) scale(.96); } to { opacity:1; transform:translateX(0) scale(1); } }
+  @keyframes notifOut { from { opacity:1; transform:translateX(0) scale(1); } to { opacity:0; transform:translateX(-24px) scale(.94); } }
+
+  .notif-toast-inner {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 14px 18px;
+  }
+  .notif-toast-icon-wrap {
+    width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  /* couleur par type */
+  .notif-toast[data-type="quete"]  .notif-toast-icon-wrap { background: rgba(235,88,70,0.18); }
+  .notif-toast[data-type="bet"]    .notif-toast-icon-wrap { background: rgba(240,192,64,0.18); }
+  .notif-toast[data-type="chat"]   .notif-toast-icon-wrap { background: rgba(91,141,239,0.18); }
+  .notif-toast[data-type="pfc"]    .notif-toast-icon-wrap { background: rgba(62,207,110,0.18); }
+  .notif-toast[data-type="default"].notif-toast-icon-wrap { background: rgba(235,88,70,0.18); }
+
+  /* barre colorée gauche */
+  .notif-toast::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    border-radius: 16px 0 0 16px;
+  }
+  .notif-toast[data-type="quete"]::before  { background: var(--red); }
+  .notif-toast[data-type="bet"]::before    { background: var(--yellow); }
+  .notif-toast[data-type="chat"]::before   { background: #5b8def; }
+  .notif-toast[data-type="pfc"]::before    { background: var(--green); }
+  .notif-toast[data-type="default"]::before { background: var(--primary); }
+
+  .notif-toast-body { flex: 1; min-width: 0; padding-top: 1px; }
+  .notif-toast-title { font-size: .85rem; font-weight: 800; color: var(--text); letter-spacing: -.01em; }
+  .notif-toast-msg   { font-size: .75rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .notif-toast-close {
+    font-size: .65rem; color: var(--muted); cursor: pointer;
+    padding: 3px 6px; border-radius: 6px; flex-shrink: 0;
+    background: var(--surface2); line-height: 1;
+    transition: background .15s;
+  }
+  .notif-toast-close:hover { background: var(--border); color: var(--text); }
+
+  /* barre de progression */
+  .notif-progress {
+    position: absolute; bottom: 0; left: 3px; right: 0; height: 3px;
+    background: var(--border); border-radius: 0 0 16px 0;
+    overflow: hidden;
+  }
+  .notif-progress-bar {
+    height: 100%; border-radius: 0 0 16px 0;
+    animation: notifProgress linear forwards;
+  }
+  .notif-toast[data-type="quete"]  .notif-progress-bar { background: var(--red); }
+  .notif-toast[data-type="bet"]    .notif-progress-bar { background: var(--yellow); }
+  .notif-toast[data-type="chat"]   .notif-progress-bar { background: #5b8def; }
+  .notif-toast[data-type="pfc"]    .notif-progress-bar { background: var(--green); }
+  .notif-toast[data-type="default"].notif-progress-bar { background: var(--primary); }
+  @keyframes notifProgress { from { width: 100%; } to { width: 0%; } }
+
+
+  /* ── POLISH GLOBAL ──────────────────────────── */
+  /* Scrollbar globale fine */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Cards avec hover subtil */
+  .settings-card, .transfer-card, .bet-card, .quete-card, .history-card {
+    transition: box-shadow .2s;
+  }
+
+  /* Inputs améliorés */
+  input[type="text"], input[type="number"], input[type="password"], textarea, select {
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input[type="text"]:focus, input[type="number"]:focus,
+  input[type="password"]:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+
+  /* Bouton transfer */
+  .btn-transfer {
+    background: var(--primary); color: #fff; border: none;
+    border-radius: 10px; padding: 12px 20px;
+    font-family: 'Syne', sans-serif; font-size: .9rem; font-weight: 700;
+    cursor: pointer; transition: all .2s; white-space: nowrap;
+  }
+  .btn-transfer:hover { background: var(--primary-dim); transform: translateY(-1px); }
+
+  /* Tags de section colorés (home) */
+  .home-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .6rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; padding: 2px 8px; border-radius: 6px;
+  }
+  .home-tag-urgent { background: rgba(235,88,70,0.15); color: var(--red); }
+  .home-tag-info   { background: rgba(91,141,239,0.15); color: var(--blue); }
+  .home-tag-ok     { background: rgba(62,207,110,0.15); color: var(--green); }
+  .home-tag-warn   { background: rgba(240,192,64,0.15); color: var(--yellow); }
+
+  /* ── TIMER BADGES (quêtes / paris) ──────────── */
+  .timer-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'Space Mono', monospace; font-size: .72rem;
+    color: var(--yellow); font-weight: 700;
+  }
+  .timer-badge.urgent { color: var(--red); animation: timerPulse 1s ease-in-out infinite; }
+  @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+
+  /* ── GLOBAL POLISH ───────────────────────────── */
+  /* Scrollbar ultra fine */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Sélection de texte */
+  ::selection { background: var(--primary-subtle); color: var(--primary); }
+
+  /* Smooth scrolling */
+  html { scroll-behavior: smooth; }
+
+  /* Body — antialiasing propre */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus visible seulement au clavier */
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+  :focus:not(:focus-visible) { outline: none; }
+
+  /* Labels de formulaire */
+  .form-group label {
+    font-size: .68rem; font-weight: 700; color: var(--muted);
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+
+  /* Séparateur de section */
+  .section-divider {
+    height: 1px; background: var(--border-subtle); margin: 4px 0;
+  }
+
+  /* Badge "Moi" dans classement */
+  .lb-you-badge {
+    display: inline-flex; align-items: center;
+    background: var(--primary-subtle); color: var(--primary);
+    border: 1px solid rgba(235,88,70,0.2);
+    font-size: .6rem; font-weight: 700; padding: 1px 6px;
+    border-radius: 4px; margin-left: 6px; letter-spacing: .04em;
+  }
+
+  /* Title badges */
+  .title-badge {
+    display: inline-flex; align-items: center;
+    background: var(--surface3); color: var(--text-soft);
+    border: 1px solid var(--border-subtle);
+    font-size: .65rem; font-weight: 700; padding: 2px 8px;
+    border-radius: 6px; letter-spacing: .02em;
+  }
+
+  /* Home section header */
+  .home-section-header {
+    font-size: .62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .12em;
+    display: flex; align-items: center; gap: 10px; margin: 4px 0 2px;
+  }
+  .home-section-header::after {
+    content: ''; flex: 1; height: 1px; background: var(--border-subtle);
+  }
+
+  /* Confirm dialog amélioré */
+  .confirm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 300; display: flex; align-items: center; justify-content: center;
+    animation: fadeIn .18s;
+  }
+  .confirm-box {
+    background: var(--surface); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg); padding: 28px; width: 100%;
+    max-width: 360px; margin: 20px; display: flex; flex-direction: column;
+    gap: 16px; text-align: center; box-shadow: var(--shadow-lg);
+    animation: slideUp .22s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* Page transitions */
+  .page.active { animation: pageFadeIn .18s ease; }
+  @keyframes pageFadeIn { from { opacity:.7; } to { opacity:1; } }
+
+  /* Input row */
+  .input-row { display: flex; gap: 10px; align-items: stretch; }
+  .input-row input { flex: 1; }
+  .input-group { display: flex; flex-direction: column; gap: 8px; }
+  .input-group label { font-size: .68rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .input-group input, .input-group select {
+    background: var(--surface2); border: 1px solid var(--border-subtle);
+    border-radius: 10px; padding: 11px 14px; color: var(--text);
+    font-family: 'Space Mono', monospace; font-size: .88rem; outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition); width: 100%;
+  }
+  .input-group input:focus, .input-group select:focus {
+    border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-subtle);
+  }
+
+  /* Balance display */
+  .balance-display { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
+  .balance-display .label { font-size: .75rem; color: var(--muted); font-weight: 600; }
+  .balance-display .val { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--primary); }
+
 </style>
 </head>
 <body>
@@ -1419,105 +2049,193 @@
 <!-- APP -->
 <div id="app">
   <canvas class="sparkle-canvas" id="sparkles"></canvas>
-  <header>
-    <div class="logo" onclick="goToHome()" style="cursor:pointer;">Pomel<span>.</span></div>
-    <div class="wallet">
-      <span class="coin">🪙</span>
-      <div>
-        <div class="amount" id="headerBalance">0</div>
-        <div class="label">Pomels</div>
-      </div>
-    </div>
-    <!-- Série quotidienne -->
-    <div class="streak-widget" id="streakWidget" onclick="claimStreak()" title="Série quotidienne — clique chaque jour !">
-      <span class="streak-fire" id="streakFire">🔥</span>
-      <div class="streak-days" id="streakDays"></div>
-      <span class="streak-label" id="streakLabel"></span>
-    </div>
-    <div class="user-badge" id="userBadge" onclick="toggleUserMenu(event)">
-      Bonjour, <strong id="headerName">—</strong>
-      <span class="user-badge-arrow">▾</span>
-      <div class="user-menu" onclick="event.stopPropagation()">
-        <button class="user-menu-item" onclick="goToFromUser('infos')">ℹ️ Informations</button>
-        <div class="nav-dropdown-sep"></div>
-        <button class="user-menu-item danger" onclick="logout()">🚪 Déconnexion</button>
-      </div>
-    </div>
-  </header>
+  <div id="notifContainer"></div>
 
-  <nav>
-    <!-- Roulette standalone — dorée -->
-    <button class="nav-btn nav-btn-roulette" id="navbtn-roulette" onclick="goTo('roulette',this)">🎰 Roulette</button>
+  <!-- OVERLAY mobile sidenav -->
+  <div id="sidenav-overlay" onclick="closeMobileSidenav()"></div>
 
-    <!-- Chat standalone — rouge -->
-    <button class="nav-btn nav-btn-chat" id="navbtn-chat" onclick="goTo('discussion',this)">💬 Chat</button>
-
-    <div class="nav-sep"></div>
-
-    <!-- Dropdown : Jeux -->
-    <div class="nav-dropdown" id="dropdown-games">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('games')">🎮 Jeux ▾</button>
-      <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('snake','games',this)">🐍 Serpent</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('g2048','games',this)">🔢 2048</button>
-        <div class="nav-dropdown-sep"></div>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('clicker','games',this)">🌱 Clicker</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('jardin','games',this)">🌸 Jardin</button>
-        <div class="nav-dropdown-sep"></div>
-        <button class="nav-dropdown-item" id="navbtn-pfc" onclick="goToFromDropdown('pfc','games',this)">🪨 Pierre Feuille Ciseaux</button>
-      </div>
+  <!-- ── SIDEBAR NAV GAUCHE ── -->
+  <nav id="sidenav">
+    <!-- Logo -->
+    <div class="sidenav-logo" onclick="goToHome()">
+      <span class="sidenav-logo-text">Pomel<span>.</span></span>
     </div>
 
-    <!-- Dropdown : Commerce -->
-    <div class="nav-dropdown" id="dropdown-commerce">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('commerce')">🛒 Commerce ▾</button>
-      <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('boutique','commerce',this)">🛒 Boutique</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('hotel','commerce',this)">🏨 Hôtel des Ventes</button>
-      </div>
-    </div>
+    <div class="sidenav-scroll" id="sidenavScroll">
 
-    <!-- Dropdown : Classement -->
-    <div class="nav-dropdown" id="dropdown-classement">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('classement')">🏆 Classement ▾</button>
-      <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToClassement('general',this)">🏆 Général</button>
-        <button class="nav-dropdown-item" onclick="goToClassement('groupes',this)">🏅 Groupes</button>
-      </div>
-    </div>
+      <!-- ACCUEIL -->
+      <button class="sidenav-item active" id="snav-home" onclick="goToHome()">
+        <span class="sidenav-item-icon">🏠</span>
+        <span class="sidenav-item-label">Accueil</span>
+      </button>
 
-    <div class="nav-sep"></div>
+      <!-- PRIORITÉ : Roulette + Chat -->
+      <div class="sidenav-section">Quotidien</div>
+      <button class="sidenav-item nav-roulette" id="snav-roulette" onclick="navTo('roulette')">
+        <span class="sidenav-item-icon">🎰</span>
+        <span class="sidenav-item-label">Roulette</span>
+      </button>
+      <button class="sidenav-item nav-chat" id="snav-chat" onclick="navTo('discussion')">
+        <span class="sidenav-item-icon">💬</span>
+        <span class="sidenav-item-label">Chat</span>
+      </button>
 
-    <!-- Dropdown : Communauté -->
-    <div class="nav-dropdown" id="dropdown-social">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('social')">👥 Communauté ▾</button>
-      <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('profils','social',this)">👥 Profils</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('quetes','social',this)">⚔️ Quêtes</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('paris','social',this)">🎲 Paris</button>
-        <div class="nav-dropdown-sep"></div>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('proverbe','social',this)">📜 Proverbe du jour</button>
-      </div>
-    </div>
+      <!-- JEUX -->
+      <div class="sidenav-section">Jeux</div>
+      <button class="sidenav-item" id="snav-snake" onclick="navTo('snake')">
+        <span class="sidenav-item-icon">🐍</span>
+        <span class="sidenav-item-label">Serpent</span>
+      </button>
+      <button class="sidenav-item" id="snav-g2048" onclick="navTo('g2048')">
+        <span class="sidenav-item-icon">🔢</span>
+        <span class="sidenav-item-label">2048</span>
+      </button>
+      <button class="sidenav-item" id="snav-clicker" onclick="navTo('clicker')">
+        <span class="sidenav-item-icon">🌱</span>
+        <span class="sidenav-item-label">Clicker</span>
+      </button>
+      <button class="sidenav-item" id="snav-jardin" onclick="navTo('jardin')">
+        <span class="sidenav-item-icon">🌸</span>
+        <span class="sidenav-item-label">Jardin</span>
+      </button>
+      <button class="sidenav-item" id="snav-pfc" onclick="navTo('pfc')">
+        <span class="sidenav-item-icon">🪨</span>
+        <span class="sidenav-item-label">Pierre Feuille Ciseaux</span>
+      </button>
 
-    <!-- Dropdown : Mon compte -->
-    <div class="nav-dropdown" id="dropdown-profil">
-      <button class="nav-btn nav-dropdown-trigger" onclick="toggleDropdown('profil')">👤 Mon compte ▾</button>
-      <div class="nav-dropdown-menu">
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('monprofil','profil',this)">🙋 Mon profil</button>
-        <button class="nav-dropdown-item" onclick="goToFromDropdown('banque','profil',this)">🏦 Banque &amp; historique</button>
-      </div>
+      <!-- COMMERCE -->
+      <div class="sidenav-section">Commerce</div>
+      <button class="sidenav-item" id="snav-boutique" onclick="navTo('boutique')">
+        <span class="sidenav-item-icon">🛒</span>
+        <span class="sidenav-item-label">Boutique</span>
+      </button>
+      <button class="sidenav-item" id="snav-hotel" onclick="navTo('hotel')">
+        <span class="sidenav-item-icon">🏨</span>
+        <span class="sidenav-item-label">Hôtel des Ventes</span>
+      </button>
+
+      <!-- CLASSEMENTS -->
+      <div class="sidenav-section">Classements</div>
+      <button class="sidenav-item" id="snav-classement-general" onclick="navToClassement('general')">
+        <span class="sidenav-item-icon">🏆</span>
+        <span class="sidenav-item-label">Général</span>
+      </button>
+      <button class="sidenav-item" id="snav-classement-groupes" onclick="navToClassement('groupes')">
+        <span class="sidenav-item-icon">🏅</span>
+        <span class="sidenav-item-label">Groupes</span>
+      </button>
+
+      <!-- COMMUNAUTÉ -->
+      <div class="sidenav-section">Communauté</div>
+      <button class="sidenav-item" id="snav-profils" onclick="navTo('profils')">
+        <span class="sidenav-item-icon">👥</span>
+        <span class="sidenav-item-label">Profils</span>
+      </button>
+      <button class="sidenav-item" id="snav-quetes" onclick="navTo('quetes')">
+        <span class="sidenav-item-icon">⚔️</span>
+        <span class="sidenav-item-label">Quêtes</span>
+      </button>
+      <button class="sidenav-item" id="snav-paris" onclick="navTo('paris')">
+        <span class="sidenav-item-icon">🎲</span>
+        <span class="sidenav-item-label">Paris</span>
+      </button>
+      <button class="sidenav-item" id="snav-proverbe" onclick="navTo('proverbe')">
+        <span class="sidenav-item-icon">📜</span>
+        <span class="sidenav-item-label">Proverbe du jour</span>
+      </button>
+
+      <!-- MON COMPTE -->
+      <div class="sidenav-section">Mon compte</div>
+      <button class="sidenav-item" id="snav-monprofil" onclick="navTo('monprofil')">
+        <span class="sidenav-item-icon">🙋</span>
+        <span class="sidenav-item-label">Mon profil</span>
+      </button>
+      <button class="sidenav-item" id="snav-banque" onclick="navTo('banque')">
+        <span class="sidenav-item-icon">🏦</span>
+        <span class="sidenav-item-label">Banque &amp; historique</span>
+      </button>
+
+    </div><!-- /sidenav-scroll -->
+
+    <!-- Collapse toggle -->
+    <div class="sidenav-footer">
+      <button class="sidenav-collapse-btn" onclick="toggleSidenav()">
+        <span class="sidenav-collapse-icon">◀</span>
+        <span class="sidenav-collapse-label">Réduire</span>
+      </button>
     </div>
   </nav>
+
+  <!-- ── TOPBAR ── -->
+  <div id="topbar">
+    <div class="topbar-left">
+      <button id="hamburger-btn" onclick="toggleMobileSidenav()">☰</button>
+      <span class="topbar-page-title" id="topbarTitle">Accueil</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-wallet">
+        <span class="wallet-coin">🪙</span>
+        <span class="amount" id="headerBalance">0</span>
+        <span class="wallet-label">Pomels</span>
+      </div>
+      <div class="streak-widget" id="streakWidget" onclick="claimStreak()" title="Série quotidienne">
+        <span class="streak-fire" id="streakFire">🔥</span>
+        <div class="streak-days" id="streakDays"></div>
+        <span class="streak-label" id="streakLabel"></span>
+      </div>
+      <div class="topbar-user" id="userBadge" onclick="toggleUserMenu(event)">
+        <div class="topbar-user-avatar" id="topbarUserAvatar">?</div>
+        <span class="topbar-user-name" id="headerName">—</span>
+        <span class="topbar-user-arrow">▾</span>
+        <div class="user-menu" onclick="event.stopPropagation()">
+          <button class="user-menu-item" onclick="navTo('monprofil')">🙋 Mon profil</button>
+          <button class="user-menu-item" onclick="navTo('banque')">🏦 Banque</button>
+          <div class="nav-dropdown-sep"></div>
+          <button class="user-menu-item" onclick="navTo('infos')">ℹ️ Informations</button>
+          <div class="nav-dropdown-sep"></div>
+          <button class="user-menu-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SIDEBAR JOUEURS (droite) ── -->
+  <button id="sidebarToggle" onclick="toggleSidebar()" title="Joueurs">👥</button>
+  <div id="playerSidebar" class="hidden">
+    <div class="sidebar-header">
+      <span>Joueurs</span>
+      <span id="sidebarPlayerCount" style="font-size:.7rem;"></span>
+    </div>
+    <div class="sidebar-list" id="sidebarList"></div>
+  </div>
+
+  <!-- ── BOTTOM NAV MOBILE ── -->
+  <div id="mobile-bottom-nav">
+    <button class="mobile-nav-btn" onclick="goToHome()"><span class="mbn-icon">🏠</span>Accueil</button>
+    <button class="mobile-nav-btn" onclick="navTo('roulette')"><span class="mbn-icon">🎰</span>Roulette</button>
+    <button class="mobile-nav-btn" onclick="navTo('discussion')"><span class="mbn-icon">💬</span>Chat</button>
+    <button class="mobile-nav-btn" onclick="navTo('paris')"><span class="mbn-icon">🎲</span>Paris</button>
+    <button class="mobile-nav-btn" onclick="toggleMobileSidenav()"><span class="mbn-icon">☰</span>Menu</button>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div id="main-content">
 
   <!-- HOME -->
   <div class="page active" id="page-home">
     <div class="home-wrap">
-      <div class="home-greeting" id="homeGreeting">Bonjour ! 👋</div>
-      <div class="home-sub">Voici ce qui se passe sur Pomel. aujourd'hui</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="home-greeting" id="homeGreeting" style="font-size:1.4rem;font-weight:800;letter-spacing:-.02em;">Bonjour ! 👋</div>
+          <div class="home-sub" style="color:var(--muted);font-size:.85rem;margin-top:2px;">Voici ce qui se passe sur Pomel. aujourd'hui</div>
+        </div>
+      </div>
+
+      <!-- Alertes urgentes -->
+      <div class="home-alerts" id="homeAlerts"></div>
 
       <!-- Widget groupe -->
-      <div id="homeGroupWidget" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;cursor:pointer;transition:border-color .2s;" onclick="goToClassement('groupes', document.querySelector('#dropdown-classement .nav-dropdown-item[onclick*=\'groupes\']'))">
+      <div id="homeGroupWidget" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;cursor:pointer;transition:border-color .2s;" onclick="navToClassement('groupes')">
         <span style="font-size:1.1rem;">🏅</span>
         <div style="flex:1;min-width:0;">
           <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Mon groupe</div>
@@ -1529,31 +2247,31 @@
       <div class="home-grid">
 
         <!-- 1. Clicker stock plein (urgent, personnel) — full width -->
-        <div class="home-card home-card-full" id="homeClickerCard" style="display:none; border-color:var(--green); box-shadow:0 0 16px rgba(62,207,110,0.2); cursor:pointer;" onclick="goToFromDropdown('clicker','games', document.querySelector('#dropdown-games .nav-dropdown-item[onclick*=\'clicker\']'))">
+        <div class="home-card home-card-full" id="homeClickerCard" style="display:none; border-color:var(--green); box-shadow:0 0 16px rgba(62,207,110,0.2); cursor:pointer;" onclick="navTo('clicker')">
           <div class="home-card-title" style="color:var(--green);">🌱 Clicker — Stock prêt !</div>
           <div id="homeClickerStatus"></div>
         </div>
 
         <!-- 2. Quêtes reçues (urgent, personnel) — full width -->
-        <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item[onclick*=\'quetes\']'))">
+        <div class="home-card home-card-full" id="homeQuetesInCard" style="display:none; border-color:#5b8def; box-shadow:0 0 16px rgba(91,141,239,0.15); cursor:pointer;" onclick="navTo('quetes')">
           <div class="home-card-title" style="color:#5b8def;">⚔️ Quêtes reçues</div>
           <div id="homeQuetesIn" class="home-bets-zone"></div>
         </div>
 
         <!-- 3. Quêtes créées (suivi personnel) — full width -->
-        <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="goToFromDropdown('quetes','social', document.querySelector('#dropdown-social .nav-dropdown-item[onclick*=\'quetes\']'))">
+        <div class="home-card home-card-full" id="homeQuetesOutCard" style="display:none; border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); cursor:pointer;" onclick="navTo('quetes')">
           <div class="home-card-title" style="color:var(--primary);">🧭 Mes quêtes créées</div>
           <div id="homeQuetesOut" class="home-bets-zone"></div>
         </div>
 
         <!-- 3b. Défi PFC reçu (urgent, personnel) — full width -->
-        <div class="home-card home-card-full" id="homePFCCard" style="display:none; border-color:var(--yellow); box-shadow:0 0 16px rgba(240,192,64,0.15); cursor:pointer;" onclick="goToFromDropdown('pfc','games', document.querySelector('#dropdown-games .nav-dropdown-item[onclick*=\'pfc\']'))">
+        <div class="home-card home-card-full" id="homePFCCard" style="display:none; border-color:var(--yellow); box-shadow:0 0 16px rgba(240,192,64,0.15); cursor:pointer;" onclick="navTo('pfc')">
           <div class="home-card-title" style="color:var(--yellow);">🪨 Pierre Feuille Ciseaux — Défi reçu !</div>
           <div id="homePFCStatus" class="home-bets-zone"></div>
         </div>
 
         <!-- 4. Roulette (quotidien) — pleine largeur pour le CTA -->
-        <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="goTo('roulette', document.getElementById('navbtn-roulette'))" style="cursor:pointer;">
+        <div class="home-card home-card-full home-roulette-status" id="homeRouletteCard" onclick="navTo('roulette')" style="cursor:pointer;">
           <div class="home-card-title">🎰 Roulette Quotidienne</div>
           <div id="homeRouletteStatus"></div>
         </div>
@@ -1565,7 +2283,7 @@
         </div>
 
         <!-- 6. Hôtel des Ventes — span 2 -->
-        <div class="home-card home-card-span2" id="homeHotelCard" style="cursor:pointer;" onclick="goToFromDropdown('hotel','commerce', document.querySelector('#dropdown-commerce .nav-dropdown-item[onclick*=\'hotel\']'))">
+        <div class="home-card home-card-span2" id="homeHotelCard" style="cursor:pointer;" onclick="navTo('hotel')">
           <div class="home-card-title">🏨 Hôtel des Ventes</div>
           <div id="homeHotelList" class="home-bets-zone"></div>
         </div>
@@ -1869,7 +2587,7 @@
             <div style="font-weight:700;font-size:.95rem;">🌸 Jardin de Pomel'Land</div>
             <div style="font-size:.8rem;color:var(--muted);margin-top:3px;">Dépense tes graines pour planter des fleurs et gagner des Pomels !</div>
           </div>
-          <button class="btn-buy" style="background:var(--green);white-space:nowrap;" onclick="goToFromDropdown('jardin','games', document.querySelector('#dropdown-games .nav-dropdown-item[onclick*=\'jardin\']'))">Aller au Jardin 🌸</button>
+          <button class="btn-buy" style="background:var(--green);white-space:nowrap;" onclick="navTo('jardin')">Aller au Jardin 🌸</button>
         </div>
       </div>
 
@@ -2115,7 +2833,19 @@
           <div class="profil-dots-section-title">🖼️ Bannière de profil</div>
           <div id="dotsMenuBanners"></div>
           <div class="profil-dots-divider"></div>
-          <button class="user-menu-item" style="width:100%;text-align:center;font-size:.8rem;" onclick="closeProfilMenuOutside({target:document.body});goToFromDropdown('boutique','commerce',document.querySelector('#dropdown-commerce .nav-dropdown-item[onclick*=\'boutique\']'));switchShopTab('inventory');">🎒 Gérer mes achats</button>
+          <button class="user-menu-item" style="width:100%;text-align:center;font-size:.8rem;" onclick="navTo('boutique');switchShopTab('inventory');">🎒 Gérer mes achats</button>
+        </div>
+      </div>
+
+      <!-- Avatar -->
+      <div class="settings-card" id="avatarCard">
+        <h3>🎨 Mon avatar</h3>
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+          <div id="myAvatarPreview" style="width:64px;height:64px;border-radius:50%;border:2px solid var(--primary);overflow:hidden;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--muted);">?</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-outline" onclick="openAvatarEditor()">✏️ Créer / Modifier</button>
+            <button class="btn-outline" onclick="randomizeAvatar()">🎲 Générer aléatoirement</button>
+          </div>
         </div>
       </div>
 
@@ -2709,9 +3439,16 @@ async function dbGet(path) {
 }
 
 async function dbSet(path, val) {
-  try {
-    await db.ref(path).set(val);
-  } catch(e) { console.error('dbSet error', e); }
+  const MAX = 3;
+  for (let i = 0; i < MAX; i++) {
+    try {
+      await db.ref(path).set(val);
+      return; // succès
+    } catch(e) {
+      if (i < MAX - 1) await new Promise(r => setTimeout(r, 200 * (i + 1)));
+      else console.error('[pomel] dbSet échec définitif', path, e.message);
+    }
+  }
 }
 
 async function dbDelete(path) {
@@ -2734,35 +3471,115 @@ async function getAllAccounts() { return dbGetAll('accounts'); }
 async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); }
 
 // Transaction atomique pour ajouter du solde + historique sans écraser d'autres écritures en cours
-// Retourne le compte mis à jour, ou null en cas d'erreur
+// Retourne le compte mis à jour, ou null en cas d'échec définitif
+// Retry automatique jusqu'à 4 fois avec backoff exponentiel
 async function addBalanceTransaction(code, amount, historyEntry) {
-  try {
-    let updatedAcc = null;
-    await db.ref('accounts/' + code).transaction(current => {
-      if (!current) return current; // compte inexistant, abort
-      current.balance = (current.balance || 0) + amount;
-      current.balance = Math.max(0, Math.min(10000000, Math.floor(current.balance)));
-      // Tracking persistant
-      if (amount > 0) {
-        current.totalEarned = (current.totalEarned || 0) + amount;
-        const weekKey = getGroupWeekKey();
-        if (current.weekPomelsKey !== weekKey) { current.weekPomelsKey = weekKey; current.weekPomelsEarned = 0; }
-        current.weekPomelsEarned = (current.weekPomelsEarned || 0) + amount;
-      } else if (amount < 0) {
-        current.totalSpent = (current.totalSpent || 0) + Math.abs(amount);
+  const MAX_RETRIES = 4;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      let updatedAcc = null;
+      let accountMissing = false;
+
+      const result = await db.ref('accounts/' + code).transaction(current => {
+        if (current === null || current === undefined) {
+          accountMissing = true;
+          return; // abort — ne pas créer de compte fantôme
+        }
+        current.balance = (current.balance || 0) + amount;
+        current.balance = Math.max(0, Math.min(10000000, Math.floor(current.balance)));
+        if (amount > 0) {
+          current.totalEarned = (current.totalEarned || 0) + amount;
+          const weekKey = getGroupWeekKey();
+          if (current.weekPomelsKey !== weekKey) { current.weekPomelsKey = weekKey; current.weekPomelsEarned = 0; }
+          current.weekPomelsEarned = (current.weekPomelsEarned || 0) + amount;
+        } else if (amount < 0) {
+          current.totalSpent = (current.totalSpent || 0) + Math.abs(amount);
+        }
+        if (historyEntry) {
+          if (!Array.isArray(current.history)) current.history = [];
+          current.history.unshift(historyEntry);
+          if (current.history.length > 500) current.history = current.history.slice(0, 500);
+        }
+        updatedAcc = current;
+        return current;
+      });
+
+      // Transaction committed = résultat fiable
+      if (result && result.committed) {
+        // Lire la valeur confirmée par Firebase
+        const snap = result.snapshot;
+        if (snap && snap.exists()) return snap.val();
+        if (updatedAcc) return updatedAcc;
       }
-      if (historyEntry) {
-        if (!Array.isArray(current.history)) current.history = [];
-        current.history.unshift(historyEntry);
-        if (current.history.length > 500) current.history = current.history.slice(0, 500);
+
+      // Compte introuvable — inutile de retenter
+      if (accountMissing) {
+        console.warn('[pomel] addBalanceTransaction: compte introuvable', code);
+        return null;
       }
-      updatedAcc = current;
-      return current;
-    });
-    return updatedAcc;
-  } catch(e) {
-    console.error('addBalanceTransaction error', e);
-    return null;
+
+      // Transaction non committée (abort Firebase ou null retourné) — retenter
+      if (attempt < MAX_RETRIES - 1) {
+        await new Promise(r => setTimeout(r, 150 * Math.pow(2, attempt) + Math.random() * 100));
+        continue;
+      }
+
+      // Dernier recours : lire le solde actuel et faire un dbSet si la transaction n'a jamais abouti
+      // (peut arriver si Firebase est lent mais le compte existe)
+      try {
+        const acc = await getAccount(code);
+        if (acc) {
+          acc.balance = Math.max(0, Math.min(10000000, Math.floor((acc.balance || 0) + amount)));
+          if (amount > 0) { acc.totalEarned = (acc.totalEarned || 0) + amount; }
+          else if (amount < 0) { acc.totalSpent = (acc.totalSpent || 0) + Math.abs(amount); }
+          if (historyEntry) {
+            if (!Array.isArray(acc.history)) acc.history = [];
+            acc.history.unshift(historyEntry);
+            if (acc.history.length > 500) acc.history = acc.history.slice(0, 500);
+          }
+          await dbSet('accounts/' + code, acc);
+          console.warn('[pomel] addBalanceTransaction: fallback dbSet utilisé pour', code);
+          return acc;
+        }
+      } catch(fallbackErr) {}
+
+      return null;
+
+    } catch(e) {
+      if (attempt < MAX_RETRIES - 1) {
+        await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+      } else {
+        console.error('[pomel] addBalanceTransaction échec définitif', code, e);
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+// ── HELPER DISTRIBUTION FIABLE ──────────────────
+// Distribue des pomels à une liste de codes, réessaie les échecs
+async function distributeReliably(recipients) {
+  // recipients = [{code, amount, historyEntry}]
+  const failed = [];
+  for (const r of recipients) {
+    const updated = await addBalanceTransaction(r.code, r.amount, r.historyEntry);
+    if (!updated) {
+      failed.push(r);
+    } else if (r.code === state.code) {
+      state = migrateAccount(updated); refreshUI();
+    }
+  }
+  // Retry unique pour les échecs
+  if (failed.length > 0) {
+    await new Promise(res => setTimeout(res, 500));
+    for (const r of failed) {
+      const retry = await addBalanceTransaction(r.code, r.amount, r.historyEntry);
+      if (retry && r.code === state.code) { state = migrateAccount(retry); refreshUI(); }
+      if (!retry) {
+        console.error('[pomel] distributeReliably: échec définitif pour', r.code, r.amount);
+      }
+    }
   }
 }
 
@@ -3007,14 +3824,35 @@ function launchApp() {
   // Initialiser les pastilles de notification
   checkNotifUpdates();
   setInterval(checkNotifUpdates, 60000);
+  // Push notifications
+  checkPushNotifications();
+  setInterval(checkPushNotifications, 15000);
+  // Sidebar joueurs droite
+  const sidebar = document.getElementById('playerSidebar');
+  if (window.innerWidth >= 1200) { sidebar.classList.remove('hidden'); _sidebarVisible = true; }
+  refreshSidebar();
+  startSidebarRefresh();
+  // Timers live
+  startTimerInterval();
+  // Sidenav state
+  initSidenav();
+  // Avatar topbar
+  refreshTopbarAvatar();
 }
 
 function refreshUI() {
   document.getElementById('headerBalance').textContent = state.balance.toLocaleString('fr-FR');
   document.getElementById('headerName').textContent = state.name;
-  document.getElementById('transferBalance').textContent = state.balance.toLocaleString('fr-FR') + ' Pomels';
+  const tb = document.getElementById('transferBalance'); if (tb) tb.textContent = state.balance.toLocaleString('fr-FR') + ' Pomels';
   renderStreakWidget();
+  refreshTopbarAvatar();
   takeStateSnapshot();
+}
+
+function refreshTopbarAvatar() {
+  const el = document.getElementById('topbarUserAvatar');
+  if (!el || !state) return;
+  renderAvatarInEl(el, state, 32);
 }
 
 function logout() {
@@ -3219,36 +4057,11 @@ function goToFromUser(id) {
 }
 
 let _classementView = 'general';
-function goToClassement(view, itemBtn) {
-  _classementView = view;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-classement').classList.add('active');
-  clearAllNavActive();
-  const trigger = document.querySelector('#dropdown-classement .nav-dropdown-trigger');
-  if (trigger) trigger.classList.add('active');
-  if (itemBtn) itemBtn.classList.add('active');
-  closeAllDropdowns();
-  // Afficher la bonne vue
-  const viewGeneral = document.getElementById('classementViewGeneral');
-  const viewGroupes = document.getElementById('classementViewGroupes');
-  const lbTabs      = document.getElementById('lbTabsGeneral');
-  const title       = document.getElementById('classementTitle');
-  if (view === 'general') {
-    viewGeneral.style.display = '';
-    viewGroupes.style.display = 'none';
-    if (lbTabs) lbTabs.style.display = '';
-    if (title) title.textContent = '🏆 Classement général';
-    renderLeaderboard(currentLbMode);
-  } else {
-    viewGeneral.style.display = 'none';
-    viewGroupes.style.display = '';
-    if (lbTabs) lbTabs.style.display = 'none';
-    if (title) title.textContent = '🏅 Classement des groupes';
-    renderGroupsOnPage();
-  }
-}
+function goToClassement(view, itemBtn) { navToClassement(view); }
 
 function _onPageLoad(id) {
+  // Mettre à jour la sidenav
+  setActiveSnavItem(id);
   // Stop snake if navigating away
   if (id !== 'snake' && snakeLoop) {
     clearTimeout(snakeLoop);
@@ -3384,12 +4197,18 @@ function spin() {
     ring.style.transform = `rotate(${angle}deg)`;
     if (progress < 1) { requestAnimationFrame(tick); return; }
     spinning = false;
-    state.balance += prize;
     state.lastSpin = new Date().toISOString();
     state.totalSpins = (state.totalSpins || 0) + 1;
-    trackEarning(state, prize);
-    state.history.unshift({ type: 'roulette', desc: 'Roulette quotidienne', amount: prize, date: new Date().toISOString() });
-    saveAccount(state); refreshUI();
+    // Sauvegarder le lastSpin et totalSpins (profil non-balance)
+    saveAccount(state);
+    // Créditer les pomels de façon atomique
+    addBalanceTransaction(state.code, prize, {
+      type: 'roulette', desc: 'Roulette quotidienne', amount: prize, date: new Date().toISOString()
+    }).then(updated => {
+      if (updated) { state = migrateAccount(updated); }
+      else { state.balance += prize; } // fallback local si Firebase lent
+      refreshUI();
+    });
     document.getElementById('wheelValue').textContent = prize.toLocaleString('fr-FR');
     checkSpinAvailability();
     renderHomeRoulette(); // Mettre à jour l'affichage home immédiatement
@@ -3585,7 +4404,8 @@ async function openProfileModal(code) {
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   overlay.innerHTML = `
     <div class="modal-box" style="max-width:480px;">
-      <h2>
+      <h2 style="display:flex;align-items:center;gap:12px;">
+        <div id="profileModalAvatar" style="width:48px;height:48px;border-radius:50%;border:2px solid var(--primary);overflow:hidden;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:var(--muted);">${escapeHTML(migrated.name.charAt(0).toUpperCase())}</div>
         <span class="${nameClass}">${migrated.name}${badgeHTMLM}${streakHTMLM}</span>
         <button class="modal-close" onclick="document.getElementById('profileModal').remove()">✕</button>
       </h2>
@@ -3655,7 +4475,22 @@ async function resolveGroupBadges() {
 
 async function getAllGroups() { return dbGetAll('groups'); }
 async function getGroup(id)   { return dbGet('groups/' + id); }
-async function saveGroup(g)   { await dbSet('groups/' + g.id, g); }
+async function saveGroup(g) {
+  if (!g || !g.id) return;
+  try {
+    await db.ref('groups/' + g.id).transaction(current => {
+      if (!current) return g;
+      const merged = { ...g };
+      // Garder le max des compteurs pour éviter d'écraser des gains concurrents
+      merged.pomcoins    = Math.max(g.pomcoins    || 0, current.pomcoins    || 0);
+      merged.pfcWeekBonus = Math.max(g.pfcWeekBonus || 0, current.pfcWeekBonus || 0);
+      return merged;
+    });
+  } catch(e) {
+    // Fallback dbSet si la transaction échoue
+    await dbSet('groups/' + g.id, g);
+  }
+}
 async function deleteGroup(id){ await dbDelete('groups/' + id); }
 
 function getGroupWeekKey() {
@@ -4075,12 +4910,11 @@ async function checkGroupWeeklyReward() {
       }
       await saveGroup(groupToUpdate);
     }
-    for (const code of (g.members || [])) {
-      const updated = await addBalanceTransaction(code, 2000, {
+    await distributeReliably((g.members || []).map(code => ({
+      code, amount: 2000, historyEntry: {
         type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo ! (+${totalPomcoins} PomCoins au groupe)`, amount: 2000, date: now.toISOString()
-      });
-      if (updated && code === state.code) { state = migrateAccount(updated); refreshUI(); }
-    }
+      }
+    })));
   }
 
   // Groupes 4e et 5e → dissolution
@@ -4654,13 +5488,20 @@ async function buyTitle(titleId) {
   if ((state.ownedTitles || []).includes(titleId)) return;
   if (state.balance < title.price) return;
 
-  state.balance -= title.price;
+  // Débiter le prix atomiquement
+  if (title.price > 0) {
+    const shopUpdated = await addBalanceTransaction(state.code, -title.price, {
+      type: 'shop', desc: `Titre acheté : "${title.name}"`, amount: -title.price, date: new Date().toISOString()
+    });
+    if (shopUpdated) {
+      state = migrateAccount(shopUpdated);
+    } else {
+      setAlert('shopAlert', 'Erreur réseau — réessaie dans quelques secondes.', 'error');
+      return;
+    }
+  }
   if (!state.ownedTitles) state.ownedTitles = [];
   state.ownedTitles.push(titleId);
-  if (title.price > 0) {
-    trackEarning(state, -title.price);
-    state.history.unshift({ type: 'shop', desc: `Titre acheté : "${title.name}"`, amount: -title.price, date: new Date().toISOString() });
-  }
   await saveAccount(state);
   refreshUI();
   setAlert('shopAlert', `✅ "${title.name}" acheté ! Retrouve-le dans tes achats.`, 'success');
@@ -4762,10 +5603,16 @@ async function placeBet(betId, choice) {
   if (!amount || amount <= 0) { alert('Entre un montant valide !'); return; }
   if (amount > state.balance) { alert(`Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`); return; }
 
-  state.balance -= amount;
-  trackEarning(state, -amount);
-  state.history.unshift({ type: 'bet', desc: `Pari : "${bet.desc}" — ${choice === 1 ? bet.option1 : bet.option2}`, amount: -amount, date: new Date().toISOString() });
-  await saveAccount(state);
+  // Débiter le parieur atomiquement
+  const betPlaceUpd = await addBalanceTransaction(state.code, -amount, {
+    type: 'bet', desc: `Pari : "${bet.desc}" — ${choice === 1 ? bet.option1 : bet.option2}`, amount: -amount, date: new Date().toISOString()
+  });
+  if (betPlaceUpd) {
+    state = migrateAccount(betPlaceUpd);
+  } else {
+    alert('Erreur réseau — réessaie dans quelques secondes.');
+    return;
+  }
 
   bettors.push({ code: state.code, name: state.name, choice, amount });
   bet.bettors = bettors;
@@ -4918,6 +5765,7 @@ function buildBetCard(bet) {
   card.className = 'bet-card' + (isMine ? ' mine' : '') + (bet.status === 'closed' ? ' closed' : '');
 
   const date = new Date(bet.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const betExpiresAt = new Date(bet.createdAt).getTime() + 3 * 24 * 3600 * 1000;
 
   const bettors1 = bettors.filter(b => b.choice === 1);
   const bettors2 = bettors.filter(b => b.choice === 2);
@@ -5003,6 +5851,7 @@ function buildBetCard(bet) {
     <div class="bet-header">
       <span class="bet-status ${bet.status}">${bet.status === 'open' ? '🟢 Ouvert' : '⬜ Terminé'}</span>
       <span style="font-size:.75rem;color:var(--muted)">${date}</span>
+      ${bet.status === 'open' ? `<span class="timer-badge" data-expires="${betExpiresAt}">⏱ ...</span>` : ''}
     </div>
     <div class="bet-desc">${escapeHTML(bet.desc)}</div>
     <div class="bet-meta">
@@ -5040,14 +5889,13 @@ function buildBetCard(bet) {
 function goToHome() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
-  clearAllNavActive();
-  closeAllDropdowns();
+  setActiveSnavItem('home');
   closeUserMenu();
-  // Stop snake if running
   if (snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; snakeState = null; }
   stopClickerPage();
   stopDiscussionListener();
   renderHome();
+  window.scrollTo(0, 0);
 }
 
 async function renderHome() {
@@ -5067,6 +5915,24 @@ async function renderHome() {
     renderHomeLivePost(),
     renderHomeBets(),
   ]);
+
+  // Déplacer les alertes urgentes dans la zone dédiée
+  _moveUrgentCards();
+}
+
+function _moveUrgentCards() {
+  const alertsZone = document.getElementById('homeAlerts');
+  if (!alertsZone) return;
+  alertsZone.innerHTML = '';
+  // Cards urgentes = celles avec display != none et qui ont une border colorée
+  const urgentIds = ['homeClickerCard','homeQuetesInCard','homePFCCard'];
+  urgentIds.forEach(id => {
+    const card = document.getElementById(id);
+    if (card && card.style.display !== 'none') {
+      // Clone dans la zone alertes + laisser l'original (sinon les refs JS se cassent)
+      card.style.marginBottom = '0';
+    }
+  });
 }
 
 async function renderHomeGroup() {
@@ -5156,6 +6022,7 @@ async function renderHomeQuetes() {
     incoming.forEach(q => {
       const statusLabel = q.status === 'pending' ? '⏳ En attente de ta réponse' : '🔥 En cours — à toi de jouer !';
       const statusColor = q.status === 'pending' ? '#5b8def' : 'var(--yellow)';
+      const queteExpires = q.deadline ? new Date(q.deadline).getTime() : new Date(q.createdAt).getTime() + 7*24*3600*1000;
       const div = document.createElement('div');
       div.className = 'home-bet-row';
       div.innerHTML = `
@@ -5164,6 +6031,7 @@ async function renderHomeQuetes() {
           <span>De <strong>${escapeHTML(q.creatorName)}</strong></span>
           <span style="color:var(--green);font-weight:700;">+${q.reward.toLocaleString('fr-FR')} 🪙</span>
           <span style="color:${statusColor};font-weight:600;">${statusLabel}</span>
+          <span class="timer-badge" data-expires="${queteExpires}">⏱ ...</span>
         </div>
       `;
       inEl.appendChild(div);
@@ -5690,11 +6558,12 @@ async function exchangeSeeds() {
   const cost = pomels * 100;
   if (pomels <= 0 || clickerData.seeds < cost) return;
   clickerData.seeds -= cost;
-  state.balance += pomels;
-  trackEarning(state, pomels);
-  state.history.unshift({ type: 'clicker', desc: `🌱 Échange : ${cost} graines → ${pomels} Pomels`, amount: pomels, date: new Date().toISOString() });
-  await saveAccount(state);
   await saveClickerData();
+  const exchUpd = await addBalanceTransaction(state.code, pomels, {
+    type: 'clicker', desc: `🌱 Échange : ${cost} graines → ${pomels} Pomels`, amount: pomels, date: new Date().toISOString()
+  });
+  if (exchUpd) { state = migrateAccount(exchUpd); }
+  else { state.balance += pomels; }
   refreshUI();
   updateClickerUI();
   document.getElementById('exchangeAmount').value = '';
@@ -5879,12 +6748,13 @@ async function gameOverSnake() {
   const finalScore = snakeState.score;
   const finalPomels = snakePomelsEarned;
 
-  // Award Pomels
+  // Award Pomels atomiquement
   if (finalPomels > 0) {
-    state.balance += finalPomels;
-    trackEarning(state, finalPomels);
-    state.history.unshift({ type: 'snake', desc: `🐍 Serpent — score ${finalScore}`, amount: finalPomels, date: new Date().toISOString() });
-    await saveAccount(state);
+    const snakeUpd = await addBalanceTransaction(state.code, finalPomels, {
+      type: 'snake', desc: `🐍 Serpent — score ${finalScore}`, amount: finalPomels, date: new Date().toISOString()
+    });
+    if (snakeUpd) { state = migrateAccount(snakeUpd); }
+    else { state.balance += finalPomels; }
     refreshUI();
   }
 
@@ -6031,15 +6901,11 @@ async function checkSnakeWeeklyReset() {
   if (!snap) return;
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
 
-  // Distribuer les récompenses (transactions atomiques)
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    const prize = i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION;
-    const updated = await addBalanceTransaction(e.code, prize, {
-      type: 'snake', desc: `🐍 Classement hebdo Serpent — #${i+1}`, amount: prize, date: new Date().toISOString()
-    });
-    if (updated && e.code === state.code) { state = migrateAccount(updated); refreshUI(); }
-  }
+  // Distribuer les récompenses avec retry automatique
+  await distributeReliably(entries.map((e, i) => ({
+    code: e.code, amount: i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION,
+    historyEntry: { type: 'snake', desc: `🐍 Classement hebdo Serpent — #${i+1}`, amount: i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION, date: new Date().toISOString() }
+  })));
 
   // Reset du classement hebdo (le général snake_lb n'est PAS touché)
   await dbDelete('snake_weekly_lb');
@@ -6287,10 +7153,11 @@ async function g2048GameOver() {
   const pomels = Math.floor(finalScore / G2048_POMEL_RATE);
 
   if (pomels > 0) {
-    state.balance += pomels;
-    trackEarning(state, pomels);
-    state.history.unshift({ type: '2048', desc: `🔢 2048 — ${finalScore.toLocaleString('fr-FR')} pts`, amount: pomels, date: new Date().toISOString() });
-    await saveAccount(state);
+    const g2048Upd = await addBalanceTransaction(state.code, pomels, {
+      type: '2048', desc: `🔢 2048 — ${finalScore.toLocaleString('fr-FR')} pts`, amount: pomels, date: new Date().toISOString()
+    });
+    if (g2048Upd) { state = migrateAccount(g2048Upd); }
+    else { state.balance += pomels; } // fallback local
     refreshUI();
   }
 
@@ -6469,14 +7336,10 @@ async function checkG2048WeeklyReset() {
   const snap = await dbGet('g2048_weekly_lb');
   if (!snap) return;
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    const prize = i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION;
-    const updated = await addBalanceTransaction(e.code, prize, {
-      type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: prize, date: new Date().toISOString()
-    });
-    if (updated && e.code === state.code) { state = migrateAccount(updated); refreshUI(); }
-  }
+  await distributeReliably(entries.map((e, i) => ({
+    code: e.code, amount: i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION,
+    historyEntry: { type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION, date: new Date().toISOString() }
+  })));
   await dbDelete('g2048_weekly_lb');
 }
 
@@ -6605,10 +7468,16 @@ async function buyHotelListing(listingId) {
   // Check balance
   if (state.balance < listing.price) { alert(`Solde insuffisant ! Il te faut ${listing.price.toLocaleString('fr-FR')} Pomels.`); return; }
 
-  // Deduct from buyer
-  state.balance -= listing.price;
-  trackEarning(state, -listing.price);
-  state.history.unshift({ type: 'hotel', desc: `Titre acheté : "${listing.titleName}" (Hôtel des Ventes)`, amount: -listing.price, date: new Date().toISOString() });
+  // Débiter l'acheteur atomiquement
+  const hotelBuyerUpd = await addBalanceTransaction(state.code, -listing.price, {
+    type: 'hotel', desc: `Titre acheté : "${listing.titleName}" (Hôtel des Ventes)`, amount: -listing.price, date: new Date().toISOString()
+  });
+  if (hotelBuyerUpd) {
+    state = migrateAccount(hotelBuyerUpd);
+  } else {
+    alert('Erreur réseau — réessaie dans quelques secondes.');
+    return;
+  }
 
   // Add custom title to buyer's owned titles
   const customId = 'custom_' + listingId;
@@ -6621,7 +7490,7 @@ async function buyHotelListing(listingId) {
 
   await saveAccount(state);
 
-  // Credit creator (transaction atomique)
+  // Créditer le vendeur atomiquement
   await addBalanceTransaction(listing.creatorCode, listing.price, {
     type: 'hotel', desc: `Titre vendu : "${listing.titleName}"`, amount: listing.price, date: new Date().toISOString()
   });
@@ -6850,10 +7719,13 @@ function buildQueteCard(q, role) {
       </div>`;
   }
 
+  const qExp = q.deadline ? new Date(q.deadline).getTime() : new Date(q.createdAt).getTime() + 3*24*3600*1000;
+  const showTimer = (q.status === 'pending' || q.status === 'accepted');
   card.innerHTML = `
     <div class="quete-header">
       <span class="quete-status ${statusClass}">${statusLabels[q.status] || q.status}</span>
       <span style="font-size:.72rem;color:var(--muted);">${date}</span>
+      ${showTimer ? `<span class="timer-badge" data-expires="${qExp}">⏱ ...</span>` : ''}
     </div>
     <div class="quete-desc">${escapeHTML(q.desc)}</div>
     <div class="quete-meta">
@@ -7317,15 +8189,16 @@ async function distributeJardinRewards(flowers) {
   const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
   const winners = [];
 
+  const toDistribute = [];
   for (let i = 0; i < sorted.length; i++) {
     const p = sorted[i];
     const prize = i < 3 ? JARDIN_PRIZES[i] : CONSOLATION;
-    const updated = await addBalanceTransaction(p.code, prize, {
+    toDistribute.push({ code: p.code, amount: prize, historyEntry: {
       type: 'jardin', desc: `🌸 Jardin de Pomel'Land — ${i < 3 ? `#${i+1}` : 'participant'}`, amount: prize, date: new Date().toISOString()
-    });
-    if (updated && p.code === state.code) { state = migrateAccount(updated); refreshUI(); }
+    }});
     winners.push({ rank: i + 1, name: p.name, code: p.code, count: p.count, prize });
   }
+  await distributeReliably(toDistribute);
   return winners;
 }
 
@@ -7923,12 +8796,19 @@ async function handleTransfer() {
   if (!recipient) { alertEl.textContent = `Joueur "${recipientName}" introuvable.`; alertEl.className = 'alert error visible'; return; }
   if (recipient.code === state.code) { alertEl.textContent = 'Tu ne peux pas t\'envoyer des Pomels à toi-même !'; alertEl.className = 'alert error visible'; return; }
 
-  state.balance -= amount;
-  trackEarning(state, -amount);
-  state.history.unshift({ type: 'transfer', desc: `Envoyé à ${recipient.name}`, amount: -amount, date: new Date().toISOString() });
-  await saveAccount(state);
+  // Débiter l'envoyeur de façon atomique
+  const senderUpdated = await addBalanceTransaction(state.code, -amount, {
+    type: 'transfer', desc: `Envoyé à ${recipient.name}`, amount: -amount, date: new Date().toISOString()
+  });
+  if (senderUpdated) {
+    state = migrateAccount(senderUpdated);
+  } else {
+    alertEl.textContent = 'Erreur réseau — réessaie dans quelques secondes.';
+    alertEl.className = 'alert error visible';
+    return;
+  }
 
-  // Créditer le destinataire avec une transaction atomique (évite l'écrasement par un flush seeds)
+  // Créditer le destinataire de façon atomique
   await addBalanceTransaction(recipient.code, amount, {
     type: 'transfer', desc: `Reçu de ${state.name}`, amount: amount, date: new Date().toISOString()
   });
@@ -8028,7 +8908,7 @@ async function renderMonProfil() {
 
   document.getElementById('monProfilCardContent').innerHTML = `
     <div class="profil-me-header">
-      <div class="profil-me-avatar">${me.name.charAt(0).toUpperCase()}</div>
+      <div class="profil-me-avatar" id="profilMeAvatarEl">${me.name.charAt(0).toUpperCase()}</div>
       <div>
         <div class="profil-me-name"><span class="${nameClass}">${me.name}${badgeHTMLMP}</span></div>
         <div class="profil-me-since">Membre depuis ${joined}${groupDisplay}</div>
@@ -8064,6 +8944,10 @@ async function renderMonProfil() {
   `;
 
   renderDotsMenu();
+  // Avatar
+  const avatarElMP = document.getElementById('profilMeAvatarEl');
+  if (avatarElMP) renderAvatarInEl(avatarElMP, state, 52);
+  refreshAvatarPreview();
 
   // Fermer le menu si on clique ailleurs
   document.addEventListener('click', closeProfilMenuOutside, { once: false });
@@ -8248,8 +9132,15 @@ async function renderProfils() {
     const bannerClsP = getBannerClass(migrated.activeBanner);
     if (bannerClsP) card.classList.add(bannerClsP);
     card.onclick = () => openProfileModal(acc.code);
+    // Avatar inline
+    const cardAvatarEl = document.createElement('div');
+    cardAvatarEl.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:4px;';
+    const cardAvatarIcon = document.createElement('div');
+    cardAvatarIcon.style.cssText = 'width:40px;height:40px;border-radius:50%;border:1.5px solid var(--border);overflow:hidden;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--muted);';
+    renderAvatarInEl(cardAvatarIcon, migrated, 40);
     card.innerHTML = `
-      <div class="profil-card-name">
+      <div class="profil-card-name" style="display:flex;align-items:center;gap:8px;">
+        <div class="profil-card-avatar-placeholder"></div>
         <span class="${nameClass}">${migrated.name}${badgeHTMLCard}${streakHTMLCard}</span>
       </div>
       ${groupName ? `<div class="profil-card-group">🏅 ${groupName}</div>` : ''}
@@ -8260,6 +9151,9 @@ async function renderProfils() {
       </div>
       ${titlesHTML ? `<div class="profil-card-titles">${titlesHTML}</div>` : ''}
     `;
+    // Remplacer le placeholder par l'avatar réel
+    const ph = card.querySelector('.profil-card-avatar-placeholder');
+    if (ph) { renderAvatarInEl(cardAvatarIcon, migrated, 40); ph.replaceWith(cardAvatarIcon); }
     grid.appendChild(card);
   });
 }
@@ -8291,27 +9185,54 @@ document.addEventListener('keydown', e => {
 const MAX_BALANCE = 10_000_000;
 const MAX_SINGLE_GAIN = 500_000;
 
-// Validation avant chaque sauvegarde compte
-const _originalSaveAccount = saveAccount;
+// saveAccount — écrit le compte complet dans Firebase
+// Utilise une transaction pour éviter d'écraser un solde modifié concurrentiellement
 async function saveAccount(acc) {
-  if (!acc || typeof acc !== 'object') return;
-  // Plafond de solde
+  if (!acc || typeof acc !== 'object' || !acc.code) return;
+
+  // Validation locale avant écriture
   if (typeof acc.balance === 'number') {
     acc.balance = Math.max(0, Math.min(MAX_BALANCE, Math.floor(acc.balance)));
   }
-  // Pas de gain unitaire aberrant dans l'historique
   if (Array.isArray(acc.history)) {
     acc.history = acc.history.filter(h =>
       h && typeof h.amount === 'number' && (Math.abs(h.amount) <= MAX_SINGLE_GAIN || h.amount === 0)
     );
-    // Limiter la taille de l'historique pour éviter les comptes trop lourds
     if (acc.history.length > 500) acc.history = acc.history.slice(0, 500);
   }
-  // Les ownedTitles ne peuvent contenir que des strings
   if (acc.ownedTitles) {
     acc.ownedTitles = acc.ownedTitles.filter(t => typeof t === 'string' && t.length < 80);
   }
-  await dbSet('accounts/' + acc.code, acc);
+
+  // Utiliser une transaction Firebase pour fusionner les données de profil
+  // sans écraser le solde qui peut avoir été mis à jour par addBalanceTransaction
+  // sur un autre client entre-temps
+  try {
+    await db.ref('accounts/' + acc.code).transaction(current => {
+      if (!current) {
+        // Nouveau compte — écriture initiale complète
+        return acc;
+      }
+      // Fusionner : on garde le solde/totalEarned/totalSpent le plus élevé
+      // pour ne pas écraser une transaction concurrent
+      const merged = { ...acc };
+      merged.balance      = Math.max(acc.balance || 0, current.balance || 0);
+      merged.totalEarned  = Math.max(acc.totalEarned || 0, current.totalEarned || 0);
+      merged.totalSpent   = Math.max(acc.totalSpent || 0, current.totalSpent || 0);
+      merged.totalSpins   = Math.max(acc.totalSpins || 0, current.totalSpins || 0);
+      // Fusionner l'historique : garder les entrées les plus récentes des deux
+      const myHistory = acc.history || [];
+      const remoteHistory = current.history || [];
+      if (remoteHistory.length > myHistory.length) {
+        merged.history = remoteHistory;
+      }
+      return merged;
+    });
+  } catch(e) {
+    // Fallback si transaction impossible (ex: compte très gros)
+    console.warn('[pomel] saveAccount fallback dbSet', acc.code, e.message);
+    await dbSet('accounts/' + acc.code, acc);
+  }
 }
 
 // Vérification d'intégrité au chargement : détecte les anomalies sans recaler
@@ -8498,16 +9419,17 @@ async function claimStreak() {
   // Mais on affiche 5/5 le temps du render avant reset
   const displayDays = newDays;
 
-  state.balance += reward;
-  trackEarning(state, reward);
-  state.history.unshift({
+  // Sauvegarder l'état streak (non-balance) d'abord
+  await saveAccount(state);
+  // Créditer les pomels atomiquement
+  const streakUpdated = await addBalanceTransaction(state.code, reward, {
     type: 'streak',
     desc: `🔥 Série quotidienne — Jour ${displayDays}/5`,
     amount: reward,
     date: new Date().toISOString(),
   });
-
-  await saveAccount(state);
+  if (streakUpdated) { state = migrateAccount(streakUpdated); }
+  else { state.balance += reward; } // fallback local
   refreshUI();
   renderStreakWidget();
   showWinToast(`+${reward.toLocaleString('fr-FR')} Pomels — Série jour ${displayDays}/5 ! 🔥`);
@@ -8568,51 +9490,41 @@ function hasUnread(page) {
   return latest > seen && latest > 0;
 }
 
-// Injecte ou retire une pastille sur un élément
+// Injecte ou retire une pastille sur un élément (compat)
 function setBadge(el, show) {
   if (!el) return;
   let badge = el.querySelector('.notif-badge, .notif-badge-item');
   if (show && !badge) {
     badge = document.createElement('span');
-    badge.className = el.classList.contains('nav-dropdown-item') ? 'notif-badge-item' : 'notif-badge';
+    badge.className = 'notif-badge';
     el.appendChild(badge);
   } else if (!show && badge) {
     badge.remove();
   }
 }
 
-// Refresh toutes les pastilles nav
+// Refresh toutes les pastilles nav — sidenav version
 function refreshAllBadges() {
-  const findItem = (dropdown, pageId) =>
-    document.querySelector(`#dropdown-${dropdown} .nav-dropdown-item[onclick*="'${pageId}'"]`);
+  // Helper : met ou enlève un point rouge sur un sidenav-item
+  function setSnavBadge(snavId, show) {
+    const btn = document.getElementById(snavId);
+    if (!btn) return;
+    let badge = btn.querySelector('.sidenav-badge');
+    if (show && !badge) {
+      badge = document.createElement('span');
+      badge.className = 'sidenav-badge';
+      badge.textContent = '•';
+      btn.appendChild(badge);
+    } else if (!show && badge) {
+      badge.remove();
+    }
+  }
 
-  // Hôtel → Commerce
-  const hotelItem       = findItem('commerce', 'hotel');
-  const commerceTrigger = document.querySelector('#dropdown-commerce .nav-dropdown-trigger');
-  const hotelUnread     = hasUnread('hotel');
-  setBadge(hotelItem, hotelUnread);
-  setBadge(commerceTrigger, hotelUnread);
-
-  // Paris → Communauté
-  const parisItem      = findItem('social', 'paris');
-  const proverbeItem   = findItem('social', 'proverbe');
-  const socialTrigger  = document.querySelector('#dropdown-social .nav-dropdown-trigger');
-  const parisUnread    = hasUnread('paris');
-  const proverbeUnread = hasUnread('proverbe');
-  setBadge(parisItem, parisUnread);
-  setBadge(proverbeItem, proverbeUnread);
-  setBadge(socialTrigger, parisUnread || proverbeUnread);
-
-  // Discussion → Chat standalone
-  const chatBtn = document.getElementById('navbtn-chat');
-  setBadge(chatBtn, hasUnread('discussion'));
-
-  // PFC → Jeux dropdown item
-  const pfcBtn = document.getElementById('navbtn-pfc');
-  const gamesTrigger = document.querySelector('#dropdown-games .nav-dropdown-trigger');
-  const pfcUnread = hasUnread('pfc');
-  setBadge(pfcBtn, pfcUnread);
-  setBadge(gamesTrigger, pfcUnread);
+  setSnavBadge('snav-hotel',    hasUnread('hotel'));
+  setSnavBadge('snav-paris',    hasUnread('paris'));
+  setSnavBadge('snav-proverbe', hasUnread('proverbe'));
+  setSnavBadge('snav-chat',     hasUnread('discussion'));
+  setSnavBadge('snav-pfc',      hasUnread('pfc'));
 }
 
 // Vérifie Firebase pour les nouveaux contenus et met à jour les timestamps
@@ -9200,8 +10112,758 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+
+// ══════════════════════════════════════════════════
+// AVATAR SYSTEM
+// ══════════════════════════════════════════════════
+
+// Dessine l'avatar d'un compte sur un canvas 100x100
+// avatar = { shapes: [{type,x,y,w,h,color,rotation}] } ou null
+function drawAvatar(canvas, avatar, size) {
+  size = size || 100;
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = '#1a1a22';
+  ctx.fillRect(0, 0, size, size);
+  if (!avatar || !avatar.shapes || !avatar.shapes.length) {
+    // Fallback lettre
+    return false;
+  }
+  const scale = size / 200;
+  for (const s of avatar.shapes) {
+    ctx.save();
+    ctx.translate(s.x * scale, s.y * scale);
+    ctx.rotate((s.rotation || 0) * Math.PI / 180);
+    ctx.fillStyle = s.color || '#EB5846';
+    ctx.globalAlpha = s.opacity !== undefined ? s.opacity : 1;
+    const w = (s.w || 40) * scale;
+    const h = (s.h || 40) * scale;
+    if (s.type === 'circle') {
+      ctx.beginPath();
+      ctx.arc(0, 0, w / 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (s.type === 'rect') {
+      ctx.fillRect(-w/2, -h/2, w, h);
+    } else if (s.type === 'triangle') {
+      ctx.beginPath();
+      ctx.moveTo(0, -h/2);
+      ctx.lineTo(w/2, h/2);
+      ctx.lineTo(-w/2, h/2);
+      ctx.closePath();
+      ctx.fill();
+    } else if (s.type === 'star') {
+      const spikes = 5, outerR = w/2, innerR = w/4;
+      ctx.beginPath();
+      for (let i = 0; i < spikes * 2; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const a = (i * Math.PI) / spikes - Math.PI / 2;
+        i === 0 ? ctx.moveTo(r * Math.cos(a), r * Math.sin(a)) : ctx.lineTo(r * Math.cos(a), r * Math.sin(a));
+      }
+      ctx.closePath(); ctx.fill();
+    } else if (s.type === 'diamond') {
+      ctx.beginPath();
+      ctx.moveTo(0, -h/2); ctx.lineTo(w/2, 0);
+      ctx.lineTo(0, h/2); ctx.lineTo(-w/2, 0);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+  return true;
+}
+
+// Retourne un canvas HTML avec l'avatar dessiné (size px)
+function buildAvatarCanvas(avatar, size) {
+  size = size || 100;
+  const c = document.createElement('canvas');
+  c.className = 'avatar-canvas';
+  const drawn = drawAvatar(c, avatar, size);
+  return { canvas: c, drawn };
+}
+
+// Récupère l'avatar d'un account (depuis acc.avatar)
+function getAvatarForAcc(acc) {
+  return (acc && acc.avatar) ? acc.avatar : null;
+}
+
+// Affiche l'avatar dans un conteneur (remplace le contenu)
+function renderAvatarInEl(el, acc, size) {
+  size = size || 52;
+  const avatar = getAvatarForAcc(acc);
+  if (avatar && avatar.shapes && avatar.shapes.length) {
+    const { canvas } = buildAvatarCanvas(avatar, size * 2); // 2x pour netteté
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    el.innerHTML = '';
+    el.appendChild(canvas);
+  } else {
+    el.innerHTML = (acc && acc.name) ? acc.name.charAt(0).toUpperCase() : '?';
+  }
+}
+
+// Génère un avatar aléatoire
+function generateRandomAvatar() {
+  const shapes = [];
+  const colors = ['#EB5846','#3ecf6e','#5b8def','#f0c040','#c03c2c','#ff88aa','#88ddff','#ffcc44','#aa88ff'];
+  const types = ['circle','rect','triangle','star','diamond'];
+  const count = 4 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < count; i++) {
+    shapes.push({
+      type: types[Math.floor(Math.random() * types.length)],
+      x: 20 + Math.random() * 160,
+      y: 20 + Math.random() * 160,
+      w: 20 + Math.random() * 80,
+      h: 20 + Math.random() * 80,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.floor(Math.random() * 360),
+      opacity: 0.7 + Math.random() * 0.3,
+    });
+  }
+  return { shapes };
+}
+
+async function randomizeAvatar() {
+  const avatar = generateRandomAvatar();
+  state.avatar = avatar;
+  await saveAccount(state);
+  refreshAvatarPreview();
+  refreshSidebar();
+}
+
+function refreshAvatarPreview() {
+  const el = document.getElementById('myAvatarPreview');
+  if (el) renderAvatarInEl(el, state, 64);
+}
+
+// ── ÉDITEUR D'AVATAR ─────────────────────────────
+let _editorShapes = [];
+let _editorSelected = -1;
+let _editorTool = 'circle';
+let _editorColor = '#EB5846';
+let _editorSize = 60;
+let _editorDrag = null;
+const EDITOR_COLORS = ['#EB5846','#3ecf6e','#5b8def','#f0c040','#fff','#ff88aa','#88ddff','#aa88ff','#ffcc44','#111'];
+
+function openAvatarEditor() {
+  _editorShapes = state.avatar ? JSON.parse(JSON.stringify(state.avatar.shapes || [])) : [];
+  _editorSelected = -1;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'avatarEditorModal';
+  overlay.onclick = e => { if (e.target === overlay) closeAvatarEditor(); };
+
+  const colorSwatches = EDITOR_COLORS.map((c, i) =>
+    `<div class="avatar-color-swatch${i===0?' active':''}" style="background:${c}" data-color="${c}" onclick="setEditorColor('${c}',this)" title="${c}"></div>`
+  ).join('');
+
+  overlay.innerHTML = `
+    <div class="modal-box" style="max-width:520px;">
+      <h2>🎨 Éditeur d'avatar <button class="modal-close" onclick="closeAvatarEditor()">✕</button></h2>
+      <div class="avatar-editor-wrap">
+        <div class="avatar-editor-canvas-area" id="avatarEditorArea">
+          <canvas id="avatarEditorCanvas" width="200" height="200"></canvas>
+        </div>
+        <div class="avatar-editor-toolbar">
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Forme</span>
+            <button class="avatar-shape-btn active" data-shape="circle" onclick="setEditorTool('circle',this)">⬤ Cercle</button>
+            <button class="avatar-shape-btn" data-shape="rect" onclick="setEditorTool('rect',this)">▬ Rect</button>
+            <button class="avatar-shape-btn" data-shape="triangle" onclick="setEditorTool('triangle',this)">▲ Triangle</button>
+            <button class="avatar-shape-btn" data-shape="star" onclick="setEditorTool('star',this)">★ Étoile</button>
+            <button class="avatar-shape-btn" data-shape="diamond" onclick="setEditorTool('diamond',this)">◆ Losange</button>
+          </div>
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Couleur</span>
+            ${colorSwatches}
+            <input type="color" id="avatarCustomColor" value="#EB5846" oninput="setEditorColor(this.value,null,true)" style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border);cursor:pointer;padding:0;background:none;" title="Couleur personnalisée">
+          </div>
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Taille</span>
+            <input type="range" class="avatar-size-slider" id="editorSizeSlider" min="10" max="140" value="60" oninput="setEditorSize(this.value)">
+            <span id="editorSizeLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:28px;">60</span>
+          </div>
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Rotation (sélectionné)</span>
+            <input type="range" class="avatar-size-slider" id="editorRotSlider" min="0" max="360" value="0" oninput="setEditorRot(this.value)">
+            <span id="editorRotLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:30px;">0°</span>
+          </div>
+          <div class="avatar-actions">
+            <button class="avatar-action-btn danger-btn" onclick="editorUndoLast()">↩ Annuler dernière</button>
+            <button class="avatar-action-btn danger-btn" onclick="editorClear()">🗑 Tout effacer</button>
+            <button class="avatar-action-btn primary-btn" onclick="saveAvatarEditor()">💾 Sauvegarder</button>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);">Clique sur le canvas pour poser une forme. Clique sur une forme pour la sélectionner et la déplacer.</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  _editorRedraw();
+  _editorBindCanvas();
+}
+
+function closeAvatarEditor() {
+  document.getElementById('avatarEditorModal')?.remove();
+}
+
+function setEditorTool(t, btn) {
+  _editorTool = t;
+  document.querySelectorAll('.avatar-shape-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function setEditorColor(c, el, fromPicker) {
+  _editorColor = c;
+  document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (!fromPicker) { const picker = document.getElementById('avatarCustomColor'); if (picker) picker.value = c; }
+  // Update selected shape color
+  if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
+    _editorShapes[_editorSelected].color = c;
+    _editorRedraw();
+  }
+}
+
+function setEditorSize(v) {
+  _editorSize = parseInt(v);
+  const lbl = document.getElementById('editorSizeLabel');
+  if (lbl) lbl.textContent = v;
+  if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
+    _editorShapes[_editorSelected].w = _editorSize;
+    _editorShapes[_editorSelected].h = _editorSize;
+    _editorRedraw();
+  }
+}
+
+function setEditorRot(v) {
+  const lbl = document.getElementById('editorRotLabel');
+  if (lbl) lbl.textContent = v + '°';
+  if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
+    _editorShapes[_editorSelected].rotation = parseInt(v);
+    _editorRedraw();
+  }
+}
+
+function editorUndoLast() { _editorShapes.pop(); _editorSelected = -1; _editorRedraw(); }
+function editorClear() { _editorShapes = []; _editorSelected = -1; _editorRedraw(); }
+
+function _editorRedraw() {
+  const canvas = document.getElementById('avatarEditorCanvas');
+  if (!canvas) return;
+  drawAvatar(canvas, { shapes: _editorShapes }, 200);
+  const ctx = canvas.getContext('2d');
+  // Highlight selected
+  if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
+    const s = _editorShapes[_editorSelected];
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    const r = (s.w || 40) / 2 + 4;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function _editorBindCanvas() {
+  const canvas = document.getElementById('avatarEditorCanvas');
+  if (!canvas) return;
+  let dragging = false, dragOff = {x:0,y:0};
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = 200 / rect.width, scaleY = 200 / rect.height;
+    const cx = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
+    const cy = (e.clientY !== undefined ? e.clientY : e.touches[0].clientY) - rect.top;
+    return { x: cx * scaleX, y: cy * scaleY };
+  }
+
+  function hitTest(pos) {
+    for (let i = _editorShapes.length - 1; i >= 0; i--) {
+      const s = _editorShapes[i];
+      const dx = pos.x - s.x, dy = pos.y - s.y;
+      const r = (s.w || 40) / 2 + 6;
+      if (dx * dx + dy * dy < r * r) return i;
+    }
+    return -1;
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const pos = getPos(e);
+    const hit = hitTest(pos);
+    if (hit >= 0) {
+      _editorSelected = hit;
+      dragging = true;
+      dragOff = { x: pos.x - _editorShapes[hit].x, y: pos.y - _editorShapes[hit].y };
+      // Sync sliders
+      const s = _editorShapes[hit];
+      const rotSlider = document.getElementById('editorRotSlider');
+      const sizeSlider = document.getElementById('editorSizeSlider');
+      if (rotSlider) { rotSlider.value = s.rotation || 0; document.getElementById('editorRotLabel').textContent = (s.rotation||0) + '°'; }
+      if (sizeSlider) { sizeSlider.value = s.w || 40; document.getElementById('editorSizeLabel').textContent = s.w || 40; }
+      _editorColor = s.color;
+    } else {
+      // Poser nouvelle forme
+      _editorShapes.push({ type: _editorTool, x: pos.x, y: pos.y, w: _editorSize, h: _editorSize, color: _editorColor, rotation: 0, opacity: 0.92 });
+      _editorSelected = _editorShapes.length - 1;
+      dragging = true;
+      dragOff = { x: 0, y: 0 };
+    }
+    _editorRedraw();
+    e.preventDefault();
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!dragging || _editorSelected < 0) return;
+    const pos = getPos(e);
+    _editorShapes[_editorSelected].x = pos.x - dragOff.x;
+    _editorShapes[_editorSelected].y = pos.y - dragOff.y;
+    _editorRedraw();
+  });
+
+  canvas.addEventListener('mouseup', () => { dragging = false; });
+  canvas.addEventListener('mouseleave', () => { dragging = false; });
+
+  // Touch
+  canvas.addEventListener('touchstart', e => {
+    const pos = getPos(e);
+    const hit = hitTest(pos);
+    if (hit >= 0) {
+      _editorSelected = hit; dragging = true;
+      dragOff = { x: pos.x - _editorShapes[hit].x, y: pos.y - _editorShapes[hit].y };
+    } else {
+      _editorShapes.push({ type: _editorTool, x: pos.x, y: pos.y, w: _editorSize, h: _editorSize, color: _editorColor, rotation: 0, opacity: 0.92 });
+      _editorSelected = _editorShapes.length - 1; dragging = true; dragOff = { x: 0, y: 0 };
+    }
+    _editorRedraw(); e.preventDefault();
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', e => {
+    if (!dragging || _editorSelected < 0) return;
+    const pos = getPos(e);
+    _editorShapes[_editorSelected].x = pos.x - dragOff.x;
+    _editorShapes[_editorSelected].y = pos.y - dragOff.y;
+    _editorRedraw(); e.preventDefault();
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => { dragging = false; });
+}
+
+async function saveAvatarEditor() {
+  state.avatar = { shapes: _editorShapes };
+  await saveAccount(state);
+  closeAvatarEditor();
+  refreshAvatarPreview();
+  refreshSidebar();
+}
+
+// ══════════════════════════════════════════════════
+// SIDEBAR JOUEURS
+// ══════════════════════════════════════════════════
+let _sidebarVisible = false;
+let _sidebarInterval = null;
+
+function toggleSidebar() {
+  _sidebarVisible = !_sidebarVisible;
+  const el = document.getElementById('playerSidebar');
+  el.classList.toggle('hidden', !_sidebarVisible);
+  if (_sidebarVisible) refreshSidebar();
+}
+
+async function refreshSidebar() {
+  const list = document.getElementById('sidebarList');
+  const countEl = document.getElementById('sidebarPlayerCount');
+  if (!list) return;
+
+  const [all, groups] = await Promise.all([getAllAccounts(), getAllGroups()]);
+  const codeToGroup = {};
+  (groups || []).forEach(g => (g.members || []).forEach(c => codeToGroup[c] = g.name));
+
+  const players = all
+    .filter(a => a.code !== '__ADMIN__')
+    .sort((a, b) => (b.totalEarned || 0) - (a.totalEarned || 0));
+
+  if (countEl) countEl.textContent = players.length + ' joueurs';
+
+  list.innerHTML = '';
+  for (const acc of players) {
+    const m = migrateAccount(acc);
+    const isMe = m.code === state.code;
+    const nameClass = getNameColorClass(m.activeColor);
+    const bannerCls = getBannerClass(m.activeBanner);
+    const earned = m.totalEarned || 0;
+
+    const row = document.createElement('div');
+    // Bannière sur la row (fond), pas sur l'avatar
+    row.className = 'sidebar-player' + (bannerCls ? ' ' + bannerCls : '');
+    if (isMe) row.style.outline = '1px solid var(--primary)';
+    row.onclick = () => openProfileModal(m.code);
+
+    // Avatar — sans bannière
+    const avatarWrap = document.createElement('div');
+    avatarWrap.className = 'sidebar-avatar';
+    renderAvatarInEl(avatarWrap, m, 34);
+
+    const info = document.createElement('div');
+    info.className = 'sidebar-player-info';
+    info.innerHTML = `
+      <div class="sidebar-player-name ${nameClass}">${escapeHTML(m.name)}${isMe ? ' <span style="font-size:.6rem;color:var(--primary);">(moi)</span>' : ''}</div>
+      <div class="sidebar-player-val">${earned.toLocaleString('fr-FR')} 🪙 gagné</div>
+    `;
+
+    row.appendChild(avatarWrap);
+    row.appendChild(info);
+    list.appendChild(row);
+  }
+}
+
+// Auto-refresh sidebar toutes les 30s si visible
+function startSidebarRefresh() {
+  if (_sidebarInterval) return;
+  _sidebarInterval = setInterval(() => {
+    const sidebar = document.getElementById('playerSidebar');
+    if (sidebar && !sidebar.classList.contains('hidden')) refreshSidebar();
+  }, 30000);
+}
+
+// ══════════════════════════════════════════════════
+// NOTIFICATIONS SYSTÈME (toast + son)
+// ══════════════════════════════════════════════════
+const _notifSeen = new Set();
+
+// AudioContext partagé — débloqué au premier clic utilisateur
+let _audioCtx = null;
+function _getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+document.addEventListener('click', () => { try { _getAudioCtx(); } catch(e) {} }, { once: true });
+
+function playNotifSound(type) {
+  try {
+    const ctx = _getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    const freqs = { quete: [880, 1100], bet: [660, 880], chat: [1047, 1319], pfc: [784, 1047], default: [880, 1100] };
+    const [f1, f2] = freqs[type] || freqs.default;
+    osc.frequency.setValueAtTime(f1, ctx.currentTime);
+    osc.frequency.setValueAtTime(f2, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.type = 'sine';
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.35);
+  } catch(e) {}
+}
+
+function showNotif(icon, title, msg, type, onClick) {
+  const key = type + '|' + title + '|' + msg;
+  if (_notifSeen.has(key)) return;
+  _notifSeen.add(key);
+  setTimeout(() => _notifSeen.delete(key), 60000);
+
+  playNotifSound(type);
+
+  const container = document.getElementById('notifContainer');
+  if (!container) return;
+
+  const DURATION = 7000;
+  const toast = document.createElement('div');
+  toast.className = 'notif-toast';
+  toast.setAttribute('data-type', type || 'default');
+  toast.innerHTML = `
+    <div class="notif-toast-inner">
+      <div class="notif-toast-icon-wrap">${icon}</div>
+      <div class="notif-toast-body">
+        <div class="notif-toast-title">${title}</div>
+        <div class="notif-toast-msg">${msg}</div>
+      </div>
+      <div class="notif-toast-close" onclick="dismissNotif(this.closest('.notif-toast'))">✕</div>
+    </div>
+    <div class="notif-progress">
+      <div class="notif-progress-bar" style="animation-duration:${DURATION}ms"></div>
+    </div>
+  `;
+  if (onClick) toast.onclick = e => {
+    if (e.target.classList.contains('notif-toast-close')) return;
+    onClick(); dismissNotif(toast);
+  };
+
+  container.appendChild(toast);
+  setTimeout(() => dismissNotif(toast), DURATION);
+}
+
+function dismissNotif(toast) {
+  if (!toast || !toast.parentElement) return;
+  toast.classList.add('closing');
+  setTimeout(() => toast.remove(), 280);
+}
+
+// ── Vérificateur de notifs (injecté dans checkNotifUpdates) ──
+let _prevNotifState = {
+  quetes: new Set(),
+  bets: new Set(),
+  chat: 0,
+  pfcChallenges: new Set(),
+  pfcResolved: new Set(),
+};
+
+async function checkPushNotifications() {
+  if (!state || state.code === '__ADMIN__') return;
+  try {
+    const now = Date.now();
+    const today = getTodayKey();
+
+    // ── Quêtes reçues ──
+    const allQ = await getAllQuetes();
+    for (const q of allQ) {
+      if (q.targetCode === state.code && q.status === 'pending' && !_prevNotifState.quetes.has(q.id)) {
+        if (now - new Date(q.createdAt).getTime() < 120000) { // moins de 2 min
+          showNotif('⚔️', 'Nouvelle quête !', `${escapeHTML(q.creatorName)} t'a assigné une mission — ${q.reward.toLocaleString('fr-FR')} 🪙`, 'quete', () => navTo('quetes'));
+        }
+        _prevNotifState.quetes.add(q.id);
+      }
+    }
+
+    // ── Paris fermés où j'avais misé ──
+    const allBets = await getAllBets();
+    for (const b of allBets) {
+      if (b.status === 'closed' && !_prevNotifState.bets.has(b.id)) {
+        const myBet = (b.bettors || []).find(x => x.code === state.code);
+        if (myBet) {
+          const won = myBet.choice === b.winnerOption;
+          showNotif('🎲', 'Pari terminé !', `"${escapeHTML(b.desc)}" — ${won ? '🏆 Tu as gagné !' : '💀 Tu as perdu.'}`, 'bet', () => navTo('paris'));
+        }
+        _prevNotifState.bets.add(b.id);
+      }
+    }
+
+    // ── Nouveau message chat ──
+    const discData = await dbGet('discussion') || {};
+    const discMsgs = Object.values(discData).filter(m => m.date === today && m.authorCode !== state.code);
+    const latestChat = discMsgs.length ? Math.max(...discMsgs.map(m => new Date(m.createdAt).getTime())) : 0;
+    if (latestChat > _prevNotifState.chat && latestChat > now - 120000) {
+      const latest = discMsgs.find(m => new Date(m.createdAt).getTime() === latestChat);
+      if (latest) showNotif('💬', 'Nouveau message !', `${escapeHTML(latest.authorName)} : ${escapeHTML(latest.text.slice(0,60))}`, 'chat', () => navTo('discussion'));
+      _prevNotifState.chat = latestChat;
+    }
+
+    // ── PFC : défi reçu ──
+    const pfcData = await getAllPFCChallenges() || {};
+    for (const c of Object.values(pfcData)) {
+      if (c.challengedCode === state.code && c.status === 'pending' && now < c.expiresAt && !_prevNotifState.pfcChallenges.has(c.id)) {
+        if (now - c.createdAt < 120000) {
+          showNotif('🪨', 'Défi Pierre Feuille Ciseaux !', `${escapeHTML(c.challengerName)} te défie !`, 'pfc', () => navTo('pfc'));
+        }
+        _prevNotifState.pfcChallenges.add(c.id);
+      }
+      // PFC : réponse reçue (je suis le challenger, le défi est résolu)
+      if (c.challengerCode === state.code && c.status === 'resolved' && !_prevNotifState.pfcResolved.has(c.id)) {
+        if (c.resolvedAt && now - c.resolvedAt < 120000) {
+          showNotif('🪨', 'PFC résolu !', `${escapeHTML(c.challengedName || '?')} a répondu à ton défi !`, 'pfc', () => navTo('pfc'));
+        }
+        _prevNotifState.pfcResolved.add(c.id);
+      }
+    }
+
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════
+// TIMERS QUÊTES & PARIS (live countdown)
+// ══════════════════════════════════════════════════
+let _timerInterval = null;
+
+function formatCountdown(ms) {
+  if (ms <= 0) return 'Expiré';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (h > 0) return `${h}h ${m.toString().padStart(2,'0')}m`;
+  if (m > 0) return `${m}m ${s.toString().padStart(2,'0')}s`;
+  return `${s}s`;
+}
+
+function getTimerClass(ms) {
+  return ms < 300000 ? 'timer-badge urgent' : 'timer-badge';
+}
+
+function updateAllTimers() {
+  const now = Date.now();
+  document.querySelectorAll('[data-expires]').forEach(el => {
+    const exp = parseInt(el.getAttribute('data-expires'));
+    const remaining = exp - now;
+    el.textContent = '⏱ ' + formatCountdown(remaining);
+    el.className = getTimerClass(remaining);
+  });
+}
+
+function startTimerInterval() {
+  if (_timerInterval) return;
+  _timerInterval = setInterval(updateAllTimers, 1000);
+}
+
+
+// ══════════════════════════════════════════════════
+// NAVIGATION — nouvelle sidebar
+// ══════════════════════════════════════════════════
+const PAGE_TITLES = {
+  home:'Accueil', roulette:'🎰 Roulette', discussion:'💬 Chat',
+  snake:'🐍 Serpent', g2048:'🔢 2048', clicker:'🌱 Clicker',
+  jardin:'🌸 Jardin', pfc:'🪨 Pierre Feuille Ciseaux',
+  boutique:'🛒 Boutique', hotel:'🏨 Hôtel des Ventes',
+  classement:'🏆 Classement', profils:'👥 Profils',
+  quetes:'⚔️ Quêtes', paris:'🎲 Paris', proverbe:'📜 Proverbe',
+  monprofil:'🙋 Mon profil', banque:'🏦 Banque', infos:'ℹ️ Infos',
+};
+
+// Map page → id du bouton sidenav
+const SNAV_MAP = {
+  home:'snav-home', roulette:'snav-roulette', discussion:'snav-chat',
+  snake:'snav-snake', g2048:'snav-g2048', clicker:'snav-clicker',
+  jardin:'snav-jardin', pfc:'snav-pfc', boutique:'snav-boutique',
+  hotel:'snav-hotel', profils:'snav-profils', quetes:'snav-quetes',
+  paris:'snav-paris', proverbe:'snav-proverbe',
+  monprofil:'snav-monprofil', banque:'snav-banque',
+};
+
+let _currentPage = 'home';
+let _sidenavCollapsed = false;
+let _mobileSidenavOpen = false;
+
+function setActiveSnavItem(pageId) {
+  document.querySelectorAll('.sidenav-item').forEach(b => b.classList.remove('active'));
+  const btnId = SNAV_MAP[pageId];
+  if (btnId) { const btn = document.getElementById(btnId); if (btn) btn.classList.add('active'); }
+  // Topbar title
+  const titleEl = document.getElementById('topbarTitle');
+  if (titleEl) titleEl.textContent = PAGE_TITLES[pageId] || '';
+  // Mobile bottom nav
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  _currentPage = pageId;
+  // Fermer sidenav mobile après navigation
+  if (_mobileSidenavOpen) closeMobileSidenav();
+}
+
+function navTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  setActiveSnavItem(id);
+  _onPageLoad(id);
+  window.scrollTo(0, 0);
+}
+
+function navToClassement(view) {
+  _classementView = view;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-classement').classList.add('active');
+  setActiveSnavItem(view === 'general' ? 'snav-classement-general' : 'snav-classement-groupes');
+  // Ajuster l'id pour SNAV_MAP
+  document.querySelectorAll('.sidenav-item').forEach(b => b.classList.remove('active'));
+  const btnId = view === 'general' ? 'snav-classement-general' : 'snav-classement-groupes';
+  const btn = document.getElementById(btnId); if (btn) btn.classList.add('active');
+  const titleEl = document.getElementById('topbarTitle');
+  if (titleEl) titleEl.textContent = view === 'general' ? '🏆 Classement général' : '🏅 Classement des groupes';
+  _currentPage = 'classement';
+  if (_mobileSidenavOpen) closeMobileSidenav();
+  // Afficher la bonne vue
+  const viewGeneral = document.getElementById('classementViewGeneral');
+  const viewGroupes = document.getElementById('classementViewGroupes');
+  const lbTabs = document.getElementById('lbTabsGeneral');
+  const title = document.getElementById('classementTitle');
+  if (view === 'general') {
+    if (viewGeneral) viewGeneral.style.display = '';
+    if (viewGroupes) viewGroupes.style.display = 'none';
+    if (lbTabs) lbTabs.style.display = '';
+    if (title) title.textContent = '🏆 Classement général';
+    renderLeaderboard(currentLbMode);
+  } else {
+    if (viewGeneral) viewGeneral.style.display = 'none';
+    if (viewGroupes) viewGroupes.style.display = '';
+    if (lbTabs) lbTabs.style.display = 'none';
+    if (title) title.textContent = '🏅 Classement des groupes';
+    renderGroupsOnPage();
+  }
+  window.scrollTo(0, 0);
+}
+
+// Compat — appelé par des dizaines d'endroits dans le code
+function goTo(id, _btn) { navTo(id); }
+function goToFromDropdown(id, _group, _btn) { navTo(id); }
+function goToFromUser(id) { navTo(id); }
+function goToClassement(view, _btn) { navToClassement(view); }
+function clearAllNavActive() { document.querySelectorAll('.sidenav-item').forEach(b => b.classList.remove('active')); }
+function closeAllDropdowns() {} // plus de dropdowns
+
+function goToHome() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  setActiveSnavItem('home');
+  if (typeof snakeLoop !== 'undefined' && snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; snakeState = null; }
+  if (typeof stopClickerPage === 'function') stopClickerPage();
+  if (typeof stopDiscussionListener === 'function') stopDiscussionListener();
+  if (typeof renderHome === 'function') renderHome();
+  window.scrollTo(0, 0);
+}
+
+// Sidenav collapse desktop
+function toggleSidenav() {
+  _sidenavCollapsed = !_sidenavCollapsed;
+  const nav = document.getElementById('sidenav');
+  const main = document.getElementById('main-content');
+  const topbar = document.getElementById('topbar');
+  nav.classList.toggle('collapsed', _sidenavCollapsed);
+  main.classList.toggle('nav-collapsed', _sidenavCollapsed);
+  if (topbar) topbar.classList.toggle('nav-collapsed', _sidenavCollapsed);
+  localStorage.setItem('sidenav_collapsed', _sidenavCollapsed ? '1' : '0');
+}
+
+// Sidenav mobile
+function toggleMobileSidenav() {
+  _mobileSidenavOpen ? closeMobileSidenav() : openMobileSidenav();
+}
+function openMobileSidenav() {
+  _mobileSidenavOpen = true;
+  document.getElementById('sidenav').classList.add('mobile-open');
+  document.getElementById('sidenav-overlay').classList.add('visible');
+}
+function closeMobileSidenav() {
+  _mobileSidenavOpen = false;
+  document.getElementById('sidenav').classList.remove('mobile-open');
+  document.getElementById('sidenav-overlay').classList.remove('visible');
+}
+
+// Toggle user menu (topbar)
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  document.getElementById('userBadge').classList.toggle('open');
+}
+function closeUserMenu() { document.getElementById('userBadge')?.classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('#userBadge')) closeUserMenu();
+});
+
+// Restore sidenav state
+function initSidenav() {
+  const saved = localStorage.getItem('sidenav_collapsed');
+  if (saved === '1' && window.innerWidth >= 769) {
+    _sidenavCollapsed = true;
+    document.getElementById('sidenav').classList.add('collapsed');
+    document.getElementById('main-content').classList.add('nav-collapsed');
+    document.getElementById('topbar').classList.add('nav-collapsed');
+  }
+}
+
 init();
 </script>
+</div><!-- /main-content -->
 <footer class="site-footer">Ce site est à but humoristique, toute dérive ne sera pas tolérée. Nous ne vous réclamerons jamais aucune information personnelle ou download/upload de quelconques données.</footer>
 
   <!-- ÉCRAN ADMIN -->
