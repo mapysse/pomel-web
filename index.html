@@ -3481,9 +3481,10 @@ async function addBalanceTransaction(code, amount, historyEntry) {
       let accountMissing = false;
 
       const result = await db.ref('accounts/' + code).transaction(current => {
+        // Firebase envoie null au 1er passage (cache local vide) — retourner null
+        // permet à Firebase de relire depuis le serveur sans flaguer le compte comme manquant
         if (current === null || current === undefined) {
-          accountMissing = true;
-          return; // abort — ne pas créer de compte fantôme
+          return current;
         }
         current.balance = (current.balance || 0) + amount;
         current.balance = Math.max(0, Math.min(10000000, Math.floor(current.balance)));
@@ -3512,9 +3513,18 @@ async function addBalanceTransaction(code, amount, historyEntry) {
         if (updatedAcc) return updatedAcc;
       }
 
+      // Transaction non committée : vérifier si le compte existe vraiment
+      if (!result.committed) {
+        const snapCheck = result && result.snapshot;
+        if (snapCheck && !snapCheck.exists()) {
+          console.warn('[pomel] addBalanceTransaction: compte introuvable', code);
+          return null;
+        }
+      }
+
       // Compte introuvable — inutile de retenter
       if (accountMissing) {
-        console.warn('[pomel] addBalanceTransaction: compte introuvable', code);
+        console.warn('[pomel] addBalanceTransaction: compte introuvable (legacy)', code);
         return null;
       }
 
@@ -10535,18 +10545,24 @@ function startSidebarRefresh() {
 // ══════════════════════════════════════════════════
 const _notifSeen = new Set();
 
-// AudioContext partagé — débloqué au premier clic utilisateur
+// AudioContext partagé — créé uniquement après un geste utilisateur
 let _audioCtx = null;
+let _audioUnlocked = false;
 function _getAudioCtx() {
+  if (!_audioUnlocked) return null; // pas encore débloqué
   if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (_audioCtx.state === 'suspended') _audioCtx.resume();
   return _audioCtx;
 }
-document.addEventListener('click', () => { try { _getAudioCtx(); } catch(e) {} }, { once: true });
+document.addEventListener('click', () => {
+  _audioUnlocked = true;
+  try { _getAudioCtx(); } catch(e) {}
+}, { once: true });
 
 function playNotifSound(type) {
   try {
     const ctx = _getAudioCtx();
+    if (!ctx) return; // pas encore débloqué, on skip silencieusement
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain); gain.connect(ctx.destination);
