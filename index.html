@@ -2733,6 +2733,39 @@ async function getAccount(code) { return dbGet('accounts/' + code); }
 async function getAllAccounts() { return dbGetAll('accounts'); }
 async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); }
 
+// Transaction atomique pour ajouter du solde + historique sans écraser d'autres écritures en cours
+// Retourne le compte mis à jour, ou null en cas d'erreur
+async function addBalanceTransaction(code, amount, historyEntry) {
+  try {
+    let updatedAcc = null;
+    await db.ref('accounts/' + code).transaction(current => {
+      if (!current) return current; // compte inexistant, abort
+      current.balance = (current.balance || 0) + amount;
+      current.balance = Math.max(0, Math.min(10000000, Math.floor(current.balance)));
+      // Tracking persistant
+      if (amount > 0) {
+        current.totalEarned = (current.totalEarned || 0) + amount;
+        const weekKey = getGroupWeekKey();
+        if (current.weekPomelsKey !== weekKey) { current.weekPomelsKey = weekKey; current.weekPomelsEarned = 0; }
+        current.weekPomelsEarned = (current.weekPomelsEarned || 0) + amount;
+      } else if (amount < 0) {
+        current.totalSpent = (current.totalSpent || 0) + Math.abs(amount);
+      }
+      if (historyEntry) {
+        if (!Array.isArray(current.history)) current.history = [];
+        current.history.unshift(historyEntry);
+        if (current.history.length > 500) current.history = current.history.slice(0, 500);
+      }
+      updatedAcc = current;
+      return current;
+    });
+    return updatedAcc;
+  } catch(e) {
+    console.error('addBalanceTransaction error', e);
+    return null;
+  }
+}
+
 // ── BET HELPERS ──────────────────────────────────
 async function getBet(id) { return dbGet('bets/' + id); }
 async function saveBet(bet) { await dbSet('bets/' + bet.id, bet); }
@@ -3827,16 +3860,11 @@ async function joinGroup(groupId) {
   state.group = groupId;
   await saveAccount(state);
 
-  // Créditer le créateur du groupe
+  // Créditer le créateur du groupe (transaction atomique)
   if (group.creatorCode && group.creatorCode !== state.code) {
-    const creator = await getAccount(group.creatorCode);
-    if (creator) {
-      creator.balance += 3000;
-      trackEarning(creator, 3000);
-      creator.history = creator.history || [];
-      creator.history.unshift({ type: 'group', desc: `🏅 "${state.name}" a rejoint ton groupe "${group.name}"`, amount: 3000, date: new Date().toISOString() });
-      await saveAccount(creator);
-    }
+    await addBalanceTransaction(group.creatorCode, 3000, {
+      type: 'group', desc: `🏅 "${state.name}" a rejoint ton groupe "${group.name}"`, amount: 3000, date: new Date().toISOString()
+    });
   }
 
   group.members = [...(group.members || []), state.code];
@@ -3901,17 +3929,22 @@ async function checkGroupWeeklyReward() {
     const toDissolveMonthly = allGroupsRaw.filter(g => g.monthKey && g.monthKey !== currentMonthKey);
     if (toDissolveMonthly.length > 0) {
       await dbSet('group_month_dissolved/' + currentMonthKey, true);
-      const allAccounts = await getAllAccounts();
       for (const g of toDissolveMonthly) {
         for (const code of (g.members || [])) {
-          const acc = allAccounts.find(a => a.code === code);
-          if (acc) {
-            acc.group = null;
-            acc.history = acc.history || [];
-            acc.history.unshift({ type: 'group', desc: `🔄 Groupe "${g.name}" dissous (renouvellement mensuel)`, amount: 0, date: now.toISOString() });
-            await saveAccount(acc);
-            if (code === state.code) { state = migrateAccount(acc); state.group = null; refreshUI(); }
-          }
+          try {
+            await db.ref('accounts/' + code).transaction(current => {
+              if (!current) return current;
+              current.group = null;
+              if (!Array.isArray(current.history)) current.history = [];
+              current.history.unshift({ type: 'group', desc: `🔄 Groupe "${g.name}" dissous (renouvellement mensuel)`, amount: 0, date: now.toISOString() });
+              if (current.history.length > 500) current.history = current.history.slice(0, 500);
+              return current;
+            });
+            if (code === state.code) {
+              const freshAcc = await getAccount(code);
+              if (freshAcc) { state = migrateAccount(freshAcc); state.group = null; refreshUI(); }
+            }
+          } catch(e) {}
         }
         await deleteGroup(g.id);
       }
@@ -3969,15 +4002,10 @@ async function checkGroupWeeklyReward() {
       await saveGroup(groupToUpdate);
     }
     for (const code of (g.members || [])) {
-      const acc = await getAccount(code);
-      if (acc) {
-        acc.balance += 2000;
-        trackEarning(acc, 2000);
-        acc.history = acc.history || [];
-        acc.history.unshift({ type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo ! (+${totalPomcoins} PomCoins au groupe)`, amount: 2000, date: now.toISOString() });
-        await saveAccount(acc);
-        if (code === state.code) { state = migrateAccount(acc); refreshUI(); }
-      }
+      const updated = await addBalanceTransaction(code, 2000, {
+        type: 'group', desc: `🏅 Groupe "${g.name}" — Top ${i+1} hebdo ! (+${totalPomcoins} PomCoins au groupe)`, amount: 2000, date: now.toISOString()
+      });
+      if (updated && code === state.code) { state = migrateAccount(updated); refreshUI(); }
     }
   }
 
@@ -3985,14 +4013,22 @@ async function checkGroupWeeklyReward() {
   const toDissolve = scored.slice(3);
   for (const g of toDissolve) {
     for (const code of (g.members || [])) {
-      const acc = await getAccount(code);
-      if (acc) {
-        acc.group = null;
-        acc.history = acc.history || [];
-        acc.history.unshift({ type: 'group', desc: `💥 Groupe "${g.name}" dissous (classement hebdo)`, amount: 0, date: now.toISOString() });
-        await saveAccount(acc);
-        if (code === state.code) { state = migrateAccount(acc); state.group = null; refreshUI(); }
-      }
+      // Dissolution: pas de balance change, juste group=null + historique
+      // On utilise une transaction pour ne pas écraser d'autres écritures
+      try {
+        await db.ref('accounts/' + code).transaction(current => {
+          if (!current) return current;
+          current.group = null;
+          if (!Array.isArray(current.history)) current.history = [];
+          current.history.unshift({ type: 'group', desc: `💥 Groupe "${g.name}" dissous (classement hebdo)`, amount: 0, date: now.toISOString() });
+          if (current.history.length > 500) current.history = current.history.slice(0, 500);
+          return current;
+        });
+        if (code === state.code) {
+          const freshAcc = await getAccount(code);
+          if (freshAcc) { state = migrateAccount(freshAcc); state.group = null; refreshUI(); }
+        }
+      } catch(e) {}
     }
     await deleteGroup(g.id);
   }
@@ -4698,46 +4734,33 @@ async function closeBet(betId, winnerOption) {
   const freshBet = await getBet(betId);
   if (!freshBet || freshBet.status !== 'closed' || freshBet.closedAt !== bet.closedAt) return;
 
-  // Payer les gagnants (argent système)
+  const now = new Date().toISOString();
+
+  // Payer les gagnants (transaction atomique — ne peut pas être écrasé par un flush seeds)
   for (const w of winners) {
     const gain = Math.floor(w.amount * winnerOdds);
-    const acc = await getAccount(w.code);
-    if (acc) {
-      acc.balance += gain;
-      trackEarning(acc, gain);
-      acc.history = acc.history || [];
-      acc.history.unshift({ type: 'bet', desc: `Pari gagné ×${winnerOdds} : "${bet.desc}"`, amount: gain, date: new Date().toISOString() });
-      await saveAccount(acc);
-      if (w.code === state.code) { state = migrateAccount(acc); }
-    }
+    const updated = await addBalanceTransaction(w.code, gain, {
+      type: 'bet', desc: `Pari gagné ×${winnerOdds} : "${bet.desc}"`, amount: gain, date: now
+    });
+    if (updated && w.code === state.code) { state = migrateAccount(updated); }
   }
 
   // Rembourser si aucun gagnant (personne n'avait misé sur le bon choix)
   if (winners.length === 0) {
     for (const l of losers) {
-      const acc = await getAccount(l.code);
-      if (acc) {
-        acc.balance += l.amount;
-        trackEarning(acc, l.amount);
-        acc.history = acc.history || [];
-        acc.history.unshift({ type: 'bet', desc: `Pari remboursé : "${bet.desc}"`, amount: l.amount, date: new Date().toISOString() });
-        await saveAccount(acc);
-        if (l.code === state.code) { state = migrateAccount(acc); }
-      }
+      const updated = await addBalanceTransaction(l.code, l.amount, {
+        type: 'bet', desc: `Pari remboursé : "${bet.desc}"`, amount: l.amount, date: now
+      });
+      if (updated && l.code === state.code) { state = migrateAccount(updated); }
     }
   }
 
-  // Commission créateur — relire le compte FRAIS (il a pu être modifié si le créateur était aussi gagnant via console)
+  // Commission créateur (transaction atomique)
   if (creatorCut > 0) {
-    const creator = await getAccount(bet.creator);
-    if (creator) {
-      creator.balance += creatorCut;
-      trackEarning(creator, creatorCut);
-      creator.history = creator.history || [];
-      creator.history.unshift({ type: 'bet', desc: `Commission pari : "${bet.desc}"`, amount: creatorCut, date: new Date().toISOString() });
-      await saveAccount(creator);
-      if (bet.creator === state.code) { state = migrateAccount(creator); }
-    }
+    const updated = await addBalanceTransaction(bet.creator, creatorCut, {
+      type: 'bet', desc: `Commission pari : "${bet.desc}"`, amount: creatorCut, date: now
+    });
+    if (updated && bet.creator === state.code) { state = migrateAccount(updated); }
   }
 
   refreshUI();
@@ -4749,16 +4772,12 @@ async function deleteBetByCreator(betId) {
   if (!bet || bet.creator !== state.code) return;
   showConfirm('Supprimer ce pari ? Les mises seront intégralement remboursées.', async () => {
     const bettors = bet.bettors || [];
+    const now = new Date().toISOString();
     for (const b of bettors) {
-      const acc = await getAccount(b.code);
-      if (acc) {
-        acc.balance += b.amount;
-        trackEarning(acc, b.amount);
-        acc.history = acc.history || [];
-        acc.history.unshift({ type: 'bet', desc: `Pari annulé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
-        await saveAccount(acc);
-        if (b.code === state.code) { state = migrateAccount(acc); refreshUI(); }
-      }
+      const updated = await addBalanceTransaction(b.code, b.amount, {
+        type: 'bet', desc: `Pari annulé : "${bet.desc}"`, amount: b.amount, date: now
+      });
+      if (updated && b.code === state.code) { state = migrateAccount(updated); refreshUI(); }
     }
     await deleteBet(betId);
     closeConfirm();
@@ -4779,16 +4798,12 @@ async function cleanupBets() {
       const freshBet = await getBet(bet.id);
       if (!freshBet || freshBet.status !== 'expired') continue;
       const bettors = freshBet.bettors || [];
+      const nowIso = new Date().toISOString();
       for (const b of bettors) {
-        const acc = await getAccount(b.code);
-        if (acc) {
-          acc.balance += b.amount;
-          trackEarning(acc, b.amount);
-          acc.history = acc.history || [];
-          acc.history.unshift({ type: 'bet', desc: `Pari expiré remboursé : "${bet.desc}"`, amount: b.amount, date: new Date().toISOString() });
-          await saveAccount(acc);
-          if (b.code === state.code) { state = migrateAccount(acc); refreshUI(); }
-        }
+        const updated = await addBalanceTransaction(b.code, b.amount, {
+          type: 'bet', desc: `Pari expiré remboursé : "${bet.desc}"`, amount: b.amount, date: nowIso
+        });
+        if (updated && b.code === state.code) { state = migrateAccount(updated); refreshUI(); }
       }
       await deleteBet(bet.id);
     } else if (bet.status === 'closed' || bet.status === 'expired') {
@@ -5942,19 +5957,14 @@ async function checkSnakeWeeklyReset() {
   if (!snap) return;
   const entries = Object.values(snap).sort((a, b) => b.score - a.score);
 
-  // Distribuer les récompenses
+  // Distribuer les récompenses (transactions atomiques)
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
     const prize = i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION;
-    const acc = await getAccount(e.code);
-    if (acc) {
-      acc.balance += prize;
-      trackEarning(acc, prize);
-      acc.history = acc.history || [];
-      acc.history.unshift({ type: 'snake', desc: `🐍 Classement hebdo Serpent — #${i+1}`, amount: prize, date: new Date().toISOString() });
-      await saveAccount(acc);
-      if (e.code === state.code) { state = migrateAccount(acc); refreshUI(); }
-    }
+    const updated = await addBalanceTransaction(e.code, prize, {
+      type: 'snake', desc: `🐍 Classement hebdo Serpent — #${i+1}`, amount: prize, date: new Date().toISOString()
+    });
+    if (updated && e.code === state.code) { state = migrateAccount(updated); refreshUI(); }
   }
 
   // Reset du classement hebdo (le général snake_lb n'est PAS touché)
@@ -6388,15 +6398,10 @@ async function checkG2048WeeklyReset() {
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
     const prize = i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION;
-    const acc = await getAccount(e.code);
-    if (acc) {
-      acc.balance += prize;
-      trackEarning(acc, prize);
-      acc.history = acc.history || [];
-      acc.history.unshift({ type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: prize, date: new Date().toISOString() });
-      await saveAccount(acc);
-      if (e.code === state.code) { state = migrateAccount(acc); refreshUI(); }
-    }
+    const updated = await addBalanceTransaction(e.code, prize, {
+      type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: prize, date: new Date().toISOString()
+    });
+    if (updated && e.code === state.code) { state = migrateAccount(updated); refreshUI(); }
   }
   await dbDelete('g2048_weekly_lb');
 }
@@ -6542,15 +6547,10 @@ async function buyHotelListing(listingId) {
 
   await saveAccount(state);
 
-  // Credit creator
-  const creator = await getAccount(listing.creatorCode);
-  if (creator) {
-    creator.balance += listing.price;
-    trackEarning(creator, listing.price);
-    creator.history = creator.history || [];
-    creator.history.unshift({ type: 'hotel', desc: `Titre vendu : "${listing.titleName}"`, amount: listing.price, date: new Date().toISOString() });
-    await saveAccount(creator);
-  }
+  // Credit creator (transaction atomique)
+  await addBalanceTransaction(listing.creatorCode, listing.price, {
+    type: 'hotel', desc: `Titre vendu : "${listing.titleName}"`, amount: listing.price, date: new Date().toISOString()
+  });
 
   // Mark buyer in listing
   listing.buyers = listing.buyers || [];
@@ -6854,53 +6854,32 @@ async function validateQuete(queteId) {
 
   const creatorBonus = Math.ceil(q.reward / 2);
   const isSamePerson = q.targetCode === q.creatorCode;
+  const now = new Date().toISOString();
 
-  // Award Pomels to target
-  const target = await getAccount(q.targetCode);
-  if (target) {
-    target.balance += q.reward;
-    trackEarning(target, q.reward);
-    target.history = target.history || [];
-    target.history.unshift({
-      type: 'quete',
-      desc: `⚔️ Quête accomplie : "${q.desc}"`,
-      amount: q.reward,
-      date: new Date().toISOString(),
+  // Award Pomels to target (transaction atomique)
+  const updatedTarget = await addBalanceTransaction(q.targetCode, q.reward, {
+    type: 'quete', desc: `⚔️ Quête accomplie : "${q.desc}"`, amount: q.reward, date: now,
+  });
+  if (updatedTarget && q.targetCode === state.code) { state = migrateAccount(updatedTarget); refreshUI(); }
+
+  if (isSamePerson) {
+    // Cas edge : créateur = cible → ajouter le bonus créateur en transaction aussi
+    const updatedSame = await addBalanceTransaction(q.targetCode, creatorBonus, {
+      type: 'quete', desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`, amount: creatorBonus, date: now,
     });
-    if (isSamePerson) {
-      // Cas edge : créateur = cible → ajouter aussi le bonus créateur dans le même save
-      target.balance += creatorBonus;
-      trackEarning(target, creatorBonus);
-      target.history.unshift({
-        type: 'quete',
-        desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`,
-        amount: creatorBonus,
-        date: new Date().toISOString(),
-      });
-    }
-    await saveAccount(target);
-    if (target.code === state.code) { state = migrateAccount(target); refreshUI(); }
+    if (updatedSame && q.targetCode === state.code) { state = migrateAccount(updatedSame); refreshUI(); }
   }
 
   // Award bonus to creator (sauf si déjà fait ci-dessus car même personne)
   if (!isSamePerson) {
-    const creator = await getAccount(q.creatorCode);
-    if (creator) {
-      creator.balance += creatorBonus;
-      trackEarning(creator, creatorBonus);
-      creator.history = creator.history || [];
-      creator.history.unshift({
-        type: 'quete',
-        desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`,
-        amount: creatorBonus,
-        date: new Date().toISOString(),
-      });
-      await saveAccount(creator);
-      if (creator.code === state.code) { state = migrateAccount(creator); refreshUI(); }
-    }
+    const updatedCreator = await addBalanceTransaction(q.creatorCode, creatorBonus, {
+      type: 'quete', desc: `⚔️ Quête validée — bonus créateur : "${q.desc}"`, amount: creatorBonus, date: now,
+    });
+    if (updatedCreator && q.creatorCode === state.code) { state = migrateAccount(updatedCreator); refreshUI(); }
   }
 
-  setAlert('queteCreateAlert', `🏆 Quête validée ! ${target ? escapeHTML(target.name) : ''} reçoit ${q.reward.toLocaleString('fr-FR')} 🪙 et tu reçois ${creatorBonus.toLocaleString('fr-FR')} 🪙 en bonus !`, 'success');
+  const targetName = updatedTarget ? updatedTarget.name : q.targetName;
+  setAlert('queteCreateAlert', `🏆 Quête validée ! ${escapeHTML(targetName)} reçoit ${q.reward.toLocaleString('fr-FR')} 🪙 et tu reçois ${creatorBonus.toLocaleString('fr-FR')} 🪙 en bonus !`, 'success');
   setTimeout(() => { document.getElementById('queteCreateAlert').className = 'alert'; }, 5000);
   renderQuetes();
 }
@@ -7267,15 +7246,10 @@ async function distributeJardinRewards(flowers) {
   for (let i = 0; i < sorted.length; i++) {
     const p = sorted[i];
     const prize = i < 3 ? JARDIN_PRIZES[i] : CONSOLATION;
-    const acc = await getAccount(p.code);
-    if (acc) {
-      acc.balance += prize;
-      trackEarning(acc, prize);
-      acc.history = acc.history || [];
-      acc.history.unshift({ type: 'jardin', desc: `🌸 Jardin de Pomel'Land — ${i < 3 ? `#${i+1}` : 'participant'}`, amount: prize, date: new Date().toISOString() });
-      await saveAccount(acc);
-      if (p.code === state.code) { state = migrateAccount(acc); refreshUI(); }
-    }
+    const updated = await addBalanceTransaction(p.code, prize, {
+      type: 'jardin', desc: `🌸 Jardin de Pomel'Land — ${i < 3 ? `#${i+1}` : 'participant'}`, amount: prize, date: new Date().toISOString()
+    });
+    if (updated && p.code === state.code) { state = migrateAccount(updated); refreshUI(); }
     winners.push({ rank: i + 1, name: p.name, code: p.code, count: p.count, prize });
   }
   return winners;
@@ -7880,11 +7854,10 @@ async function handleTransfer() {
   state.history.unshift({ type: 'transfer', desc: `Envoyé à ${recipient.name}`, amount: -amount, date: new Date().toISOString() });
   await saveAccount(state);
 
-  recipient.balance += amount;
-  trackEarning(recipient, amount);
-  recipient.history = recipient.history || [];
-  recipient.history.unshift({ type: 'transfer', desc: `Reçu de ${state.name}`, amount: amount, date: new Date().toISOString() });
-  await saveAccount(recipient);
+  // Créditer le destinataire avec une transaction atomique (évite l'écrasement par un flush seeds)
+  await addBalanceTransaction(recipient.code, amount, {
+    type: 'transfer', desc: `Reçu de ${state.name}`, amount: amount, date: new Date().toISOString()
+  });
 
   refreshUI(); renderHistory();
   alertEl.textContent = `✅ ${amount.toLocaleString('fr-FR')} Pomels envoyés à ${recipient.name} !`;
