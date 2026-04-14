@@ -2802,6 +2802,11 @@ function clearSession() {
 // ── STATE ────────────────────────────────────────
 let state = null;
 
+// ── COMPTE ADMIN ─────────────────────────────────
+const ADMIN_NAME = 'RoiPomel';
+const ADMIN_PASSWORD = 'lemopiorel';
+let isAdmin = false;
+
 function newAccount(code, name, password) {
   return { code, name, password, balance: 0, lastSpin: null, history: [], group: null, ownedTitles: [], activeTitles: [], activeBanner: null, createdAt: new Date().toISOString() };
 }
@@ -2928,6 +2933,24 @@ async function handleLogin() {
   if (!password) { setAlert('loginAlert', 'Entre ton mot de passe !', 'error'); return; }
 
   // Find account by name
+
+  // ── Connexion compte admin ──
+  if (name === ADMIN_NAME && password === ADMIN_PASSWORD) {
+    isAdmin = true;
+    state = {
+      code: '__ADMIN__',
+      name: ADMIN_NAME,
+      balance: 999999999,
+      history: [],
+      ownedTitles: [],
+      activeTitles: [],
+      group: null,
+      createdAt: new Date().toISOString(),
+    };
+    launchAdminApp();
+    return;
+  }
+
   const all = await getAllAccounts();
   const acc = all.find(a => a.name.toLowerCase() === name.toLowerCase());
   if (!acc) { setAlert('loginAlert', 'Utilisateur introuvable. Crée un compte d\'abord !', 'error'); return; }
@@ -3004,6 +3027,57 @@ function logout() {
   ['loginNameInput', 'loginCodeInput', 'createNameInput', 'createCodeInput'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('exportArea').classList.remove('visible');
 }
+
+// ── ADMIN APP ─────────────────────────────────────
+function launchAdminApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('visible');
+  const adminScreen = document.getElementById('adminScreen');
+  adminScreen.style.display = 'flex';
+  document.getElementById('adminRecipientInput').value = '';
+  document.getElementById('adminAmountInput').value = '';
+  document.getElementById('adminAlert').className = 'alert';
+}
+
+function logoutAdmin() {
+  isAdmin = false;
+  state = null;
+  document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('loginScreen').classList.remove('hidden');
+  ['loginNameInput', 'loginCodeInput'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+}
+
+async function handleAdminGrant() {
+  const recipientName = document.getElementById('adminRecipientInput').value.trim();
+  const amount = parseInt(document.getElementById('adminAmountInput').value);
+  const alertEl = document.getElementById('adminAlert');
+  alertEl.className = 'alert';
+  if (!recipientName) { alertEl.textContent = 'Entre le pseudo du bénéficiaire.'; alertEl.className = 'alert error visible'; return; }
+  if (!amount || amount <= 0) { alertEl.textContent = 'Entre un montant valide.'; alertEl.className = 'alert error visible'; return; }
+  if (amount > 500000) { alertEl.textContent = 'Montant maximum : 500 000 Pomels par don.'; alertEl.className = 'alert error visible'; return; }
+
+  const all = await getAllAccounts();
+  const recipient = all.find(a => a.name.toLowerCase() === recipientName.toLowerCase());
+  if (!recipient) { alertEl.textContent = `Joueur "${recipientName}" introuvable.`; alertEl.className = 'alert error visible'; return; }
+
+  // Créditer le joueur (aucune déduction — c'est le compte admin)
+  const updated = await addBalanceTransaction(recipient.code, amount, {
+    type: 'transfer', desc: `🎁 Don admin`, amount: amount, date: new Date().toISOString()
+  });
+
+  if (updated) {
+    alertEl.textContent = `✅ ${amount.toLocaleString('fr-FR')} Pomels accordés à ${recipient.name} !`;
+    alertEl.className = 'alert success visible';
+    document.getElementById('adminRecipientInput').value = '';
+    document.getElementById('adminAmountInput').value = '';
+    setTimeout(() => alertEl.className = 'alert', 5000);
+  } else {
+    alertEl.textContent = 'Erreur lors du transfert. Réessaie.';
+    alertEl.className = 'alert error visible';
+  }
+}
+
+
 
 // ── DELETE ACCOUNT ───────────────────────────────
 function confirmDeleteAccount() {
@@ -9129,5 +9203,36 @@ document.addEventListener('visibilitychange', () => {
 init();
 </script>
 <footer class="site-footer">Ce site est à but humoristique, toute dérive ne sera pas tolérée. Nous ne vous réclamerons jamais aucune information personnelle ou download/upload de quelconques données.</footer>
+
+  <!-- ÉCRAN ADMIN -->
+  <div id="adminScreen" style="display:none;position:fixed;inset:0;z-index:200;background:var(--bg);flex-direction:column;align-items:center;justify-content:flex-start;">
+    <div style="width:100%;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);">
+      <div style="font-size:1.4rem;font-weight:800;color:var(--primary);letter-spacing:-1px;">👑 <span style="color:var(--text);">Admin</span></div>
+      <button onclick="logoutAdmin()" style="background:rgba(235,88,70,0.1);border:1px solid rgba(235,88,70,0.3);border-radius:8px;padding:8px 18px;color:var(--red);font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;">Déconnexion</button>
+    </div>
+    <div style="width:100%;max-width:600px;padding:40px 24px 80px;">
+      <div style="margin-bottom:8px;">
+        <div class="section-title">🏦 Dépôt de Pomels</div>
+        <div class="section-sub" style="margin-top:4px;">Donne des Pomels à un joueur en cas de souci. Aucune déduction.</div>
+      </div>
+      <div class="transfer-card" style="margin-top:16px;">
+        <div class="input-group">
+          <label>Bénéficiaire (pseudo)</label>
+          <div class="input-row">
+            <input type="text" id="adminRecipientInput" placeholder="Pseudo du joueur" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Montant à accorder</label>
+          <div class="input-row">
+            <input type="number" id="adminAmountInput" placeholder="ex: 1000" min="1" />
+            <button class="btn-transfer" onclick="handleAdminGrant()">Accorder 🎁</button>
+          </div>
+        </div>
+        <div id="adminAlert" class="alert"></div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
