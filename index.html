@@ -9071,6 +9071,7 @@ function refreshInstapomPreview() {
 function openInstapomEditor() {
   _editorShapes = JSON.parse(JSON.stringify(_instapomShapes));
   _editorSelected = -1;
+  _editorMode = 'instapom';
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay'; overlay.id = 'avatarEditorModal';
   overlay.onclick = e => { if (e.target === overlay) closeInstapomEditor(); };
@@ -9121,8 +9122,8 @@ function openInstapomEditor() {
             </select>
           </div>
           <div class="avatar-actions">
-            <button class="avatar-action-btn danger-btn" onclick="editorUndoLast();_instapomRedraw();">↩ Annuler</button>
-            <button class="avatar-action-btn danger-btn" onclick="editorClear();_instapomRedraw();">🗑 Effacer</button>
+            <button class="avatar-action-btn danger-btn" onclick="editorUndoLast()">↩ Annuler</button>
+            <button class="avatar-action-btn danger-btn" onclick="editorClear()">🗑 Effacer</button>
             <button class="avatar-action-btn primary-btn" onclick="saveInstapomEditor()">💾 Valider</button>
           </div>
         </div>
@@ -10970,11 +10971,13 @@ let _editorTool = 'circle';
 let _editorColor = '#EB5846';
 let _editorSize = 60;
 let _editorDrag = null;
+let _editorMode = 'avatar'; // 'avatar' ou 'instapom'
 const EDITOR_COLORS = ['#EB5846','#3ecf6e','#5b8def','#f0c040','#fff','#ff88aa','#88ddff','#aa88ff','#ffcc44','#111'];
 
 function openAvatarEditor() {
   _editorShapes = state.avatar ? JSON.parse(JSON.stringify(state.avatar.shapes || [])) : [];
   _editorSelected = -1;
+  _editorMode = 'avatar';
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -11049,7 +11052,7 @@ function setEditorColor(c, el, fromPicker) {
   // Update selected shape color
   if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
     _editorShapes[_editorSelected].color = c;
-    _editorRedraw();
+    _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw();
   }
 }
 
@@ -11060,7 +11063,7 @@ function setEditorSize(v) {
   if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
     _editorShapes[_editorSelected].w = _editorSize;
     _editorShapes[_editorSelected].h = _editorSize;
-    _editorRedraw();
+    _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw();
   }
 }
 
@@ -11069,12 +11072,12 @@ function setEditorRot(v) {
   if (lbl) lbl.textContent = v + '°';
   if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
     _editorShapes[_editorSelected].rotation = parseInt(v);
-    _editorRedraw();
+    _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw();
   }
 }
 
-function editorUndoLast() { _editorShapes.pop(); _editorSelected = -1; _editorRedraw(); }
-function editorClear() { _editorShapes = []; _editorSelected = -1; _editorRedraw(); }
+function editorUndoLast() { _editorShapes.pop(); _editorSelected = -1; _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw(); }
+function editorClear() { _editorShapes = []; _editorSelected = -1; _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw(); }
 
 function _editorRedraw() {
   const canvas = document.getElementById('avatarEditorCanvas');
