@@ -8786,8 +8786,16 @@ function updatePompostCount() {
 
 async function renderPomPosts() {
   const today = getTodayKey();
-  const rawPosts = await getPomPosts() || {};
-  const posts = Object.values(rawPosts).filter(p => p.date === today);
+  // Nettoyage des anciens posts (comme le chat)
+  const rawAll = await getPomPosts() || {};
+  const cleaned = {};
+  let needClean = false;
+  Object.values(rawAll).forEach(p => {
+    if (p.date === today) cleaned[p.id] = p;
+    else needClean = true;
+  });
+  if (needClean) await savePomPosts(Object.keys(cleaned).length ? cleaned : null);
+  const posts = Object.values(cleaned);
   const alreadyPosted = posts.some(p => p.authorCode === state.code);
 
   const inputZone = document.getElementById('pompostInputZone');
@@ -8859,12 +8867,12 @@ async function submitPomPost() {
   if (!text) { setAlert('pompostAlert', 'Écris quelque chose !', 'error'); return; }
   const today = getTodayKey();
   const rawPosts = await getPomPosts() || {};
-  const todayPosts = Object.values(rawPosts).filter(p => p.date === today);
-  if (todayPosts.some(p => p.authorCode === state.code)) {
-    setAlert('pompostAlert', 'Tu as déjà posté un PomPost aujourd\'hui !', 'error'); return;
-  }
+  // Garder uniquement les posts du jour
   const cleaned = {};
   Object.values(rawPosts).forEach(p => { if (p.date === today) cleaned[p.id] = p; });
+  if (Object.values(cleaned).some(p => p.authorCode === state.code)) {
+    setAlert('pompostAlert', 'Tu as déjà posté un PomPost aujourd\'hui !', 'error'); return;
+  }
   const id = 'pp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
   cleaned[id] = { id, date: today, text, authorCode: state.code, authorName: state.name, createdAt: new Date().toISOString(), reactions: {}, replies: {} };
   await savePomPosts(cleaned);
@@ -9001,13 +9009,13 @@ async function submitInstaPom() {
   if (!_instapomShapes.length) { setAlert('instapomAlert', 'Crée une image d\'abord !', 'error'); return; }
   const today = getTodayKey();
   const rawPosts = await getInstaPoms() || {};
-  const todayPosts = Object.values(rawPosts).filter(p => p.date === today);
-  if (todayPosts.some(p => p.authorCode === state.code)) {
+  // Garder uniquement les posts du jour
+  const cleaned = {};
+  Object.values(rawPosts).forEach(p => { if (p.date === today) cleaned[p.id] = p; });
+  if (Object.values(cleaned).some(p => p.authorCode === state.code)) {
     setAlert('instapomAlert', 'Tu as déjà publié une InstaPom aujourd\'hui !', 'error'); return;
   }
   const caption = document.getElementById('instapomCaption')?.value.trim() || '';
-  const cleaned = {};
-  Object.values(rawPosts).forEach(p => { if (p.date === today) cleaned[p.id] = p; });
   const id = 'ip' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
   cleaned[id] = { id, date: today, shapes: _instapomShapes, caption, authorCode: state.code, authorName: state.name, createdAt: new Date().toISOString(), reactions: {}, replies: {} };
   await saveInstaPoms(cleaned);
@@ -9020,8 +9028,16 @@ async function submitInstaPom() {
 
 async function renderInstaPoms() {
   const today = getTodayKey();
-  const rawPosts = await getInstaPoms() || {};
-  const posts = Object.values(rawPosts).filter(p => p.date === today);
+  // Nettoyage des anciens posts (comme le chat)
+  const rawAll = await getInstaPoms() || {};
+  const cleaned = {};
+  let needClean = false;
+  Object.values(rawAll).forEach(p => {
+    if (p.date === today) cleaned[p.id] = p;
+    else needClean = true;
+  });
+  if (needClean) await saveInstaPoms(Object.keys(cleaned).length ? cleaned : null);
+  const posts = Object.values(cleaned);
   const alreadyPosted = posts.some(p => p.authorCode === state.code);
 
   const inputZone = document.getElementById('instapomInputZone');
