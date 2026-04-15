@@ -963,9 +963,12 @@
 
   /* CHAT TABS */
   .chat-tabs-bar { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; flex-shrink: 0; }
-  .chat-tab { flex: 1; background: transparent; border: none; padding: 12px 8px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .18s; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+  .chat-tab { flex: 1; background: transparent; border: none; padding: 12px 8px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .18s; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; position: relative; }
   .chat-tab:hover { color: var(--text); background: var(--surface-glass); }
   .chat-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .chat-tab-badge { position: absolute; top: 6px; right: 12px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--primary); color: #fff; font-size: .65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 5px; pointer-events: none; animation: tabBadgePop .3s cubic-bezier(.22,1,.36,1); box-shadow: 0 2px 8px rgba(235,88,70,0.4); }
+  .chat-tab-badge:empty, .chat-tab-badge[data-count="0"] { display: none; }
+  @keyframes tabBadgePop { from { transform: scale(0); } to { transform: scale(1); } }
   .chat-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
   .chat-panel.active { display: flex; }
   .discussion-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; }
@@ -1001,11 +1004,23 @@
   .instapom-list { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex: 1; margin-top: 12px; padding-bottom: 8px; }
   .instapom-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   .instapom-card-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; }
-  .instapom-img-wrap { display: flex; justify-content: center; padding: 0 16px 12px; }
-  .instapom-canvas { border-radius: 12px; border: 1px solid var(--border); display: block; width: min(320px, 100%); aspect-ratio: 1 / 1; height: auto; }
-  .instapom-caption { font-size: .9rem; color: var(--text); padding: 0 16px 10px; line-height: 1.5; }
-  .instapom-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 0 16px 14px; border-top: 1px solid var(--border); padding-top: 10px; }
-  .instapom-replies { display: flex; flex-direction: column; gap: 6px; padding: 0 16px 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .instapom-img-wrap { display: flex; justify-content: center; padding: 0 12px 12px; }
+  .instapom-canvas { border-radius: 12px; border: 1px solid var(--border); display: block; width: 100%; max-width: 320px; aspect-ratio: 1 / 1; height: auto; }
+  .instapom-caption { font-size: .9rem; color: var(--text); padding: 0 16px 10px; line-height: 1.5; word-break: break-word; }
+  .instapom-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 12px 12px; border-top: 1px solid var(--border); }
+  .instapom-replies { display: flex; flex-direction: column; gap: 6px; padding: 0 12px 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .instapom-input-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .instapom-bottom-row { margin-top: 12px; display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+  .instapom-bottom-row > div { flex: 1; min-width: 0; }
+  .instapom-bottom-row .pompost-textarea { width: 100%; min-height: 52px; }
+  .instapom-bottom-row .btn-primary { flex-shrink: 0; align-self: flex-end; }
+  @media (max-width: 480px) {
+    .instapom-canvas { max-width: 100%; }
+    .instapom-actions { gap: 4px; padding: 8px 10px 10px; }
+    .instapom-actions .pompost-react-btn { padding: 4px 6px; font-size: .78rem; }
+    .instapom-bottom-row { flex-direction: column; }
+    .instapom-bottom-row .btn-primary { width: 100%; }
+  }
   .discussion-msg { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 10px; transition: background .15s; }
   .discussion-msg:hover { background: var(--surface2); }
   .discussion-msg.me { background: rgba(235,88,70,0.06); }
@@ -1840,6 +1855,15 @@
   .avatar-action-btn.primary-btn:hover { background: var(--primary-dim); }
   .avatar-action-btn.danger-btn { color: var(--red); border-color: rgba(235,88,70,.3); }
   .avatar-action-btn.danger-btn:hover { background: rgba(235,88,70,.1); }
+
+  @media (max-width: 480px) {
+    .modal-box { padding: 20px 16px; border-radius: var(--radius-lg); }
+    .modal-box h2 { font-size: 1.1rem; }
+    .avatar-shape-btn { padding: 5px 8px; font-size: .72rem; }
+    .avatar-color-swatch { width: 24px; height: 24px; }
+    .avatar-action-btn { padding: 7px 10px; font-size: .76rem; }
+    .avatar-tool-row { gap: 6px; }
+  }
 
   /* ── NOTIFICATIONS TOAST ─────────────────────── */
   /* ── NOTIFICATIONS ───────────────────────────── */
@@ -3120,8 +3144,8 @@
       <!-- Onglets -->
       <div class="chat-tabs-bar" id="chatTabsBar">
         <button class="chat-tab active" id="chatTab-general" onclick="switchChatTab('general')">💬 Chat général</button>
-        <button class="chat-tab" id="chatTab-pompost" onclick="switchChatTab('pompost')">📝 PomPost</button>
-        <button class="chat-tab" id="chatTab-instapom" onclick="switchChatTab('instapom')">📸 InstaPom</button>
+        <button class="chat-tab" id="chatTab-pompost" onclick="switchChatTab('pompost')">📝 PomPost<span class="chat-tab-badge" id="badgePompost"></span></button>
+        <button class="chat-tab" id="chatTab-instapom" onclick="switchChatTab('instapom')">📸 InstaPom<span class="chat-tab-badge" id="badgeInstapom"></span></button>
       </div>
 
       <!-- ── ONGLET CHAT GÉNÉRAL ── -->
@@ -3158,16 +3182,16 @@
         <div class="pompost-header-card" id="instapomInputCard">
           <div id="instapomInputZone">
             <div style="font-size:.85rem;color:var(--muted);margin-bottom:10px;">Crée ton avatar du jour — il sera visible par toute la communauté !</div>
-            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div class="instapom-input-row">
               <div id="instapomPreview" style="width:80px;height:80px;border-radius:14px;border:2px solid var(--primary);overflow:hidden;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--muted);">?</div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn-outline" onclick="openInstapomEditor()">🎨 Créer / Modifier</button>
                 <button class="btn-outline" onclick="randomizeInstapom()">🎲 Aléatoire</button>
               </div>
             </div>
-            <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <div class="instapom-bottom-row">
               <div>
-                <textarea id="instapomCaption" class="pompost-textarea" placeholder="Légende (optionnel, 100 chars)" maxlength="100" style="min-height:52px;"></textarea>
+                <textarea id="instapomCaption" class="pompost-textarea" placeholder="Légende (optionnel, 100 chars)" maxlength="100"></textarea>
               </div>
               <button class="btn-primary" style="width:auto;padding:9px 22px;" onclick="submitInstaPom()">Publier 📸</button>
             </div>
@@ -8754,9 +8778,27 @@ async function submitReplyLive(postId) {
 
 // ── CHAT TABS ─────────────────────────────────────
 let _currentChatTab = 'general';
+let _tabBadgeCounts = { pompost: 0, instapom: 0 };
+
+function _updateTabBadge(tab, addCount) {
+  _tabBadgeCounts[tab] = (_tabBadgeCounts[tab] || 0) + addCount;
+  const el = document.getElementById(tab === 'pompost' ? 'badgePompost' : 'badgeInstapom');
+  if (el) {
+    const count = _tabBadgeCounts[tab];
+    el.textContent = count > 0 ? (count > 99 ? '99+' : count) : '';
+    el.setAttribute('data-count', count);
+  }
+}
+
+function _clearTabBadge(tab) {
+  _tabBadgeCounts[tab] = 0;
+  const el = document.getElementById(tab === 'pompost' ? 'badgePompost' : 'badgeInstapom');
+  if (el) { el.textContent = ''; el.setAttribute('data-count', '0'); }
+}
 
 function switchChatTab(tab) {
   _currentChatTab = tab;
+  if (tab === 'pompost' || tab === 'instapom') _clearTabBadge(tab);
   ['general','pompost','instapom'].forEach(t => {
     const panel = document.getElementById('chatPanel-' + t);
     const btn = document.getElementById('chatTab-' + t);
@@ -8981,6 +9023,7 @@ function _instapomRedraw() {
     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
   }
+  _updateDeleteBtn();
 }
 
 function _instapomBindCanvas() {
@@ -9122,6 +9165,7 @@ function openInstapomEditor() {
             </select>
           </div>
           <div class="avatar-actions">
+            <button class="avatar-action-btn danger-btn" onclick="editorDeleteSelected()" id="instapomDeleteBtn" style="display:none;">✕ Supprimer</button>
             <button class="avatar-action-btn danger-btn" onclick="editorUndoLast()">↩ Annuler</button>
             <button class="avatar-action-btn danger-btn" onclick="editorClear()">🗑 Effacer</button>
             <button class="avatar-action-btn primary-btn" onclick="saveInstapomEditor()">💾 Valider</button>
@@ -9243,10 +9287,12 @@ async function renderInstaPoms() {
       </div>`).join('');
 
     const replyInputHTML = canReply ? `
-      <div class="pompost-reply-input-zone">
-        <input class="pompost-reply-input" id="ip-reply-${post.id}" placeholder="Commenter…" maxlength="100" />
-        <button class="pompost-reply-btn" onclick="replyInstaPom('${post.id}')">↩</button>
-      </div>` : (myReply ? '<div style="font-size:.75rem;color:var(--muted);">✅ Commenté</div>' : '');
+      <div style="padding:0 12px 14px;">
+        <div class="pompost-reply-input-zone">
+          <input class="pompost-reply-input" id="ip-reply-${post.id}" placeholder="Commenter…" maxlength="100" />
+          <button class="pompost-reply-btn" onclick="replyInstaPom('${post.id}')">↩</button>
+        </div>
+      </div>` : (myReply ? '<div style="font-size:.75rem;color:var(--muted);padding:0 12px 14px;">✅ Commenté</div>' : '');
 
     card.innerHTML = `
       <div class="instapom-card-header">
@@ -11020,6 +11066,7 @@ function openAvatarEditor() {
             <span id="editorRotLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:30px;">0°</span>
           </div>
           <div class="avatar-actions">
+            <button class="avatar-action-btn danger-btn" onclick="editorDeleteSelected()" id="avatarDeleteBtn" style="display:none;">✕ Supprimer</button>
             <button class="avatar-action-btn danger-btn" onclick="editorUndoLast()">↩ Annuler dernière</button>
             <button class="avatar-action-btn danger-btn" onclick="editorClear()">🗑 Tout effacer</button>
             <button class="avatar-action-btn primary-btn" onclick="saveAvatarEditor()">💾 Sauvegarder</button>
@@ -11078,6 +11125,17 @@ function setEditorRot(v) {
 
 function editorUndoLast() { _editorShapes.pop(); _editorSelected = -1; _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw(); }
 function editorClear() { _editorShapes = []; _editorSelected = -1; _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw(); }
+function editorDeleteSelected() {
+  if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
+    _editorShapes.splice(_editorSelected, 1);
+    _editorSelected = -1;
+    _editorMode === 'instapom' ? _instapomRedraw() : _editorRedraw();
+  }
+}
+function _updateDeleteBtn() {
+  const btn = document.getElementById(_editorMode === 'instapom' ? 'instapomDeleteBtn' : 'avatarDeleteBtn');
+  if (btn) btn.style.display = _editorSelected >= 0 ? '' : 'none';
+}
 
 function _editorRedraw() {
   const canvas = document.getElementById('avatarEditorCanvas');
@@ -11098,6 +11156,7 @@ function _editorRedraw() {
     ctx.stroke();
     ctx.restore();
   }
+  _updateDeleteBtn();
 }
 
 function _editorBindCanvas() {
@@ -11362,6 +11421,9 @@ let _prevNotifState = {
   chat: 0,
   pfcChallenges: new Set(),
   pfcResolved: new Set(),
+  pompostIds: new Set(),
+  instapomIds: new Set(),
+  proverbeDate: '',
 };
 
 async function checkPushNotifications() {
@@ -11421,6 +11483,47 @@ async function checkPushNotifications() {
         _prevNotifState.pfcResolved.add(c.id);
       }
     }
+
+    // ── Nouveau proverbe du jour ──
+    const provData = await getProverbeData();
+    if (provData && provData.today && provData.today.date === today && provData.today.authorCode !== state.code) {
+      if (_prevNotifState.proverbeDate !== today) {
+        if (_prevNotifState.proverbeDate !== '') {
+          showNotif('📜', 'Proverbe du jour !', `${escapeHTML(provData.today.authorName)} a partagé le proverbe du jour`, 'default', () => navTo('proverbe'));
+        }
+        _prevNotifState.proverbeDate = today;
+      }
+    }
+
+    // ── Nouveaux PomPosts ──
+    const pompostData = await getPomPosts() || {};
+    const pompostToday = Object.values(pompostData).filter(p => p.date === today && p.authorCode !== state.code);
+    let newPompostCount = 0;
+    for (const p of pompostToday) {
+      if (!_prevNotifState.pompostIds.has(p.id)) {
+        if (_prevNotifState.pompostIds.size > 0 && now - new Date(p.createdAt).getTime() < 120000) {
+          showNotif('📝', 'Nouveau PomPost !', `${escapeHTML(p.authorName)} a publié un post`, 'chat', () => { navTo('discussion'); switchChatTab('pompost'); });
+          newPompostCount++;
+        }
+        _prevNotifState.pompostIds.add(p.id);
+      }
+    }
+    if (newPompostCount > 0 && _currentChatTab !== 'pompost') _updateTabBadge('pompost', newPompostCount);
+
+    // ── Nouveaux InstaPom ──
+    const instapomData = await getInstaPoms() || {};
+    const instapomToday = Object.values(instapomData).filter(p => p.date === today && p.authorCode !== state.code);
+    let newInstapomCount = 0;
+    for (const p of instapomToday) {
+      if (!_prevNotifState.instapomIds.has(p.id)) {
+        if (_prevNotifState.instapomIds.size > 0 && now - new Date(p.createdAt).getTime() < 120000) {
+          showNotif('📸', 'Nouvelle InstaPom !', `${escapeHTML(p.authorName)} a partagé une image`, 'chat', () => { navTo('discussion'); switchChatTab('instapom'); });
+          newInstapomCount++;
+        }
+        _prevNotifState.instapomIds.add(p.id);
+      }
+    }
+    if (newInstapomCount > 0 && _currentChatTab !== 'instapom') _updateTabBadge('instapom', newInstapomCount);
 
   } catch(e) {}
 }
