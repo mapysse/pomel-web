@@ -640,6 +640,33 @@
   .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
   .btn-danger { background: transparent; border: 1px solid var(--red); border-radius: 8px; padding: 10px 18px; color: var(--red); font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
   .btn-danger:hover { background: var(--red); color: #fff; }
+
+  /* Toggle switch */
+  .toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 26px; transition: all .3s cubic-bezier(.4,0,.2,1);
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; height: 18px; width: 18px;
+    left: 3px; top: 50%; transform: translateY(-50%);
+    background: var(--muted); border-radius: 50%;
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  }
+  .toggle-switch input:checked + .toggle-slider {
+    background: var(--primary); border-color: var(--primary);
+    box-shadow: 0 0 12px var(--primary-glow);
+  }
+  .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateY(-50%) translateX(22px);
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(235,88,70,0.3);
+  }
+  .toggle-switch:hover .toggle-slider { border-color: var(--primary-dim); }
+  .toggle-switch:active .toggle-slider::before { width: 22px; }
   .export-area { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-family: 'Space Mono', monospace; font-size: .7rem; color: var(--muted); word-break: break-all; max-height: 120px; overflow-y: auto; display: none; }
   .export-area.visible { display: block; }
   .profile-info { display: flex; flex-direction: column; }
@@ -932,8 +959,53 @@
   .proverbe-waiting { color: var(--muted); font-size: .9rem; font-style: italic; padding: 8px 0; }
 
   /* DISCUSSION GÉNÉRALE */
-  .discussion-wrap { display: flex; flex-direction: column; gap: 16px; height: calc(100vh - 220px); height: calc(100dvh - 220px); min-height: 300px; }
-  .discussion-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .discussion-wrap { display: flex; flex-direction: column; gap: 0; height: calc(100vh - 140px); height: calc(100dvh - 140px); min-height: 300px; }
+
+  /* CHAT TABS */
+  .chat-tabs-bar { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; flex-shrink: 0; }
+  .chat-tab { flex: 1; background: transparent; border: none; padding: 12px 8px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .18s; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+  .chat-tab:hover { color: var(--text); background: var(--surface-glass); }
+  .chat-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .chat-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+  .chat-panel.active { display: flex; }
+  .discussion-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; }
+
+  /* POMPOST */
+  .pompost-header-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-top: 12px; flex-shrink: 0; }
+  .pompost-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 11px 14px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .88rem; outline: none; resize: vertical; min-height: 70px; transition: border-color var(--transition); }
+  .pompost-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-subtle); }
+  .pompost-already { font-size: .85rem; color: var(--green); padding: 8px 0; }
+  .pompost-list { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; margin-top: 12px; padding-bottom: 8px; }
+  .pompost-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .pompost-card-header { display: flex; align-items: center; gap: 10px; }
+  .pompost-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--surface2); border: 1.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: var(--muted); overflow: hidden; }
+  .pompost-author { font-weight: 700; font-size: .9rem; }
+  .pompost-time { font-size: .72rem; color: var(--muted); font-family: 'Space Mono', monospace; margin-left: auto; }
+  .pompost-text { font-size: .95rem; line-height: 1.55; word-break: break-word; }
+  .pompost-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pompost-react-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: .88rem; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 4px; color: var(--text); font-family: 'Syne', sans-serif; font-weight: 600; }
+  .pompost-react-btn:hover { border-color: var(--primary); transform: scale(1.07); }
+  .pompost-react-btn.reacted { background: rgba(235,88,70,0.15); border-color: var(--primary); }
+  .pompost-react-count { font-family: 'Space Mono', monospace; font-size: .75rem; color: var(--muted); min-width: 8px; }
+  .pompost-replies { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .pompost-reply-item { display: flex; gap: 8px; align-items: flex-start; background: var(--surface2); border-radius: 8px; padding: 8px 12px; font-size: .84rem; }
+  .pompost-reply-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--primary-glow); border: 1.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .65rem; font-weight: 700; color: var(--primary); overflow: hidden; }
+  .pompost-reply-author { font-weight: 700; color: var(--primary); flex-shrink: 0; }
+  .pompost-reply-text { color: var(--text); line-height: 1.4; flex: 1; }
+  .pompost-reply-input-zone { display: flex; gap: 8px; margin-top: 4px; }
+  .pompost-reply-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--text); font-family: 'Syne', sans-serif; font-size: .82rem; outline: none; transition: border .2s; }
+  .pompost-reply-input:focus { border-color: var(--primary); }
+  .pompost-reply-btn { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+
+  /* INSTAPOM */
+  .instapom-list { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex: 1; margin-top: 12px; padding-bottom: 8px; }
+  .instapom-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .instapom-card-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; }
+  .instapom-img-wrap { display: flex; justify-content: center; padding: 0 16px 12px; }
+  .instapom-canvas { border-radius: 12px; border: 1px solid var(--border); display: block; max-width: 100%; }
+  .instapom-caption { font-size: .9rem; color: var(--text); padding: 0 16px 10px; line-height: 1.5; }
+  .instapom-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 0 16px 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .instapom-replies { display: flex; flex-direction: column; gap: 6px; padding: 0 16px 14px; border-top: 1px solid var(--border); padding-top: 10px; }
   .discussion-msg { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 10px; transition: background .15s; }
   .discussion-msg:hover { background: var(--surface2); }
   .discussion-msg.me { background: rgba(235,88,70,0.06); }
@@ -2849,6 +2921,18 @@
         </div>
       </div>
 
+      <!-- Préférences -->
+      <div class="settings-card">
+        <h3>⚙️ Préférences</h3>
+        <div class="settings-row">
+          <div class="sr-info"><strong>Sons de notification</strong><span>Bip sonore lors des notifications (quêtes, paris, chat…).</span></div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleNotifSound" checked onchange="toggleNotifSoundPref(this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
       <!-- Données du compte -->
       <div class="settings-card">
         <h3>Données du compte</h3>
@@ -3032,17 +3116,69 @@
   <!-- CHAT -->
   <div class="page" id="page-discussion">
     <div class="discussion-wrap">
-      <div>
-        <div class="section-title">💬 Chat</div>
-        <div class="section-sub">Discute avec tout le monde en temps réel — l'historique est remis à zéro chaque jour à minuit.</div>
+      <!-- Onglets -->
+      <div class="chat-tabs-bar" id="chatTabsBar">
+        <button class="chat-tab active" id="chatTab-general" onclick="switchChatTab('general')">💬 Chat général</button>
+        <button class="chat-tab" id="chatTab-pompost" onclick="switchChatTab('pompost')">📝 PomPost</button>
+        <button class="chat-tab" id="chatTab-instapom" onclick="switchChatTab('instapom')">📸 InstaPom</button>
       </div>
-      <div class="discussion-messages" id="discussionMessages">
-        <div class="live-empty">Aucun message aujourd'hui. Lance la conversation !</div>
+
+      <!-- ── ONGLET CHAT GÉNÉRAL ── -->
+      <div id="chatPanel-general" class="chat-panel active">
+        <div class="discussion-messages" id="discussionMessages">
+          <div class="live-empty">Aucun message aujourd'hui. Lance la conversation !</div>
+        </div>
+        <div class="discussion-input-bar">
+          <input type="text" class="discussion-input" id="discussionInput" placeholder="Ton message…" maxlength="300" onkeydown="if(event.key==='Enter')sendDiscussionMsg()" />
+          <button class="btn-primary discussion-send-btn" onclick="sendDiscussionMsg()">Envoyer</button>
+        </div>
       </div>
-      <div class="discussion-input-bar">
-        <input type="text" class="discussion-input" id="discussionInput" placeholder="Ton message…" maxlength="300" onkeydown="if(event.key==='Enter')sendDiscussionMsg()" />
-        <button class="btn-primary discussion-send-btn" onclick="sendDiscussionMsg()">Envoyer</button>
+
+      <!-- ── ONGLET POMPOST ── -->
+      <div id="chatPanel-pompost" class="chat-panel" style="display:none;">
+        <div class="pompost-header-card" id="pompostInputCard">
+          <div class="pompost-input-zone" id="pompostInputZone">
+            <textarea id="pompostTextarea" class="pompost-textarea" placeholder="Quoi de neuf ? (150 caractères max)" maxlength="150" oninput="updatePompostCount()"></textarea>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <span class="live-char-count" id="pompostCharCount">0 / 150</span>
+              <button class="btn-primary" style="width:auto;padding:9px 22px;" onclick="submitPomPost()">Publier 📝</button>
+            </div>
+          </div>
+          <div id="pompostAlreadyPosted" style="display:none;" class="pompost-already">✅ Tu as déjà publié un PomPost aujourd'hui — reviens demain !</div>
+          <div id="pompostAlert" class="alert"></div>
+        </div>
+        <div id="pompostList" class="pompost-list">
+          <div class="live-empty">Aucun PomPost aujourd'hui.</div>
+        </div>
       </div>
+
+      <!-- ── ONGLET INSTAPOM ── -->
+      <div id="chatPanel-instapom" class="chat-panel" style="display:none;">
+        <div class="pompost-header-card" id="instapomInputCard">
+          <div id="instapomInputZone">
+            <div style="font-size:.85rem;color:var(--muted);margin-bottom:10px;">Crée ton avatar du jour — il sera visible par toute la communauté !</div>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <div id="instapomPreview" style="width:80px;height:80px;border-radius:14px;border:2px solid var(--primary);overflow:hidden;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--muted);">?</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <button class="btn-outline" onclick="openInstapomEditor()">🎨 Créer / Modifier</button>
+                <button class="btn-outline" onclick="randomizeInstapom()">🎲 Aléatoire</button>
+              </div>
+            </div>
+            <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div>
+                <textarea id="instapomCaption" class="pompost-textarea" placeholder="Légende (optionnel, 100 chars)" maxlength="100" style="min-height:52px;"></textarea>
+              </div>
+              <button class="btn-primary" style="width:auto;padding:9px 22px;" onclick="submitInstaPom()">Publier 📸</button>
+            </div>
+          </div>
+          <div id="instapomAlreadyPosted" style="display:none;" class="pompost-already">✅ Tu as déjà publié une InstaPom aujourd'hui — reviens demain !</div>
+          <div id="instapomAlert" class="alert"></div>
+        </div>
+        <div id="instapomList" class="instapom-list">
+          <div class="live-empty">Aucune InstaPom aujourd'hui.</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -3275,7 +3411,7 @@
             <p>Le score d'un groupe est calculé chaque semaine :</p>
             <ul>
               <li><strong>Pomels gagnés</strong> cette semaine par tous les membres</li>
-              <li>+ <strong>Graines récoltées</strong> cette semaine ÷ 5 (dépenser des graines ne pénalise pas)</li>
+              <li>+ <strong>Graines récoltées</strong> cette semaine ÷ 10 (dépenser des graines ne pénalise pas)</li>
               <li>+ <strong>Points PFC</strong> gagnés en Pierre Feuille Ciseaux</li>
             </ul>
             <p style="margin-top:10px;">Chaque lundi à 9h :</p>
@@ -3478,7 +3614,6 @@ async function addBalanceTransaction(code, amount, historyEntry) {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       let updatedAcc = null;
-      let accountMissing = false;
 
       const result = await db.ref('accounts/' + code).transaction(current => {
         // Firebase envoie null au 1er passage (cache local vide) — retourner null
@@ -3520,12 +3655,6 @@ async function addBalanceTransaction(code, amount, historyEntry) {
           console.warn('[pomel] addBalanceTransaction: compte introuvable', code);
           return null;
         }
-      }
-
-      // Compte introuvable — inutile de retenter
-      if (accountMissing) {
-        console.warn('[pomel] addBalanceTransaction: compte introuvable (legacy)', code);
-        return null;
       }
 
       // Transaction non committée (abort Firebase ou null retourné) — retenter
@@ -4085,7 +4214,7 @@ function _onPageLoad(id) {
   if (id !== 'jardin' && jardinTimerInterval) { clearInterval(jardinTimerInterval); jardinTimerInterval = null; }
   if (id !== 'clicker') stopClickerPage();
   if (id === 'banque') renderHistory();
-  if (id === 'monprofil') renderMonProfil();
+  if (id === 'monprofil') { renderMonProfil(); _initNotifSoundToggle(); }
   if (id === 'classement') {
     // S'assurer que la bonne vue est visible selon _classementView
     const vg = document.getElementById('classementViewGeneral');
@@ -4117,7 +4246,18 @@ function _onPageLoad(id) {
   if (id === 'jardin') renderJardin();
   if (id === 'profils') renderProfils();
   if (id === 'pfc') { renderPFC(); markPageSeen('pfc'); }
-  if (id === 'discussion') { renderDiscussion(); markPageSeen('discussion'); }
+  if (id === 'discussion') {
+    // Reset to general tab
+    _currentChatTab = 'general';
+    ['general','pompost','instapom'].forEach(t => {
+      const panel = document.getElementById('chatPanel-' + t);
+      const btn = document.getElementById('chatTab-' + t);
+      if (panel) panel.style.display = t === 'general' ? 'flex' : 'none';
+      if (btn) btn.classList.toggle('active', t === 'general');
+    });
+    renderDiscussion();
+    markPageSeen('discussion');
+  }
   // Stop discussion listener when leaving the page
   if (id !== 'discussion') stopDiscussionListener();
 }
@@ -4216,7 +4356,7 @@ function spin() {
       type: 'roulette', desc: 'Roulette quotidienne', amount: prize, date: new Date().toISOString()
     }).then(updated => {
       if (updated) { state = migrateAccount(updated); }
-      else { state.balance += prize; } // fallback local si Firebase lent
+      else { state.balance += prize; saveAccount(state); } // fallback local persisté
       refreshUI();
     });
     document.getElementById('wheelValue').textContent = prize.toLocaleString('fr-FR');
@@ -4367,6 +4507,9 @@ async function renderLeaderboard(mode) {
     const badgeHTML  = badgeEmoji ? ` <span class="user-badge-emoji" title="${badgeName.replace(/"/g, '&quot;')}" style="cursor:help;">${badgeEmoji}</span>` : '';
     const streakHTML = getStreakBadgeHTML(acc);
     const safeCode = acc.code.replace(/'/g, "\\'");
+    const avatarEl = document.createElement('div');
+    avatarEl.style.cssText = 'width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);overflow:hidden;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--muted);';
+    renderAvatarInEl(avatarEl, acc, 32);
     item.innerHTML = `
       <span class="lb-rank ${rankClass}">${rank}</span>
       <span class="lb-medal">${medal}</span>
@@ -4378,6 +4521,9 @@ async function renderLeaderboard(mode) {
       </div>
       <span class="lb-val">${display}</span>
     `;
+    // Insert avatar after rank+medal
+    const lbInfo = item.querySelector('.lb-info');
+    if (lbInfo) item.insertBefore(avatarEl, lbInfo);
     list.appendChild(item);
   });
 }
@@ -4455,6 +4601,9 @@ async function openProfileModal(code) {
     </div>
   `;
   document.body.appendChild(overlay);
+  // Render avatar in modal
+  const avatarModalEl = document.getElementById('profileModalAvatar');
+  if (avatarModalEl) renderAvatarInEl(avatarModalEl, migrated, 48);
 }
 
 // ── GROUP NAME RESOLVER ──────────────────────────
@@ -4535,7 +4684,7 @@ async function computeGroupWeekScore(group, allAccounts, allClicker) {
     }
   }
   const pfcBonus = group.pfcWeekBonus || 0;
-  return Math.round(pomels + seeds / 5 + pfcBonus);
+  return Math.round(pomels + seeds / 10 + pfcBonus);
 }
 
 async function renderGroupsOnPage() {
@@ -7281,6 +7430,11 @@ async function g2048RenderLb() {
       <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
       <span class="snake-lb-pomels"></span>
     `;
+    // Avatar snake lb
+    const snakeAvWrap = document.createElement('div');
+    snakeAvWrap.style.cssText = 'width:24px;height:24px;border-radius:50%;border:1px solid var(--border);overflow:hidden;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;color:var(--muted);';
+    getAccount(e.code).then(acc => { if (acc) renderAvatarInEl(snakeAvWrap, acc, 24); }).catch(() => {});
+    div.insertBefore(snakeAvWrap, div.querySelector('.snake-lb-name'));
     list.appendChild(div);
   }
 }
@@ -8597,6 +8751,384 @@ async function submitReplyLive(postId) {
   renderLive();
 }
 
+// ── CHAT TABS ─────────────────────────────────────
+let _currentChatTab = 'general';
+
+function switchChatTab(tab) {
+  _currentChatTab = tab;
+  ['general','pompost','instapom'].forEach(t => {
+    const panel = document.getElementById('chatPanel-' + t);
+    const btn = document.getElementById('chatTab-' + t);
+    if (panel) panel.style.display = t === tab ? 'flex' : 'none';
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  if (tab === 'general') {
+    renderDiscussion();
+  } else if (tab === 'pompost') {
+    renderPomPosts();
+  } else if (tab === 'instapom') {
+    renderInstaPoms();
+    refreshInstapomPreview();
+  }
+}
+
+// ── POMPOST ──────────────────────────────────────
+const POMPOST_EMOJIS = ['❤️','😂','🔥','👏','😮','🤔','💯','✨','😢','🙌'];
+
+async function getPomPosts() { return dbGet('pomposts'); }
+async function savePomPosts(posts) { await dbSet('pomposts', posts); }
+
+function updatePompostCount() {
+  const val = (document.getElementById('pompostTextarea')?.value || '').length;
+  const el = document.getElementById('pompostCharCount');
+  if (el) el.textContent = `${val} / 150`;
+}
+
+async function renderPomPosts() {
+  const today = getTodayKey();
+  const rawPosts = await getPomPosts() || {};
+  const posts = Object.values(rawPosts).filter(p => p.date === today);
+  const alreadyPosted = posts.some(p => p.authorCode === state.code);
+
+  const inputZone = document.getElementById('pompostInputZone');
+  const alreadyEl = document.getElementById('pompostAlreadyPosted');
+  if (inputZone) inputZone.style.display = alreadyPosted ? 'none' : 'block';
+  if (alreadyEl) alreadyEl.style.display = alreadyPosted ? 'block' : 'none';
+
+  const list = document.getElementById('pompostList');
+  if (!list) return;
+  if (!posts.length) { list.innerHTML = '<div class="live-empty">Aucun PomPost aujourd\'hui. Sois le premier !</div>'; return; }
+
+  posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  list.innerHTML = '';
+
+  for (const post of posts) {
+    const card = document.createElement('div');
+    card.className = 'pompost-card';
+    const time = new Date(post.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const reactions = post.reactions || {};
+    const isMe = post.authorCode === state.code;
+    const repliesArr = Object.values(post.replies || {}).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    const myReply = repliesArr.find(r => r.authorCode === state.code);
+    const canReply = !isMe && !myReply;
+
+    const reactionsHTML = POMPOST_EMOJIS.map(emoji => {
+      const users = reactions[emoji] || [];
+      const count = users.length;
+      const reacted = users.includes(state.code);
+      return `<button class="pompost-react-btn ${reacted ? 'reacted' : ''}" onclick="reactPomPost('${post.id}','${emoji}')">
+        ${emoji}<span class="pompost-react-count">${count > 0 ? count : ''}</span>
+      </button>`;
+    }).join('');
+
+    const repliesHTML = repliesArr.length ? repliesArr.map(r => `
+      <div class="pompost-reply-item">
+        <div class="pompost-reply-avatar" id="pp-reply-av-${r.authorCode?.slice(-6)}">${escapeHTML((r.authorName||'?').charAt(0).toUpperCase())}</div>
+        <span class="pompost-reply-author">${escapeHTML(r.authorName)}</span>
+        <span class="pompost-reply-text">${escapeHTML(r.text)}</span>
+      </div>`).join('') : '';
+
+    const replyInputHTML = canReply ? `
+      <div class="pompost-reply-input-zone">
+        <input class="pompost-reply-input" id="pp-reply-${post.id}" placeholder="Répondre…" maxlength="100" />
+        <button class="pompost-reply-btn" onclick="replyPomPost('${post.id}')">↩</button>
+      </div>` : (myReply ? '<div style="font-size:.75rem;color:var(--muted);">✅ Tu as déjà répondu</div>' : '');
+
+    card.innerHTML = `
+      <div class="pompost-card-header">
+        <div class="pompost-avatar" id="pp-av-${post.id}">${escapeHTML((post.authorName||'?').charAt(0).toUpperCase())}</div>
+        <span class="pompost-author">${escapeHTML(post.authorName)}</span>
+        <span class="pompost-time">${time}</span>
+      </div>
+      <div class="pompost-text">${escapeHTML(post.text)}</div>
+      <div class="pompost-actions">${reactionsHTML}</div>
+      ${repliesArr.length ? `<div class="pompost-replies">${repliesHTML}</div>` : ''}
+      ${replyInputHTML}
+    `;
+    list.appendChild(card);
+
+    // Charger avatars async
+    getAccount(post.authorCode).then(acc => {
+      if (acc) { const av = document.getElementById('pp-av-' + post.id); if (av) renderAvatarInEl(av, acc, 38); }
+    }).catch(() => {});
+  }
+}
+
+async function submitPomPost() {
+  const text = document.getElementById('pompostTextarea')?.value.trim();
+  if (!text) { setAlert('pompostAlert', 'Écris quelque chose !', 'error'); return; }
+  const today = getTodayKey();
+  const rawPosts = await getPomPosts() || {};
+  const todayPosts = Object.values(rawPosts).filter(p => p.date === today);
+  if (todayPosts.some(p => p.authorCode === state.code)) {
+    setAlert('pompostAlert', 'Tu as déjà posté un PomPost aujourd\'hui !', 'error'); return;
+  }
+  const cleaned = {};
+  Object.values(rawPosts).forEach(p => { if (p.date === today) cleaned[p.id] = p; });
+  const id = 'pp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
+  cleaned[id] = { id, date: today, text, authorCode: state.code, authorName: state.name, createdAt: new Date().toISOString(), reactions: {}, replies: {} };
+  await savePomPosts(cleaned);
+  if (document.getElementById('pompostTextarea')) document.getElementById('pompostTextarea').value = '';
+  updatePompostCount();
+  setAlert('pompostAlert', '', '');
+  renderPomPosts();
+}
+
+async function reactPomPost(postId, emoji) {
+  const today = getTodayKey();
+  const rawPosts = await getPomPosts() || {};
+  const post = rawPosts[postId];
+  if (!post || post.date !== today) return;
+  if (!post.reactions) post.reactions = {};
+  const users = post.reactions[emoji] || [];
+  if (users.includes(state.code)) {
+    post.reactions[emoji] = users.filter(c => c !== state.code);
+    if (!post.reactions[emoji].length) delete post.reactions[emoji];
+  } else {
+    post.reactions[emoji] = [...users, state.code];
+  }
+  rawPosts[postId] = post;
+  await savePomPosts(rawPosts);
+  renderPomPosts();
+}
+
+async function replyPomPost(postId) {
+  const input = document.getElementById('pp-reply-' + postId);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const today = getTodayKey();
+  const rawPosts = await getPomPosts() || {};
+  const post = rawPosts[postId];
+  if (!post || post.date !== today) return;
+  if (post.authorCode === state.code) return;
+  if (!post.replies) post.replies = {};
+  if (post.replies[state.code]) return;
+  post.replies[state.code] = { authorCode: state.code, authorName: state.name, text, createdAt: new Date().toISOString() };
+  rawPosts[postId] = post;
+  await savePomPosts(rawPosts);
+  renderPomPosts();
+}
+
+// ── INSTAPOM ─────────────────────────────────────
+let _instapomShapes = [];
+
+async function getInstaPoms() { return dbGet('instapoms'); }
+async function saveInstaPoms(posts) { await dbSet('instapoms', posts); }
+
+function refreshInstapomPreview() {
+  const el = document.getElementById('instapomPreview');
+  if (!el) return;
+  if (_instapomShapes.length) {
+    const { canvas } = buildAvatarCanvas({ shapes: _instapomShapes }, 160);
+    canvas.style.width = '80px'; canvas.style.height = '80px';
+    el.innerHTML = ''; el.appendChild(canvas);
+  } else {
+    el.innerHTML = '?';
+  }
+}
+
+function openInstapomEditor() {
+  // Réutiliser l'éditeur d'avatar mais pour InstaPom
+  _editorShapes = JSON.parse(JSON.stringify(_instapomShapes));
+  _editorSelected = -1;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay'; overlay.id = 'avatarEditorModal';
+  overlay.onclick = e => { if (e.target === overlay) closeInstapomEditor(); };
+  const colorSwatches2 = EDITOR_COLORS.map((c, i) =>
+    `<span class="avatar-color-swatch${i === 0 ? ' active' : ''}" style="background:${c}" onclick="setEditorColor('${c}',this)" title="${c}"></span>`
+  ).join('');
+  overlay.innerHTML = `
+    <div class="modal-box" style="max-width:520px;">
+      <h2>📸 Créer ton InstaPom <button class="modal-close" onclick="closeInstapomEditor()">✕</button></h2>
+      <div class="avatar-editor-wrap">
+        <div class="avatar-editor-canvas-area" id="avatarEditorArea">
+          <canvas id="avatarEditorCanvas" width="200" height="200"></canvas>
+        </div>
+        <div class="avatar-editor-toolbar">
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Forme</span>
+            <button class="avatar-shape-btn active" data-shape="circle" onclick="setEditorTool('circle',this)">⬤ Cercle</button>
+            <button class="avatar-shape-btn" data-shape="rect" onclick="setEditorTool('rect',this)">▬ Rect</button>
+            <button class="avatar-shape-btn" data-shape="triangle" onclick="setEditorTool('triangle',this)">▲ Triangle</button>
+            <button class="avatar-shape-btn" data-shape="star" onclick="setEditorTool('star',this)">★ Étoile</button>
+            <button class="avatar-shape-btn" data-shape="diamond" onclick="setEditorTool('diamond',this)">◆ Losange</button>
+          </div>
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Couleur</span>
+            ${colorSwatches2}
+            <input type="color" id="avatarCustomColor" value="#EB5846" oninput="setEditorColor(this.value,null,true)" style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border);cursor:pointer;padding:0;background:none;">
+          </div>
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Taille</span>
+            <input type="range" class="avatar-size-slider" id="editorSizeSlider" min="10" max="140" value="60" oninput="setEditorSize(this.value)">
+            <span id="editorSizeLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:28px;">60</span>
+          </div>
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Rotation</span>
+            <input type="range" class="avatar-size-slider" id="editorRotSlider" min="0" max="360" value="0" oninput="setEditorRot(this.value)">
+            <span id="editorRotLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:30px;">0°</span>
+          </div>
+          <div class="avatar-actions">
+            <button class="avatar-action-btn danger-btn" onclick="editorUndoLast()">↩ Annuler</button>
+            <button class="avatar-action-btn danger-btn" onclick="editorClear()">🗑 Effacer</button>
+            <button class="avatar-action-btn primary-btn" onclick="saveInstapomEditor()">💾 Valider</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  _editorRedraw();
+  _editorBindCanvas();
+}
+
+function closeInstapomEditor() {
+  document.getElementById('avatarEditorModal')?.remove();
+}
+
+function saveInstapomEditor() {
+  _instapomShapes = JSON.parse(JSON.stringify(_editorShapes));
+  closeInstapomEditor();
+  refreshInstapomPreview();
+}
+
+function randomizeInstapom() {
+  _instapomShapes = generateRandomAvatar().shapes;
+  refreshInstapomPreview();
+}
+
+async function submitInstaPom() {
+  if (!_instapomShapes.length) { setAlert('instapomAlert', 'Crée une image d\'abord !', 'error'); return; }
+  const today = getTodayKey();
+  const rawPosts = await getInstaPoms() || {};
+  const todayPosts = Object.values(rawPosts).filter(p => p.date === today);
+  if (todayPosts.some(p => p.authorCode === state.code)) {
+    setAlert('instapomAlert', 'Tu as déjà publié une InstaPom aujourd\'hui !', 'error'); return;
+  }
+  const caption = document.getElementById('instapomCaption')?.value.trim() || '';
+  const cleaned = {};
+  Object.values(rawPosts).forEach(p => { if (p.date === today) cleaned[p.id] = p; });
+  const id = 'ip' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
+  cleaned[id] = { id, date: today, shapes: _instapomShapes, caption, authorCode: state.code, authorName: state.name, createdAt: new Date().toISOString(), reactions: {}, replies: {} };
+  await saveInstaPoms(cleaned);
+  _instapomShapes = [];
+  if (document.getElementById('instapomCaption')) document.getElementById('instapomCaption').value = '';
+  refreshInstapomPreview();
+  setAlert('instapomAlert', '', '');
+  renderInstaPoms();
+}
+
+async function renderInstaPoms() {
+  const today = getTodayKey();
+  const rawPosts = await getInstaPoms() || {};
+  const posts = Object.values(rawPosts).filter(p => p.date === today);
+  const alreadyPosted = posts.some(p => p.authorCode === state.code);
+
+  const inputZone = document.getElementById('instapomInputZone');
+  const alreadyEl = document.getElementById('instapomAlreadyPosted');
+  if (inputZone) inputZone.style.display = alreadyPosted ? 'none' : 'block';
+  if (alreadyEl) alreadyEl.style.display = alreadyPosted ? 'block' : 'none';
+
+  const list = document.getElementById('instapomList');
+  if (!list) return;
+  if (!posts.length) { list.innerHTML = '<div class="live-empty">Aucune InstaPom aujourd\'hui.</div>'; return; }
+
+  posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  list.innerHTML = '';
+
+  for (const post of posts) {
+    const card = document.createElement('div');
+    card.className = 'instapom-card';
+    const time = new Date(post.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const reactions = post.reactions || {};
+    const isMe = post.authorCode === state.code;
+    const repliesArr = Object.values(post.replies || {}).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    const myReply = repliesArr.find(r => r.authorCode === state.code);
+    const canReply = !isMe && !myReply;
+
+    const reactionsHTML = POMPOST_EMOJIS.map(emoji => {
+      const users = reactions[emoji] || [];
+      const count = users.length;
+      const reacted = users.includes(state.code);
+      return `<button class="pompost-react-btn ${reacted ? 'reacted' : ''}" onclick="reactInstaPom('${post.id}','${emoji}')">
+        ${emoji}<span class="pompost-react-count">${count > 0 ? count : ''}</span>
+      </button>`;
+    }).join('');
+
+    const repliesHTML = repliesArr.map(r => `
+      <div class="pompost-reply-item">
+        <div class="pompost-reply-avatar" id="ip-reply-av-${r.authorCode?.slice(-6)}">${escapeHTML((r.authorName||'?').charAt(0).toUpperCase())}</div>
+        <span class="pompost-reply-author">${escapeHTML(r.authorName)}</span>
+        <span class="pompost-reply-text">${escapeHTML(r.text)}</span>
+      </div>`).join('');
+
+    const replyInputHTML = canReply ? `
+      <div class="pompost-reply-input-zone">
+        <input class="pompost-reply-input" id="ip-reply-${post.id}" placeholder="Commenter…" maxlength="100" />
+        <button class="pompost-reply-btn" onclick="replyInstaPom('${post.id}')">↩</button>
+      </div>` : (myReply ? '<div style="font-size:.75rem;color:var(--muted);">✅ Commenté</div>' : '');
+
+    card.innerHTML = `
+      <div class="instapom-card-header">
+        <div class="pompost-avatar" id="ip-av-${post.id}">${escapeHTML((post.authorName||'?').charAt(0).toUpperCase())}</div>
+        <span class="pompost-author">${escapeHTML(post.authorName)}</span>
+        <span class="pompost-time">${time}</span>
+      </div>
+      <div class="instapom-img-wrap"><canvas class="instapom-canvas" id="ip-canvas-${post.id}" width="240" height="240" style="width:200px;height:200px;"></canvas></div>
+      ${post.caption ? `<div class="instapom-caption">${escapeHTML(post.caption)}</div>` : ''}
+      <div class="instapom-actions">${reactionsHTML}</div>
+      ${repliesArr.length ? `<div class="instapom-replies">${repliesHTML}</div>` : ''}
+      ${replyInputHTML}
+    `;
+    list.appendChild(card);
+
+    // Dessiner l'image
+    const canvas = document.getElementById('ip-canvas-' + post.id);
+    if (canvas && post.shapes) drawAvatar(canvas, { shapes: post.shapes }, 240);
+
+    // Charger avatars async
+    getAccount(post.authorCode).then(acc => {
+      if (acc) { const av = document.getElementById('ip-av-' + post.id); if (av) renderAvatarInEl(av, acc, 38); }
+    }).catch(() => {});
+  }
+}
+
+async function reactInstaPom(postId, emoji) {
+  const today = getTodayKey();
+  const rawPosts = await getInstaPoms() || {};
+  const post = rawPosts[postId];
+  if (!post || post.date !== today) return;
+  if (!post.reactions) post.reactions = {};
+  const users = post.reactions[emoji] || [];
+  if (users.includes(state.code)) {
+    post.reactions[emoji] = users.filter(c => c !== state.code);
+    if (!post.reactions[emoji].length) delete post.reactions[emoji];
+  } else {
+    post.reactions[emoji] = [...users, state.code];
+  }
+  rawPosts[postId] = post;
+  await saveInstaPoms(rawPosts);
+  renderInstaPoms();
+}
+
+async function replyInstaPom(postId) {
+  const input = document.getElementById('ip-reply-' + postId);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const today = getTodayKey();
+  const rawPosts = await getInstaPoms() || {};
+  const post = rawPosts[postId];
+  if (!post || post.date !== today) return;
+  if (post.authorCode === state.code) return;
+  if (!post.replies) post.replies = {};
+  if (post.replies[state.code]) return;
+  post.replies[state.code] = { authorCode: state.code, authorName: state.name, text, createdAt: new Date().toISOString() };
+  rawPosts[postId] = post;
+  await saveInstaPoms(rawPosts);
+  renderInstaPoms();
+}
+
 // ── DISCUSSION / CHAT ────────────────────────────
 let _discussionListener = null;
 let _discussionAutoScroll = true;
@@ -8672,7 +9204,7 @@ async function renderDiscussion() {
       div.className = 'discussion-msg' + (isMe ? ' me' : '');
       div.dataset.msgId = msg.id;
       div.innerHTML = `
-        <div class="discussion-msg-avatar">${escapeHTML(rawName.charAt(0).toUpperCase())}</div>
+        <div class="discussion-msg-avatar" data-code="${escapeHTML(msg.authorCode || '')}">${escapeHTML(rawName.charAt(0).toUpperCase())}</div>
         <div class="discussion-msg-body">
           <div class="discussion-msg-header">
             <span class="discussion-msg-name ${nameClass}">${safeName}${badgeEmoji ? ' ' + badgeEmoji : ''}</span>
@@ -8693,6 +9225,13 @@ async function renderDiscussion() {
           </div>
         </div>
       `;
+      // Load avatar asynchronously
+      const avatarDiv = div.querySelector('.discussion-msg-avatar');
+      if (avatarDiv && msg.authorCode) {
+        getAccount(msg.authorCode).then(authorAcc => {
+          if (authorAcc && authorAcc.avatar) renderAvatarInEl(avatarDiv, authorAcc, 32);
+        }).catch(() => {});
+      }
       msgContainer.appendChild(div);
     });
 
@@ -10548,6 +11087,18 @@ const _notifSeen = new Set();
 // AudioContext partagé — créé uniquement après un geste utilisateur
 let _audioCtx = null;
 let _audioUnlocked = false;
+let _notifSoundEnabled = localStorage.getItem('pomel_notif_sound') !== '0'; // activé par défaut
+
+function toggleNotifSoundPref(enabled) {
+  _notifSoundEnabled = enabled;
+  localStorage.setItem('pomel_notif_sound', enabled ? '1' : '0');
+}
+
+function _initNotifSoundToggle() {
+  const toggle = document.getElementById('toggleNotifSound');
+  if (toggle) toggle.checked = _notifSoundEnabled;
+}
+
 function _getAudioCtx() {
   if (!_audioUnlocked) return null; // pas encore débloqué
   if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -10560,6 +11111,7 @@ document.addEventListener('click', () => {
 }, { once: true });
 
 function playNotifSound(type) {
+  if (!_notifSoundEnabled) return; // préférence utilisateur
   try {
     const ctx = _getAudioCtx();
     if (!ctx) return; // pas encore débloqué, on skip silencieusement
@@ -10780,8 +11332,7 @@ function navToClassement(view) {
   _classementView = view;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-classement').classList.add('active');
-  setActiveSnavItem(view === 'general' ? 'snav-classement-general' : 'snav-classement-groupes');
-  // Ajuster l'id pour SNAV_MAP
+  // Activer le bon bouton sidenav manuellement (pas dans SNAV_MAP)
   document.querySelectorAll('.sidenav-item').forEach(b => b.classList.remove('active'));
   const btnId = view === 'general' ? 'snav-classement-general' : 'snav-classement-groupes';
   const btn = document.getElementById(btnId); if (btn) btn.classList.add('active');
@@ -10875,6 +11426,31 @@ function initSidenav() {
     document.getElementById('main-content').classList.add('nav-collapsed');
     document.getElementById('topbar').classList.add('nav-collapsed');
   }
+
+  // Nettoyer les classes desktop quand on passe en mobile et vice-versa
+  let _lastWasMobile = window.innerWidth < 769;
+  window.addEventListener('resize', () => {
+    const isMobile = window.innerWidth < 769;
+    if (isMobile && !_lastWasMobile) {
+      // Passage desktop → mobile : retirer les classes collapsed
+      document.getElementById('sidenav').classList.remove('collapsed');
+      document.getElementById('main-content').classList.remove('nav-collapsed');
+      document.getElementById('topbar').classList.remove('nav-collapsed');
+      _sidenavCollapsed = false;
+    } else if (!isMobile && _lastWasMobile) {
+      // Passage mobile → desktop : restaurer l'état sauvegardé
+      const saved = localStorage.getItem('sidenav_collapsed');
+      if (saved === '1') {
+        _sidenavCollapsed = true;
+        document.getElementById('sidenav').classList.add('collapsed');
+        document.getElementById('main-content').classList.add('nav-collapsed');
+        document.getElementById('topbar').classList.add('nav-collapsed');
+      }
+      // Fermer le sidenav mobile s'il était ouvert
+      if (_mobileSidenavOpen) closeMobileSidenav();
+    }
+    _lastWasMobile = isMobile;
+  });
 }
 
 init();
