@@ -1002,7 +1002,7 @@
   .instapom-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   .instapom-card-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; }
   .instapom-img-wrap { display: flex; justify-content: center; padding: 0 16px 12px; }
-  .instapom-canvas { border-radius: 12px; border: 1px solid var(--border); display: block; max-width: 100%; }
+  .instapom-canvas { border-radius: 12px; border: 1px solid var(--border); display: block; width: min(320px, 100%); aspect-ratio: 1 / 1; height: auto; }
   .instapom-caption { font-size: .9rem; color: var(--text); padding: 0 16px 10px; line-height: 1.5; }
   .instapom-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 0 16px 14px; border-top: 1px solid var(--border); padding-top: 10px; }
   .instapom-replies { display: flex; flex-direction: column; gap: 6px; padding: 0 16px 14px; border-top: 1px solid var(--border); padding-top: 10px; }
@@ -1804,6 +1804,7 @@
     box-shadow: 0 0 24px var(--primary-glow);
   }
   #avatarEditorCanvas { display: block; border-radius: 50%; }
+  #instapomEditorArea #avatarEditorCanvas { border-radius: 14px !important; }
   .avatar-editor-toolbar {
     display: flex; flex-direction: column; gap: 10px;
   }
@@ -8919,25 +8920,155 @@ async function replyPomPost(postId) {
 }
 
 // ── INSTAPOM ─────────────────────────────────────
-let _instapomShapes = [];
+let _instapomBg = '#1a1a22';
+
+function setInstapomBg(color) {
+  _instapomBg = color;
+  _instapomRedraw();
+}
+
+// Dessine un InstaPom sur un canvas (espace de coordonnées 400x400)
+function drawInstapom(canvas, shapes, bg, displaySize) {
+  const size = displaySize || 400;
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = bg || '#1a1a22';
+  ctx.fillRect(0, 0, size, size);
+  if (!shapes || !shapes.length) return;
+  const scale = size / 400;
+  for (const s of shapes) {
+    ctx.save();
+    ctx.translate(s.x * scale, s.y * scale);
+    ctx.rotate((s.rotation || 0) * Math.PI / 180);
+    ctx.fillStyle = s.color || '#EB5846';
+    ctx.globalAlpha = s.opacity !== undefined ? s.opacity : 1;
+    const w = (s.w || 60) * scale;
+    const h = (s.h || 60) * scale;
+    if (s.type === 'circle') {
+      ctx.beginPath(); ctx.arc(0, 0, w / 2, 0, Math.PI * 2); ctx.fill();
+    } else if (s.type === 'rect') {
+      ctx.fillRect(-w/2, -h/2, w, h);
+    } else if (s.type === 'triangle') {
+      ctx.beginPath(); ctx.moveTo(0, -h/2); ctx.lineTo(w/2, h/2); ctx.lineTo(-w/2, h/2); ctx.closePath(); ctx.fill();
+    } else if (s.type === 'star') {
+      const spikes = 5, outerR = w/2, innerR = w/4;
+      ctx.beginPath();
+      for (let i = 0; i < spikes * 2; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const a = (i * Math.PI) / spikes - Math.PI / 2;
+        i === 0 ? ctx.moveTo(r * Math.cos(a), r * Math.sin(a)) : ctx.lineTo(r * Math.cos(a), r * Math.sin(a));
+      }
+      ctx.closePath(); ctx.fill();
+    } else if (s.type === 'diamond') {
+      ctx.beginPath(); ctx.moveTo(0, -h/2); ctx.lineTo(w/2, 0); ctx.lineTo(0, h/2); ctx.lineTo(-w/2, 0); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function _instapomRedraw() {
+  const canvas = document.getElementById('avatarEditorCanvas');
+  if (!canvas) return;
+  drawInstapom(canvas, _editorShapes, _instapomBg, 400);
+  const ctx = canvas.getContext('2d');
+  if (_editorSelected >= 0 && _editorShapes[_editorSelected]) {
+    const s = _editorShapes[_editorSelected];
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    const r = (s.w || 60) / 2 + 6;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function _instapomBindCanvas() {
+  const canvas = document.getElementById('avatarEditorCanvas');
+  if (!canvas) return;
+  let dragging = false, dragOff = {x:0,y:0};
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = 400 / rect.width, scaleY = 400 / rect.height;
+    const cx = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
+    const cy = (e.clientY !== undefined ? e.clientY : e.touches[0].clientY) - rect.top;
+    return { x: cx * scaleX, y: cy * scaleY };
+  }
+
+  function hitTest(pos) {
+    for (let i = _editorShapes.length - 1; i >= 0; i--) {
+      const s = _editorShapes[i];
+      const dx = pos.x - s.x, dy = pos.y - s.y;
+      const r = (s.w || 60) / 2 + 8;
+      if (dx * dx + dy * dy < r * r) return i;
+    }
+    return -1;
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const pos = getPos(e);
+    const hit = hitTest(pos);
+    if (hit >= 0) {
+      _editorSelected = hit; dragging = true;
+      dragOff = { x: pos.x - _editorShapes[hit].x, y: pos.y - _editorShapes[hit].y };
+      const s = _editorShapes[hit];
+      const rotSlider = document.getElementById('editorRotSlider');
+      const sizeSlider = document.getElementById('editorSizeSlider');
+      if (rotSlider) { rotSlider.value = s.rotation || 0; document.getElementById('editorRotLabel').textContent = (s.rotation||0) + '°'; }
+      if (sizeSlider) { sizeSlider.value = s.w || 80; document.getElementById('editorSizeLabel').textContent = s.w || 80; }
+      _editorColor = s.color;
+    } else {
+      _editorShapes.push({ type: _editorTool, x: pos.x, y: pos.y, w: _editorSize, h: _editorSize, color: _editorColor, rotation: 0, opacity: 0.92 });
+      _editorSelected = _editorShapes.length - 1; dragging = true; dragOff = { x: 0, y: 0 };
+    }
+    _instapomRedraw(); e.preventDefault();
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!dragging || _editorSelected < 0) return;
+    const pos = getPos(e);
+    _editorShapes[_editorSelected].x = pos.x - dragOff.x;
+    _editorShapes[_editorSelected].y = pos.y - dragOff.y;
+    _instapomRedraw();
+  });
+  canvas.addEventListener('mouseup', () => { dragging = false; });
+  canvas.addEventListener('mouseleave', () => { dragging = false; });
+  canvas.addEventListener('touchstart', e => {
+    const pos = getPos(e);
+    const hit = hitTest(pos);
+    if (hit >= 0) { _editorSelected = hit; dragging = true; dragOff = { x: pos.x - _editorShapes[hit].x, y: pos.y - _editorShapes[hit].y }; }
+    else { _editorShapes.push({ type: _editorTool, x: pos.x, y: pos.y, w: _editorSize, h: _editorSize, color: _editorColor, rotation: 0, opacity: 0.92 }); _editorSelected = _editorShapes.length - 1; dragging = true; dragOff = { x: 0, y: 0 }; }
+    _instapomRedraw(); e.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    if (!dragging || _editorSelected < 0) return;
+    const pos = getPos(e);
+    _editorShapes[_editorSelected].x = pos.x - dragOff.x;
+    _editorShapes[_editorSelected].y = pos.y - dragOff.y;
+    _instapomRedraw(); e.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => { dragging = false; });
+}
 
 async function getInstaPoms() { return dbGet('instapoms'); }
 async function saveInstaPoms(posts) { await dbSet('instapoms', posts); }
+
+let _instapomShapes = [];
 
 function refreshInstapomPreview() {
   const el = document.getElementById('instapomPreview');
   if (!el) return;
   if (_instapomShapes.length) {
-    const { canvas } = buildAvatarCanvas({ shapes: _instapomShapes }, 160);
-    canvas.style.width = '80px'; canvas.style.height = '80px';
-    el.innerHTML = ''; el.appendChild(canvas);
+    const c = document.createElement('canvas');
+    drawInstapom(c, _instapomShapes, _instapomBg, 160);
+    c.style.width = '80px'; c.style.height = '80px'; c.style.borderRadius = '10px';
+    el.innerHTML = ''; el.appendChild(c);
   } else {
     el.innerHTML = '?';
   }
 }
 
 function openInstapomEditor() {
-  // Réutiliser l'éditeur d'avatar mais pour InstaPom
   _editorShapes = JSON.parse(JSON.stringify(_instapomShapes));
   _editorSelected = -1;
   const overlay = document.createElement('div');
@@ -8947,13 +9078,13 @@ function openInstapomEditor() {
     `<span class="avatar-color-swatch${i === 0 ? ' active' : ''}" style="background:${c}" onclick="setEditorColor('${c}',this)" title="${c}"></span>`
   ).join('');
   overlay.innerHTML = `
-    <div class="modal-box" style="max-width:520px;">
+    <div class="modal-box" style="max-width:420px;">
       <h2>📸 Créer ton InstaPom <button class="modal-close" onclick="closeInstapomEditor()">✕</button></h2>
-      <div class="avatar-editor-wrap">
-        <div class="avatar-editor-canvas-area" id="avatarEditorArea">
-          <canvas id="avatarEditorCanvas" width="200" height="200"></canvas>
+      <div class="avatar-editor-wrap" style="flex-direction:column;gap:14px;align-items:center;">
+        <div id="instapomEditorArea" style="width:min(340px,100%);margin:0 auto;">
+          <canvas id="avatarEditorCanvas" width="400" height="400" style="display:block;width:100%;aspect-ratio:1/1;height:auto;border-radius:14px;border:2px solid var(--primary);cursor:crosshair;touch-action:none;background:#1a1a22;box-shadow:0 0 24px var(--primary-glow);"></canvas>
         </div>
-        <div class="avatar-editor-toolbar">
+        <div class="avatar-editor-toolbar" style="width:100%;">
           <div class="avatar-tool-row">
             <span class="avatar-tool-label">Forme</span>
             <button class="avatar-shape-btn active" data-shape="circle" onclick="setEditorTool('circle',this)">⬤ Cercle</button>
@@ -8969,39 +9100,70 @@ function openInstapomEditor() {
           </div>
           <div class="avatar-tool-row">
             <span class="avatar-tool-label">Taille</span>
-            <input type="range" class="avatar-size-slider" id="editorSizeSlider" min="10" max="140" value="60" oninput="setEditorSize(this.value)">
-            <span id="editorSizeLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:28px;">60</span>
+            <input type="range" class="avatar-size-slider" id="editorSizeSlider" min="10" max="280" value="80" oninput="setEditorSize(this.value)">
+            <span id="editorSizeLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:28px;">80</span>
           </div>
           <div class="avatar-tool-row">
             <span class="avatar-tool-label">Rotation</span>
             <input type="range" class="avatar-size-slider" id="editorRotSlider" min="0" max="360" value="0" oninput="setEditorRot(this.value)">
             <span id="editorRotLabel" style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:30px;">0°</span>
           </div>
+          <div class="avatar-tool-row">
+            <span class="avatar-tool-label">Fond</span>
+            <select id="instapomBgSelect" onchange="setInstapomBg(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-family:'Syne',sans-serif;font-size:.82rem;cursor:pointer;">
+              <option value="#1a1a22">🌑 Noir (défaut)</option>
+              <option value="#0d1a0f">🌲 Forêt</option>
+              <option value="#0a0f2a">🌌 Cosmos</option>
+              <option value="#1a0a0a">🔴 Rouge profond</option>
+              <option value="#f0f0f5">⬜ Blanc</option>
+              <option value="#fdf6e3">🟡 Crème</option>
+              <option value="#1a1040">🟣 Violet nuit</option>
+            </select>
+          </div>
           <div class="avatar-actions">
-            <button class="avatar-action-btn danger-btn" onclick="editorUndoLast()">↩ Annuler</button>
-            <button class="avatar-action-btn danger-btn" onclick="editorClear()">🗑 Effacer</button>
+            <button class="avatar-action-btn danger-btn" onclick="editorUndoLast();_instapomRedraw();">↩ Annuler</button>
+            <button class="avatar-action-btn danger-btn" onclick="editorClear();_instapomRedraw();">🗑 Effacer</button>
             <button class="avatar-action-btn primary-btn" onclick="saveInstapomEditor()">💾 Valider</button>
           </div>
         </div>
       </div>
     </div>`;
   document.body.appendChild(overlay);
-  _editorRedraw();
-  _editorBindCanvas();
+  _instapomBg = _instapomBg || '#1a1a22';
+  document.getElementById('instapomBgSelect').value = _instapomBg;
+  _instapomRedraw();
+  _instapomBindCanvas();
 }
 
 function closeInstapomEditor() {
   document.getElementById('avatarEditorModal')?.remove();
 }
 
-function saveInstapomEditor() {
-  _instapomShapes = JSON.parse(JSON.stringify(_editorShapes));
-  closeInstapomEditor();
+function randomizeInstapom() {
+  const colors = ['#EB5846','#3ecf6e','#5b8def','#f0c040','#fff','#ff88aa','#88ddff','#aa88ff','#ffcc44'];
+  const types = ['circle','rect','triangle','star','diamond'];
+  const bgs = ['#1a1a22','#0d1a0f','#0a0f2a','#1a0a0a','#1a1040'];
+  _instapomBg = bgs[Math.floor(Math.random() * bgs.length)];
+  const count = 6 + Math.floor(Math.random() * 8);
+  _instapomShapes = [];
+  for (let i = 0; i < count; i++) {
+    _instapomShapes.push({
+      type: types[Math.floor(Math.random() * types.length)],
+      x: 30 + Math.random() * 340,
+      y: 30 + Math.random() * 340,
+      w: 30 + Math.random() * 160,
+      h: 30 + Math.random() * 160,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.floor(Math.random() * 360),
+      opacity: 0.65 + Math.random() * 0.35,
+    });
+  }
   refreshInstapomPreview();
 }
 
-function randomizeInstapom() {
-  _instapomShapes = generateRandomAvatar().shapes;
+function saveInstapomEditor() {
+  _instapomShapes = JSON.parse(JSON.stringify(_editorShapes));
+  closeInstapomEditor();
   refreshInstapomPreview();
 }
 
@@ -9017,9 +9179,10 @@ async function submitInstaPom() {
   }
   const caption = document.getElementById('instapomCaption')?.value.trim() || '';
   const id = 'ip' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
-  cleaned[id] = { id, date: today, shapes: _instapomShapes, caption, authorCode: state.code, authorName: state.name, createdAt: new Date().toISOString(), reactions: {}, replies: {} };
+  cleaned[id] = { id, date: today, shapes: _instapomShapes, bg: _instapomBg || '#1a1a22', caption, authorCode: state.code, authorName: state.name, createdAt: new Date().toISOString(), reactions: {}, replies: {} };
   await saveInstaPoms(cleaned);
   _instapomShapes = [];
+  _instapomBg = '#1a1a22';
   if (document.getElementById('instapomCaption')) document.getElementById('instapomCaption').value = '';
   refreshInstapomPreview();
   setAlert('instapomAlert', '', '');
@@ -9090,7 +9253,7 @@ async function renderInstaPoms() {
         <span class="pompost-author">${escapeHTML(post.authorName)}</span>
         <span class="pompost-time">${time}</span>
       </div>
-      <div class="instapom-img-wrap"><canvas class="instapom-canvas" id="ip-canvas-${post.id}" width="240" height="240" style="width:200px;height:200px;"></canvas></div>
+      <div class="instapom-img-wrap"><canvas class="instapom-canvas" id="ip-canvas-${post.id}" width="400" height="400"></canvas></div>
       ${post.caption ? `<div class="instapom-caption">${escapeHTML(post.caption)}</div>` : ''}
       <div class="instapom-actions">${reactionsHTML}</div>
       ${repliesArr.length ? `<div class="instapom-replies">${repliesHTML}</div>` : ''}
@@ -9098,9 +9261,9 @@ async function renderInstaPoms() {
     `;
     list.appendChild(card);
 
-    // Dessiner l'image
+    // Dessiner l'image (canvas natif 400px, affiché en 320px CSS)
     const canvas = document.getElementById('ip-canvas-' + post.id);
-    if (canvas && post.shapes) drawAvatar(canvas, { shapes: post.shapes }, 240);
+    if (canvas && post.shapes) drawInstapom(canvas, post.shapes, post.bg || '#1a1a22', 400);
 
     // Charger avatars async
     getAccount(post.authorCode).then(acc => {
