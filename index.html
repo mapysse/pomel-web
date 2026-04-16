@@ -3593,20 +3593,6 @@ const SHOP_TITLES = [
   { id: 'banner_aurora',  name: '🌌 Effet Aurore',     price: 75000, type: 'banner', bannerClass: 'banner-aurora',  desc: 'Blobs de lumière qui dérivent doucement' },
   { id: 'banner_plasma',  name: '⚡ Effet Plasma',     price: 75000, type: 'banner', bannerClass: 'banner-plasma',  desc: 'Pulsation électrique rouge intense' },
 ];
-
-// ── VIDER LES COMPTES ────────────────────
-  async function trimAllHistories() {
-  const snapshot = await firebase.database().ref('accounts').get();
-  const updates = {};
-  snapshot.forEach(child => {
-    const history = child.val().history || [];
-    if (history.length > 50) {
-      updates[`accounts/${child.key}/history`] = history.slice(0, 50);
-    }
-  });
-  await firebase.database().ref().update(updates);
-  console.log('Done!');
-}
   
 // ── STORAGE LAYER (FIREBASE) ────────────────────
 async function dbGet(path) {
