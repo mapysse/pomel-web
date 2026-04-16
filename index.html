@@ -3662,7 +3662,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
         if (historyEntry) {
           if (!Array.isArray(current.history)) current.history = [];
           current.history.unshift(historyEntry);
-          if (current.history.length > 500) current.history = current.history.slice(0, 500);
+          if (current.history.length > 50) current.history = current.history.slice(0, 50);
         }
         updatedAcc = current;
         return current;
