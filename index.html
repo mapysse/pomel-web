@@ -10022,7 +10022,7 @@ async function saveAccount(acc) {
     acc.history = acc.history.filter(h =>
       h && typeof h.amount === 'number' && (Math.abs(h.amount) <= MAX_SINGLE_GAIN || h.amount === 0)
     );
-    if (acc.history.length > 500) acc.history = acc.history.slice(0, 500);
+    if (acc.history.length > 50) acc.history = acc.history.slice(0, 50);
   }
   if (acc.ownedTitles) {
     acc.ownedTitles = acc.ownedTitles.filter(t => typeof t === 'string' && t.length < 80);
