@@ -222,7 +222,7 @@ const PM_MOVES = {
   lutte:           { id:'lutte',           name:'Lutte',            type:'neutre',     power:30, accuracy:100, pp:99, category:'attack', recoilPct:0.15, desc:'Attaque désespérée, inflige 15% de recul à l\'utilisateur.' }
 };
 
-// Moves assignés par type : tous les PomMons d'un type apprennent les 4 moves de leur type
+// Moves assignés par type : tous les PokePoms d'un type apprennent les 4 moves de leur type
 const PM_MOVES_BY_TYPE = {
   plante:     ['fouet_roncier', 'photosynthese', 'lancer_seve', 'pollen_lourd'],
   feu:        ['brasier', 'flamme_vive', 'tranchant', 'surchauffe'],
@@ -233,8 +233,8 @@ const PM_MOVES_BY_TYPE = {
   lumiere:    ['rayon_sacre', 'eclat_dore', 'aura_radieuse', 'ombre_inversee']
 };
 
-function getMoveset(pommonId) {
-  const poke = PM_DEX[pommonId];
+function getMoveset(pokepomId) {
+  const poke = PM_DEX[pokepomId];
   return PM_MOVES_BY_TYPE[poke.type].map(mid => PM_MOVES[mid]);
 }
 
@@ -877,11 +877,11 @@ PM_SPRITES.astraflore = function(ctx) {
   ctx.globalAlpha=1;
 };
 
-// Helper universel pour dessiner un PomMon
-function drawPomMon(canvas, pommonId) {
+// Helper universel pour dessiner un PokePom
+function drawPokePom(canvas, pokepomId) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, 64, 64);
-  const fn = PM_SPRITES[pommonId];
+  const fn = PM_SPRITES[pokepomId];
   if (fn) fn(ctx);
 }
 
@@ -903,7 +903,7 @@ let _pmLoaded = false;
 let _pmLoadedForCode = null;  // code de l'utilisateur pour lequel les données sont chargées
 let _pmSaveTimer = null;
 
-function pmPath() { return 'pommon/' + state.code; }
+function pmPath() { return 'pokepom/' + state.code; }
 
 // Charge depuis Firebase (appelé une fois au démarrage / navigation)
 // Garantit que toutes les propriétés attendues existent
@@ -944,7 +944,7 @@ async function pmLoadFromFirebase() {
     const data = await dbGet(pmPath());
     _pmCache = data ? pmNormalizePlayer(data) : null;
   } catch(e) {
-    console.error('[pommon] load error', e);
+    console.error('[pokepom] load error', e);
     _pmCache = null;
   }
   _pmLoaded = true;
@@ -961,7 +961,7 @@ function pmScheduleSave() {
     try {
       await dbSet(pmPath(), _pmCache);
     } catch(e) {
-      console.error('[pommon] save error', e);
+      console.error('[pokepom] save error', e);
     }
   }, 400);
 }
@@ -974,11 +974,11 @@ async function pmSaveNow() {
   try {
     await dbSet(pmPath(), _pmCache);
   } catch(e) {
-    console.error('[pommon] saveNow error', e);
+    console.error('[pokepom] saveNow error', e);
   }
 }
 
-// API synchrone (le reste du code PomMon n'a pas à changer)
+// API synchrone (le reste du code PokePom n'a pas à changer)
 function pmGet(key) {
   if (!_pmCache) return null;
   if (key === 'player') return _pmCache;
@@ -1008,7 +1008,7 @@ function pmSavePlayer(data) {
 async function pmSaveLeagueLb(score) {
   if (score <= 0 || typeof dbGet !== 'function' || typeof dbSet !== 'function') return;
   if (!state || !state.code) return;
-  const path = 'pommon_league_lb/' + state.code;
+  const path = 'pokepom_league_lb/' + state.code;
   try {
     const existing = await dbGet(path);
     if (!existing || score > existing.score) {
@@ -1019,17 +1019,17 @@ async function pmSaveLeagueLb(score) {
         date: new Date().toISOString()
       });
     }
-  } catch(e) { console.error('[pommon] saveLeagueLb error', e); }
+  } catch(e) { console.error('[pokepom] saveLeagueLb error', e); }
 }
 
 function pmInitPlayer(starterId) {
   const today = new Date().toISOString().slice(0,10);
-  const starterInstance = pmCreatePomMonInstance(starterId, 1);
+  const starterInstance = pmCreatePokePomInstance(starterId, 1);
   const player = {
     hasAccount: true,
     starterId: starterId,
     collection: [starterInstance],  // Liste d'instances (avec XP, niveau)
-    team: [starterInstance.uid],    // UIDs des PomMons d'équipe
+    team: [starterInstance.uid],    // UIDs des PokePoms d'équipe
     badges: [],                     // Liste des types d'arènes battues
     dailyWildCount: 0,
     dailyGymWins: 0,
@@ -1043,11 +1043,11 @@ function pmInitPlayer(starterId) {
   return player;
 }
 
-function pmCreatePomMonInstance(pommonId, level = 1, xp = 0) {
-  const base = PM_DEX[pommonId];
+function pmCreatePokePomInstance(pokepomId, level = 1, xp = 0) {
+  const base = PM_DEX[pokepomId];
   return {
     uid: 'pm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    pommonId: pommonId,
+    pokepomId: pokepomId,
     nickname: base.name,
     level: level,
     xp: xp,
@@ -1055,9 +1055,9 @@ function pmCreatePomMonInstance(pommonId, level = 1, xp = 0) {
   };
 }
 
-// Calcule les stats réelles d'un PomMon en tenant compte du niveau
+// Calcule les stats réelles d'un PokePom en tenant compte du niveau
 function pmGetStats(instance) {
-  const base = PM_DEX[instance.pommonId];
+  const base = PM_DEX[instance.pokepomId];
   const mult = 1 + (instance.level - 1) * PM_LEVEL_BONUS;
   return {
     hp: Math.floor(base.hp * mult),
@@ -1110,12 +1110,12 @@ function pmUpdateInstance(player, updatedInstance) {
 // Crée un combattant (prêt pour le combat)
 function pmCreateFighter(instance, statMultiplier = 1.0) {
   const stats = pmGetStats(instance);
-  const base = PM_DEX[instance.pommonId];
-  const moves = getMoveset(instance.pommonId);
+  const base = PM_DEX[instance.pokepomId];
+  const moves = getMoveset(instance.pokepomId);
   return {
     uid: instance.uid,
     instance: instance,
-    pommonId: instance.pommonId,
+    pokepomId: instance.pokepomId,
     name: instance.nickname || base.name,
     type: base.type,
     level: instance.level,
@@ -1413,7 +1413,7 @@ function pmGenerateWildEncounter() {
   }
   if (!type) type = 'plante';
 
-  // Liste des PomMons de ce type
+  // Liste des PokePoms de ce type
   const candidates = PM_DEX_IDS.filter(id => PM_DEX[id].type === type);
   // Chance ultra-rare de légendaire (si type ombre ou lumière, 10% que ce soit le légendaire)
   const legends = candidates.filter(id => PM_DEX[id].legendary);
@@ -1430,7 +1430,7 @@ function pmGenerateWildEncounter() {
   const team = pmGetTeam(player);
   const avgLvl = team.length > 0 ? Math.floor(team.reduce((s,p) => s+p.level, 0) / team.length) : 1;
   const wildLvl = Math.max(1, Math.min(10, avgLvl + (Math.floor(Math.random() * 3) - 1)));
-  return pmCreatePomMonInstance(chosen, wildLvl);
+  return pmCreatePokePomInstance(chosen, wildLvl);
 }
 
 function pmAttemptCapture() {
@@ -1459,7 +1459,7 @@ function pmGetGym(id) {
 function pmGenerateGymChampion(gym) {
   // Champion au niveau 7, stats boostées
   const lvl = 7;
-  const instance = pmCreatePomMonInstance(gym.champion, lvl);
+  const instance = pmCreatePokePomInstance(gym.champion, lvl);
   return instance;
 }
 
@@ -1472,7 +1472,7 @@ function pmGenerateLeagueOpponent(roundNum) {
   // Niveau progressif : round 1 = 5, +1 par round, max 10
   const lvl = Math.min(10, 4 + roundNum);
   const chosen = PM_DEX_IDS[Math.floor(Math.random() * PM_DEX_IDS.length)];
-  return pmCreatePomMonInstance(chosen, lvl);
+  return pmCreatePokePomInstance(chosen, lvl);
 }
 
 
@@ -1480,16 +1480,16 @@ function pmGenerateLeagueOpponent(roundNum) {
    12. INTERFACE
    ═══════════════════════════════════════════════════════════════════════════ */
 
-// ── État UI PomMon ──
+// ── État UI PokePom ──
 let _pmView = 'home'; // home, collection, team, wild, gym, gymPick, league, battle, starter
 let _pmBattleState = null; // État du combat en cours
 let _pmPendingGym = null; // Arène sélectionnée en attente du choix du combattant
 
 // Injection des styles CSS
 function pmInjectStyles() {
-  if (document.getElementById('pommon-styles')) return;
+  if (document.getElementById('pokepom-styles')) return;
   const style = document.createElement('style');
-  style.id = 'pommon-styles';
+  style.id = 'pokepom-styles';
   style.textContent = `
     /* ═══ POMMON STYLES ═══ */
     .pm-wrap { display:flex; flex-direction:column; gap:20px; }
@@ -1624,16 +1624,16 @@ function pmInjectStyles() {
 function pmInjectUI() {
   // Bouton sidenav (ajouter avant le footer)
   const sidenav = document.getElementById('sidenav');
-  if (sidenav && !document.getElementById('snav-pommon')) {
+  if (sidenav && !document.getElementById('snav-pokepom')) {
     const scroll = sidenav.querySelector('.sidenav-scroll');
     if (scroll) {
       const btn = document.createElement('button');
       btn.className = 'sidenav-item';
-      btn.id = 'snav-pommon';
+      btn.id = 'snav-pokepom';
       btn.onclick = () => pmGoTo('home');
       btn.innerHTML = `
         <span class="sidenav-item-icon">🐾</span>
-        <span class="sidenav-item-label">PomMon</span>
+        <span class="sidenav-item-label">PokePom</span>
       `;
       scroll.appendChild(btn);
     }
@@ -1642,31 +1642,31 @@ function pmInjectUI() {
   // Bouton mobile bottom nav (optionnel)
   // Page
   const mainContent = document.getElementById('main-content');
-  if (mainContent && !document.getElementById('page-pommon')) {
+  if (mainContent && !document.getElementById('page-pokepom')) {
     const page = document.createElement('div');
-    page.id = 'page-pommon';
+    page.id = 'page-pokepom';
     page.className = 'page';
     page.style.maxWidth = '900px';
     mainContent.appendChild(page);
   }
 }
 
-// Navigation vers PomMon (async pour pouvoir charger depuis Firebase)
+// Navigation vers PokePom (async pour pouvoir charger depuis Firebase)
 async function pmGoTo(view) {
   // Cacher toutes les pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  // Activer page pommon
-  const page = document.getElementById('page-pommon');
+  // Activer page pokepom
+  const page = document.getElementById('page-pokepom');
   if (page) page.classList.add('active');
   // Activer le bouton sidenav
   document.querySelectorAll('.sidenav-item').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('snav-pommon');
+  const btn = document.getElementById('snav-pokepom');
   if (btn) btn.classList.add('active');
   // Topbar title
   const titleEl = document.getElementById('topbarTitle');
-  if (titleEl) titleEl.textContent = '🐾 PomMon';
+  if (titleEl) titleEl.textContent = '🐾 PokePom';
 
-  if (typeof _currentPage !== 'undefined') _currentPage = 'pommon';
+  if (typeof _currentPage !== 'undefined') _currentPage = 'pokepom';
   if (typeof _mobileSidenavOpen !== 'undefined' && _mobileSidenavOpen && typeof closeMobileSidenav === 'function') closeMobileSidenav();
 
   _pmView = view;
@@ -1682,7 +1682,7 @@ async function pmGoTo(view) {
   // Charger depuis Firebase au premier accès
   if (!_pmLoaded) {
     // Afficher un loader le temps de la requête
-    if (page) page.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">Chargement de tes PomMons…</div>';
+    if (page) page.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">Chargement de tes PokePoms…</div>';
     await pmLoadFromFirebase();
     if (state && state.code) _pmLoadedForCode = state.code;
   }
@@ -1692,7 +1692,7 @@ async function pmGoTo(view) {
 
 // Rendu principal selon l'état
 function pmRenderPage() {
-  const page = document.getElementById('page-pommon');
+  const page = document.getElementById('page-pokepom');
   if (!page) return;
 
   // Vérifier si le joueur existe, sinon demander starter
@@ -1728,7 +1728,7 @@ function pmRenderStarterChoice(page) {
     <div class="pm-wrap">
       <div class="pm-header">
         <div>
-          <div class="pm-title">🐾 Bienvenue dans PomMon !</div>
+          <div class="pm-title">🐾 Bienvenue dans PokePom !</div>
           <div class="pm-sub">Choisis ton premier compagnon pour débuter l'aventure.</div>
         </div>
       </div>
@@ -1755,7 +1755,7 @@ function pmRenderStarterChoice(page) {
       </div>
     `;
     grid.appendChild(card);
-    setTimeout(() => drawPomMon(document.getElementById('pm-starter-' + id), id), 10);
+    setTimeout(() => drawPokePom(document.getElementById('pm-starter-' + id), id), 10);
   });
 }
 
@@ -1766,7 +1766,7 @@ function pmChooseStarter(id) {
   if (typeof showToast === 'function') showToast(`${PM_DEX[id].name} a rejoint ton équipe !`, '🐾');
 }
 
-// ── Écran d'accueil PomMon ──
+// ── Écran d'accueil PokePom ──
 function pmRenderHome(page, player) {
   const team = pmGetTeam(player);
   const badgeCount = player.badges.length;
@@ -1776,7 +1776,7 @@ function pmRenderHome(page, player) {
     <div class="pm-wrap">
       <div class="pm-header">
         <div>
-          <div class="pm-title">🐾 PomMon</div>
+          <div class="pm-title">🐾 PokePom</div>
           <div class="pm-sub">${player.collection.length} capturés · ${badgeCount}/7 badges · Meilleur score Ligue : ${player.leagueBestScore}</div>
         </div>
       </div>
@@ -1797,9 +1797,9 @@ function pmRenderHome(page, player) {
             🏆 Arènes (${badgeCount}/7 badges) · ${player.dailyGymWins >= PM_DAILY_GYM_WINS ? "Victoire déjà obtenue aujourd'hui" : "Disponible aujourd'hui"}
           </button>
           <button class="btn-primary" onclick="pmGoTo('league')" ${!canLeague || player.dailyLeagueCount >= PM_DAILY_LEAGUE ? 'disabled' : ''} style="background:${canLeague ? 'var(--primary)' : 'var(--muted)'};">
-            ⭐ Ligue PomMon ${canLeague ? `(${PM_DAILY_LEAGUE - player.dailyLeagueCount}/${PM_DAILY_LEAGUE} runs)` : '(verrouillé — 7 badges requis)'}
+            ⭐ Ligue PokePom ${canLeague ? `(${PM_DAILY_LEAGUE - player.dailyLeagueCount}/${PM_DAILY_LEAGUE} runs)` : '(verrouillé — 7 badges requis)'}
           </button>
-          <button class="btn-outline" onclick="pmGoTo('collection')">📚 Collection (${player.collection.length} PomMons)</button>
+          <button class="btn-outline" onclick="pmGoTo('collection')">📚 Collection (${player.collection.length} PokePoms)</button>
         </div>
       </div>
 
@@ -1824,14 +1824,14 @@ function pmRenderHome(page, player) {
     slot.className = 'pm-team-slot' + (team[i] ? '' : ' empty');
     slot.onclick = () => pmGoTo('team');
     if (team[i]) {
-      const p = PM_DEX[team[i].pommonId];
+      const p = PM_DEX[team[i].pokepomId];
       slot.innerHTML = `
         <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-team-${i}"></canvas>
         <div style="font-weight:700; font-size:.85rem;">${p.name}</div>
         <div style="font-size:.7rem; color:var(--muted); font-family:'Space Mono',monospace;">Niv ${team[i].level}</div>
         <span class="pm-type-badge" style="background:${PM_TYPE_COLOR[p.type]};">${PM_TYPE_EMOJI[p.type]}</span>
       `;
-      setTimeout(() => drawPomMon(document.getElementById('pm-team-' + i), team[i].pommonId), 10);
+      setTimeout(() => drawPokePom(document.getElementById('pm-team-' + i), team[i].pokepomId), 10);
     } else {
       slot.innerHTML = `<div style="color:var(--muted); font-size:.85rem;">Emplacement vide</div>`;
     }
@@ -1846,7 +1846,7 @@ function pmRenderTeamManager(page, player) {
       <div class="pm-header">
         <div>
           <div class="pm-title">🔄 Gérer l'équipe</div>
-          <div class="pm-sub">Clique sur un PomMon pour l'ajouter/retirer de ton équipe (${player.team.length}/3)</div>
+          <div class="pm-sub">Clique sur un PokePom pour l'ajouter/retirer de ton équipe (${player.team.length}/3)</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
       </div>
@@ -1858,7 +1858,7 @@ function pmRenderTeamManager(page, player) {
 
   const grid = document.getElementById('pm-team-grid');
   player.collection.forEach(inst => {
-    const base = PM_DEX[inst.pommonId];
+    const base = PM_DEX[inst.pokepomId];
     const inTeam = player.team.includes(inst.uid);
     const card = document.createElement('div');
     card.className = 'pm-collection-card' + (inTeam ? ' in-team' : '');
@@ -1892,7 +1892,7 @@ function pmRenderTeamManager(page, player) {
       </div>
     `;
     grid.appendChild(card);
-    setTimeout(() => drawPomMon(document.getElementById('pm-team-' + inst.uid), inst.pommonId), 10);
+    setTimeout(() => drawPokePom(document.getElementById('pm-team-' + inst.uid), inst.pokepomId), 10);
   });
 }
 
@@ -1903,7 +1903,7 @@ function pmRenderCollection(page, player) {
       <div class="pm-header">
         <div>
           <div class="pm-title">📚 Collection</div>
-          <div class="pm-sub">${player.collection.length}/25 PomMons capturés</div>
+          <div class="pm-sub">${player.collection.length}/25 PokePoms capturés</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
       </div>
@@ -1915,7 +1915,7 @@ function pmRenderCollection(page, player) {
 
   const grid = document.getElementById('pm-coll-grid');
   player.collection.forEach(inst => {
-    const base = PM_DEX[inst.pommonId];
+    const base = PM_DEX[inst.pokepomId];
     const inTeam = player.team.includes(inst.uid);
     const card = document.createElement('div');
     card.className = 'pm-collection-card' + (inTeam ? ' in-team' : '');
@@ -1929,7 +1929,7 @@ function pmRenderCollection(page, player) {
       ${base.lore ? `<div class="pm-coll-lore">${base.lore}</div>` : ''}
     `;
     grid.appendChild(card);
-    setTimeout(() => drawPomMon(document.getElementById('pm-coll-' + inst.uid), inst.pommonId), 10);
+    setTimeout(() => drawPokePom(document.getElementById('pm-coll-' + inst.uid), inst.pokepomId), 10);
   });
 }
 
@@ -1939,14 +1939,14 @@ function pmToggleTeam(uid) {
   if (idx !== -1) {
     // Retirer
     if (player.team.length === 1) {
-      if (typeof showToast === 'function') showToast('Tu dois garder au moins 1 PomMon dans l\'équipe !', '⚠️');
+      if (typeof showToast === 'function') showToast('Tu dois garder au moins 1 PokePom dans l\'équipe !', '⚠️');
       return;
     }
     player.team.splice(idx, 1);
   } else {
     // Ajouter
     if (player.team.length >= 3) {
-      if (typeof showToast === 'function') showToast('Équipe pleine (max 3) — retire un PomMon d\'abord.', '⚠️');
+      if (typeof showToast === 'function') showToast('Équipe pleine (max 3) — retire un PokePom d\'abord.', '⚠️');
       return;
     }
     player.team.push(uid);
@@ -1977,7 +1977,7 @@ function pmRenderWildBattle(page, player) {
     page.innerHTML = `
       <div class="pm-wrap">
         <div class="pm-header"><div class="pm-title">🌿 Combats sauvages</div></div>
-        <div class="pm-card">Tu n'as aucun PomMon en équipe ! Retourne dans ta collection.</div>
+        <div class="pm-card">Tu n'as aucun PokePom en équipe ! Retourne dans ta collection.</div>
       </div>
     `;
     return;
@@ -1993,7 +1993,7 @@ function pmRenderWildBattle(page, player) {
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
       </div>
       <div class="pm-card" style="text-align:center;">
-        <p style="margin-bottom:14px; color:var(--muted);">Un PomMon sauvage peut apparaître... choisis lequel de ton équipe envoyer au combat.</p>
+        <p style="margin-bottom:14px; color:var(--muted);">Un PokePom sauvage peut apparaître... choisis lequel de ton équipe envoyer au combat.</p>
         <div class="pm-team-slots" id="pm-team-pick"></div>
       </div>
     </div>
@@ -2001,7 +2001,7 @@ function pmRenderWildBattle(page, player) {
 
   const slots = document.getElementById('pm-team-pick');
   team.forEach((inst, i) => {
-    const base = PM_DEX[inst.pommonId];
+    const base = PM_DEX[inst.pokepomId];
     const slot = document.createElement('div');
     slot.className = 'pm-team-slot';
     slot.style.cursor = 'pointer';
@@ -2013,7 +2013,7 @@ function pmRenderWildBattle(page, player) {
       <span class="pm-type-badge" style="background:${PM_TYPE_COLOR[base.type]};">${PM_TYPE_EMOJI[base.type]}</span>
     `;
     slots.appendChild(slot);
-    setTimeout(() => drawPomMon(document.getElementById('pm-pick-' + i), inst.pommonId), 10);
+    setTimeout(() => drawPokePom(document.getElementById('pm-pick-' + i), inst.pokepomId), 10);
   });
 }
 
@@ -2024,7 +2024,7 @@ function pmStartWildBattle(firstInstance) {
 
   // Créer fighters pour toute l'équipe
   const teamFighters = team.map(inst => pmCreateFighter(inst, 1.0));
-  // Placer le PomMon choisi en premier
+  // Placer le PokePom choisi en premier
   let firstIdx = team.findIndex(t => t.uid === firstInstance.uid);
   if (firstIdx < 0) firstIdx = 0;
 
@@ -2041,7 +2041,7 @@ function pmStartWildBattle(firstInstance) {
     playerFighter: teamFighters[firstIdx],
     opponentFighter: wildFighter,
     log: [
-      `Un ${PM_DEX[wild.pommonId].name} sauvage apparaît ! (Niv ${wild.level})`,
+      `Un ${PM_DEX[wild.pokepomId].name} sauvage apparaît ! (Niv ${wild.level})`,
       `Tu envoies ${teamFighters[firstIdx].name} au combat !`
     ],
     turn: 0,
@@ -2086,7 +2086,7 @@ function pmRenderGyms(page, player) {
       ${won ? '<div style="color:var(--green); font-weight:700; font-size:.85rem;">✓ Battue</div>' : ''}
     `;
     grid.appendChild(card);
-    setTimeout(() => drawPomMon(document.getElementById('pm-gym-' + gym.id), gym.champion), 10);
+    setTimeout(() => drawPokePom(document.getElementById('pm-gym-' + gym.id), gym.champion), 10);
   });
 }
 
@@ -2107,7 +2107,7 @@ function pmStartGymBattle(gym) {
   pmRenderPage();
 }
 
-// Écran : choisir quel PomMon envoyer en premier pour l'arène
+// Écran : choisir quel PokePom envoyer en premier pour l'arène
 function pmRenderGymPick(page, player) {
   const gym = _pmPendingGym;
   if (!gym) { _pmView = 'gym'; pmRenderPage(); return; }
@@ -2128,7 +2128,7 @@ function pmRenderGymPick(page, player) {
   `;
   const slots = document.getElementById('pm-gym-pick');
   team.forEach((inst, i) => {
-    const base = PM_DEX[inst.pommonId];
+    const base = PM_DEX[inst.pokepomId];
     const slot = document.createElement('div');
     slot.className = 'pm-team-slot';
     slot.style.cursor = 'pointer';
@@ -2140,7 +2140,7 @@ function pmRenderGymPick(page, player) {
       <span class="pm-type-badge" style="background:${PM_TYPE_COLOR[base.type]};">${PM_TYPE_EMOJI[base.type]}</span>
     `;
     slots.appendChild(slot);
-    setTimeout(() => drawPomMon(document.getElementById('pm-gympick-' + i), inst.pommonId), 10);
+    setTimeout(() => drawPokePom(document.getElementById('pm-gympick-' + i), inst.pokepomId), 10);
   });
 }
 
@@ -2182,7 +2182,7 @@ function pmRenderLeague(page, player) {
     page.innerHTML = `
       <div class="pm-wrap">
         <div class="pm-header">
-          <div class="pm-title">⭐ Ligue PomMon</div>
+          <div class="pm-title">⭐ Ligue PokePom</div>
           <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
         </div>
         <div class="pm-card">Tu dois battre les 7 arènes avant d'accéder à la Ligue ! (${player.badges.length}/7)</div>
@@ -2195,7 +2195,7 @@ function pmRenderLeague(page, player) {
     page.innerHTML = `
       <div class="pm-wrap">
         <div class="pm-header">
-          <div class="pm-title">⭐ Ligue PomMon</div>
+          <div class="pm-title">⭐ Ligue PokePom</div>
           <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
         </div>
         <div class="pm-card">Tu as épuisé tes 5 tentatives quotidiennes. Reviens demain !<br><br>Meilleur score : <strong>${player.leagueBestScore} victoires</strong></div>
@@ -2209,10 +2209,10 @@ function pmRenderLeague(page, player) {
     page.innerHTML = `
       <div class="pm-wrap">
         <div class="pm-header">
-          <div class="pm-title">⭐ Ligue PomMon</div>
+          <div class="pm-title">⭐ Ligue PokePom</div>
           <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
         </div>
-        <div class="pm-card">Tu dois avoir une équipe complète de 3 PomMons pour entrer en Ligue !</div>
+        <div class="pm-card">Tu dois avoir une équipe complète de 3 PokePoms pour entrer en Ligue !</div>
       </div>
     `;
     return;
@@ -2222,7 +2222,7 @@ function pmRenderLeague(page, player) {
     <div class="pm-wrap">
       <div class="pm-header">
         <div>
-          <div class="pm-title">⭐ Ligue PomMon</div>
+          <div class="pm-title">⭐ Ligue PokePom</div>
           <div class="pm-sub">Survie avec équipe de 3 · HP/PP conservés · 50 🪙 par victoire</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
@@ -2248,7 +2248,7 @@ async function pmRenderLeagueLb() {
   if (!list) return;
   if (typeof dbGet !== 'function') { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Classement non disponible.</div>'; return; }
   try {
-    const snap = await dbGet('pommon_league_lb');
+    const snap = await dbGet('pokepom_league_lb');
     if (!snap) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score enregistré — sois le premier !</div>'; return; }
     const entries = Object.values(snap).sort((a, b) => b.score - a.score).slice(0, 10);
     if (entries.length === 0) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score enregistré.</div>'; return; }
@@ -2270,7 +2270,7 @@ async function pmRenderLeagueLb() {
       list.appendChild(row);
     }
   } catch (e) {
-    console.error('[pommon] renderLeagueLb error', e);
+    console.error('[pokepom] renderLeagueLb error', e);
     list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Erreur de chargement.</div>';
   }
 }
@@ -2325,7 +2325,7 @@ function pmRenderBattle(page, player) {
 
       <div class="pm-battle-arena">
         <div class="pm-battle-field">
-          <!-- PomMon joueur (gauche) -->
+          <!-- PokePom joueur (gauche) -->
           <div class="pm-battle-side ${p.ko ? '' : 'active'}">
             <canvas width="64" height="64" class="pm-sprite pm-sprite-lg" id="pm-battle-player"></canvas>
             <div class="pm-battle-info">
@@ -2360,8 +2360,8 @@ function pmRenderBattle(page, player) {
   `;
 
   setTimeout(() => {
-    drawPomMon(document.getElementById('pm-battle-player'), p.pommonId);
-    drawPomMon(document.getElementById('pm-battle-opp'), o.pommonId);
+    drawPokePom(document.getElementById('pm-battle-player'), p.pokepomId);
+    drawPokePom(document.getElementById('pm-battle-opp'), o.pokepomId);
     // Scroll log to bottom
     const log = document.getElementById('pm-log');
     if (log) log.scrollTop = log.scrollHeight;
@@ -2390,7 +2390,7 @@ function pmRenderStatusBadges(fighter) {
 
 function pmRenderMoveChoices(fighter) {
   const bs = _pmBattleState;
-  // Mode "choix forcé après KO" : afficher uniquement la liste des PomMons dispo
+  // Mode "choix forcé après KO" : afficher uniquement la liste des PokePoms dispo
   if (bs && bs.forcedSwitch) {
     return pmRenderSwitchChoices(true);
   }
@@ -2423,13 +2423,13 @@ function pmRenderMoveChoices(fighter) {
     html += '<button class="btn-primary" style="margin-top:10px;" onclick="pmDoBattleTurn(0)">Utiliser Lutte</button>';
   }
 
-  // Bouton "Changer de PomMon" s'il y a au moins un autre PomMon dispo (non-KO)
+  // Bouton "Changer de PokePom" s'il y a au moins un autre PokePom dispo (non-KO)
   if (bs && bs.teamFighters) {
     const availableCount = bs.teamFighters.filter((f, i) => !f.ko && i !== bs.currentTeamIdx).length;
     if (availableCount > 0) {
       html += `
         <button class="btn-outline" style="margin-top:10px; width:100%;" onclick="pmOpenSwitch()">
-          🔄 Changer de PomMon <span style="color:var(--muted); font-size:.8rem;">(coûte un tour)</span>
+          🔄 Changer de PokePom <span style="color:var(--muted); font-size:.8rem;">(coûte un tour)</span>
         </button>
       `;
     }
@@ -2438,13 +2438,13 @@ function pmRenderMoveChoices(fighter) {
   return html;
 }
 
-// Affiche les PomMons de l'équipe (pour switch manuel ou forcé après KO)
+// Affiche les PokePoms de l'équipe (pour switch manuel ou forcé après KO)
 function pmRenderSwitchChoices(isForced) {
   const bs = _pmBattleState;
   if (!bs || !bs.teamFighters) return '';
   let html = isForced
-    ? '<div style="margin-bottom:10px; text-align:center; color:var(--yellow); font-weight:700;">Ton PomMon est K.O. ! Choisis un remplaçant :</div>'
-    : '<div style="margin-bottom:10px; text-align:center; color:var(--muted); font-size:.85rem;">Choisis le PomMon à envoyer au combat :</div>';
+    ? '<div style="margin-bottom:10px; text-align:center; color:var(--yellow); font-weight:700;">Ton PokePom est K.O. ! Choisis un remplaçant :</div>'
+    : '<div style="margin-bottom:10px; text-align:center; color:var(--muted); font-size:.85rem;">Choisis le PokePom à envoyer au combat :</div>';
   html += '<div class="pm-switch-grid">';
   bs.teamFighters.forEach((f, i) => {
     const isActive = i === bs.currentTeamIdx;
@@ -2473,7 +2473,7 @@ function pmRenderSwitchChoices(isForced) {
   setTimeout(() => {
     bs.teamFighters.forEach((f, i) => {
       const c = document.getElementById('pm-sw-' + i);
-      if (c) drawPomMon(c, f.pommonId);
+      if (c) drawPokePom(c, f.pokepomId);
     });
   }, 10);
   return html;
@@ -2493,7 +2493,7 @@ function pmCancelSwitch() {
   pmRenderPage();
 }
 
-// Effectue le switch de PomMon
+// Effectue le switch de PokePom
 // costsTurn = true : switch manuel, l'adversaire attaque ce tour
 // costsTurn = false : switch forcé après KO, pas d'attaque adverse
 function pmDoSwitch(newIdx, costsTurn) {
@@ -2525,7 +2525,7 @@ function pmDoSwitch(newIdx, costsTurn) {
       const endEvents2 = pmApplyEndOfTurnEffects(o);
       endEvents2.forEach(ev => bs.log.push(pmEventToText(ev)));
       bs.turn++;
-      // Si le nouveau PomMon est KO direct → switch forcé
+      // Si le nouveau PokePom est KO direct → switch forcé
       if (newFighter.ko) {
         const hasOther = bs.teamFighters.some((f, i) => !f.ko && i !== newIdx);
         if (hasOther) {
@@ -2623,8 +2623,8 @@ function pmHandleBattleEnd() {
       // Reward Pomels (gain atomique via addBalanceTransaction)
       if (typeof addBalanceTransaction === 'function') {
         addBalanceTransaction(state.code, PM_REWARD_LEAGUE_PER_WIN, {
-          type: 'pommon_league',
-          desc: `Victoire Ligue PomMon (round ${bs.roundNum})`,
+          type: 'pokepom_league',
+          desc: `Victoire Ligue PokePom (round ${bs.roundNum})`,
           amount: PM_REWARD_LEAGUE_PER_WIN,
           date: new Date().toISOString()
         }).then(updated => {
@@ -2690,16 +2690,16 @@ function pmHandleBattleEnd() {
       pmUpdateInstance(player, bs.playerInstance);
 
       // Anti-doublon : si déjà possédé, pas de capture
-      const alreadyOwned = (player.collection || []).some(c => c.pommonId === bs.wildInstance.pommonId);
+      const alreadyOwned = (player.collection || []).some(c => c.pokepomId === bs.wildInstance.pokepomId);
       if (alreadyOwned) {
-        bs.log.push(`💨 Le ${o.name} s'enfuit. Tu possèdes déjà ce PomMon — seulement l'XP pour toi.`);
+        bs.log.push(`💨 Le ${o.name} s'enfuit. Tu possèdes déjà ce PokePom — seulement l'XP pour toi.`);
       } else {
         // Tentative de capture (seulement si pas déjà possédé)
         const captured = pmAttemptCapture();
         if (captured) {
           const captureInst = bs.wildInstance;
           pmAddToCollection(player, captureInst);
-          bs.log.push(`<strong>🎉 ${PM_DEX[captureInst.pommonId].name} a été capturé ! Il rejoint ta collection.</strong>`);
+          bs.log.push(`<strong>🎉 ${PM_DEX[captureInst.pokepomId].name} a été capturé ! Il rejoint ta collection.</strong>`);
         } else {
           bs.log.push(`💨 Le ${o.name} s'est enfui...`);
         }
@@ -2715,7 +2715,7 @@ function pmHandleBattleEnd() {
       bs.ended = true;
       pmSaveNow();
     } else if (p.ko) {
-      // Le PomMon actif est KO — chercher un remplaçant dans l'équipe
+      // Le PokePom actif est KO — chercher un remplaçant dans l'équipe
       const hasOther = bs.teamFighters && bs.teamFighters.some((f, i) => !f.ko && i !== bs.currentTeamIdx);
       if (hasOther) {
         // Switch forcé — le joueur choisit parmi les non-KO
@@ -2742,7 +2742,7 @@ function pmHandleBattleEnd() {
       }
       pmUpdateInstance(player, bs.playerInstance);
 
-      // Sauvegarder toute l'équipe (XP peut toucher d'autres PomMons plus tard)
+      // Sauvegarder toute l'équipe (XP peut toucher d'autres PokePoms plus tard)
       if (bs.teamFighters) {
         bs.teamFighters.forEach((f, i) => {
           if (bs.team && bs.team[i]) pmUpdateInstance(player, bs.team[i]);
@@ -2752,7 +2752,7 @@ function pmHandleBattleEnd() {
       // Reward Pomels (gain atomique via addBalanceTransaction)
       if (typeof addBalanceTransaction === 'function') {
         addBalanceTransaction(state.code, PM_REWARD_GYM, {
-          type: 'pommon_gym',
+          type: 'pokepom_gym',
           desc: `Arène ${PM_TYPE_LABEL[bs.gym.id]} battue`,
           amount: PM_REWARD_GYM,
           date: new Date().toISOString()
@@ -2772,7 +2772,7 @@ function pmHandleBattleEnd() {
       bs.ended = true;
       pmSaveNow();
     } else if (p.ko) {
-      // Le PomMon actif est KO — chercher un remplaçant
+      // Le PokePom actif est KO — chercher un remplaçant
       const hasOther = bs.teamFighters && bs.teamFighters.some((f, i) => !f.ko && i !== bs.currentTeamIdx);
       if (hasOther) {
         bs.forcedSwitch = true;
@@ -2857,5 +2857,5 @@ if (document.readyState === 'loading') {
 }
 
 // Retry en cas où le sidenav n'existe pas encore
-setTimeout(() => { if (!document.getElementById('snav-pommon')) pmInjectUI(); }, 2000);
-setTimeout(() => { if (!document.getElementById('snav-pommon')) pmInjectUI(); }, 5000);
+setTimeout(() => { if (!document.getElementById('snav-pokepom')) pmInjectUI(); }, 2000);
+setTimeout(() => { if (!document.getElementById('snav-pokepom')) pmInjectUI(); }, 5000);
