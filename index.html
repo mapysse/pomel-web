@@ -877,67 +877,9 @@
   .clicker-upgrade-desc { font-size: .8rem; color: var(--muted); line-height: 1.4; }
   .clicker-upgrade-price { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--primary); font-weight: 700; margin-top: 4px; }
 
-  /* SNAKE */
-  .snake-wrap { display: flex; flex-direction: column; gap: 20px; }
-  .snake-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .snake-score-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; text-align: center; min-width: 110px; flex-shrink: 0; }
-  .snake-score-label { font-size: .65rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
-  .snake-score-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
-  .snake-canvas-wrap { position: relative; width: 400px; max-width: 100%; margin: 0 auto; border-radius: 14px; overflow: hidden; border: 2px solid var(--border); box-shadow: 0 0 30px var(--primary-glow); background: #0a0a0c; }
-  .snake-canvas-wrap canvas { display: block; width: 100%; height: auto; }
-  .snake-overlay { position: absolute; inset: 0; background: rgba(13,13,15,0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(4px); }
-  .snake-overlay.hidden { display: none; }
-  .snake-overlay-title { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
-  .snake-overlay-sub { font-size: .88rem; color: var(--muted); text-align: center; padding: 0 24px; line-height: 1.5; }
-  .snake-controls-hint { display: flex; justify-content: center; gap: 24px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
-  .snake-lb-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
-  .snake-lb-title { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; }
-  .snake-lb-list { display: flex; flex-direction: column; gap: 8px; }
-  .snake-lb-item { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 14px; transition: all var(--transition); }
-  .snake-lb-item:hover { background: var(--surface3); }
-  .snake-lb-item.me { border: 1px solid rgba(235,88,70,0.3); background: var(--primary-subtle); }
-  .snake-lb-rank { font-family: 'Space Mono', monospace; font-weight: 700; width: 24px; color: var(--muted); flex-shrink: 0; }
-  .snake-lb-rank.top1 { color: #FFD700; }
-  .snake-lb-rank.top2 { color: #C0C0C0; }
-  .snake-lb-rank.top3 { color: #CD7F32; }
-  .snake-lb-name { flex: 1; font-weight: 700; font-size: .9rem; }
-  .snake-lb-score { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--primary); font-weight: 700; }
-  .snake-lb-pomels { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--green); }
-  /* Classements côte à côte */
-  .snake-lb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 700px) { .snake-lb-row { grid-template-columns: 1fr; } }
+  /* SNAKE — styles dans snake.js */
 
-  /* 2048 */
-  .g2048-wrap { display: flex; flex-direction: column; gap: 20px; }
-  .g2048-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .g2048-score-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; text-align: center; min-width: 110px; flex-shrink: 0; }
-  .g2048-score-label { font-size: .65rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
-  .g2048-score-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
-  .g2048-board-outer { position: relative; width: 400px; max-width: 100%; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px solid var(--border); box-shadow: 0 0 30px var(--primary-glow); }
-  .g2048-board { background: #2a2a35; padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; aspect-ratio: 1; }
-  .g2048-tile { border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1.8rem; transition: background .1s; animation: tile-appear .12s ease; }
-  @keyframes tile-appear { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .g2048-tile.merged { animation: tile-merge .18s ease; }
-  @keyframes tile-merge { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
-  .g2048-tile.empty { background: rgba(255,255,255,0.07); }
-  .t2    { background:#eee4da; color:#776e65; }
-  .t4    { background:#ede0c8; color:#776e65; }
-  .t8    { background:#f2b179; color:#f9f6f2; }
-  .t16   { background:#f59563; color:#f9f6f2; }
-  .t32   { background:#f67c5f; color:#f9f6f2; }
-  .t64   { background:#f65e3b; color:#f9f6f2; }
-  .t128  { background:#edcf72; color:#f9f6f2; font-size:1.5rem; }
-  .t256  { background:#edcc61; color:#f9f6f2; font-size:1.5rem; }
-  .t512  { background:#edc850; color:#f9f6f2; font-size:1.5rem; }
-  .t1024 { background:#edc53f; color:#f9f6f2; font-size:1.1rem; }
-  .t2048 { background:#edc22e; color:#f9f6f2; font-size:1.1rem; box-shadow:inset 0 0 20px rgba(255,220,80,0.3); }
-  .t4096 { background:#EB5846; color:#f9f6f2; font-size:1rem; }
-  .t8192 { background:#c03c2c; color:#f9f6f2; font-size:.9rem; }
-  .g2048-overlay { position: absolute; inset: 0; background: rgba(13,13,15,0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(4px); }
-  .g2048-overlay.hidden { display: none; }
-  .g2048-overlay-title { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
-  .g2048-overlay-sub { font-size: .88rem; color: var(--muted); text-align: center; padding: 0 24px; line-height: 1.5; }
-  .g2048-controls-hint { display: flex; justify-content: center; gap: 24px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
+  /* 2048 — styles dans g2048.js */
 
   /* PROVERBE DU JOUR */
   .proverbe-wrap { display: flex; flex-direction: column; gap: 24px; }
@@ -1446,26 +1388,9 @@
     #groupActionsGrid { grid-template-columns: 1fr !important; }
 
     /* ── JEUX MOBILE ── */
-    /* Snake — plus grand, centré */
-    .snake-wrap { gap: 14px; }
-    .snake-header { gap: 10px; }
-    .snake-header .section-title { font-size: 1.1rem; }
-    .snake-header .section-sub { font-size: .78rem; }
-    .snake-score-box { min-width: 90px; padding: 10px 14px; }
-    .snake-score-val { font-size: 1.2rem; }
-    .snake-canvas-wrap { border-radius: 10px; border-width: 2px; touch-action: none; }
-    .snake-controls-hint { font-size: .72rem; gap: 12px; }
+    /* Snake responsive — dans snake.js */
 
-    /* 2048 — tuiles adaptées */
-    .g2048-board-outer { border-radius: 10px; touch-action: none; }
-    .g2048-board { padding: 6px; gap: 6px; }
-    .g2048-tile { font-size: 1.3rem; border-radius: 4px; }
-    .t128, .t256, .t512 { font-size: 1.1rem; }
-    .t1024, .t2048 { font-size: .9rem; }
-    .t4096, .t8192 { font-size: .75rem; }
-    .g2048-header .section-title { font-size: 1.1rem; }
-    .g2048-score-box { min-width: 90px; padding: 10px 14px; }
-    .g2048-score-val { font-size: 1.2rem; }
+    /* 2048 responsive — dans g2048.js */
 
     /* Clicker — fruits plus gros, stats compactes */
     .clicker-stat { min-width: 100px; padding: 10px 14px; }
@@ -1488,55 +1413,10 @@
     .pfc-result-hands { font-size: 2.4rem; }
     .pfc-result-emoji { font-size: 2.4rem; }
 
-    /* Leaderboards compacts */
-    .snake-lb-item { padding: 8px 10px; gap: 8px; }
-    .snake-lb-name { font-size: .82rem; }
-    .snake-lb-score { font-size: .78rem; }
-    .snake-lb-pomels { font-size: .72rem; }
+    /* Snake lb + dpad — dans snake.js */
   }
 
-  /* ── D-PAD MOBILE POUR SERPENT ── */
-  .snake-dpad {
-    display: none;
-    margin: 0 auto;
-    width: 180px; height: 180px;
-    position: relative; user-select: none;
-    -webkit-user-select: none;
-  }
-  .snake-dpad-btn {
-    position: absolute;
-    width: 56px; height: 56px;
-    border-radius: 14px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: all .1s;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .snake-dpad-btn:active { background: var(--primary); border-color: var(--primary); transform: scale(.9); }
-  .snake-dpad-up    { top: 0;   left: 50%; transform: translateX(-50%); }
-  .snake-dpad-down  { bottom: 0;left: 50%; transform: translateX(-50%); }
-  .snake-dpad-left  { left: 0;  top: 50%;  transform: translateY(-50%); }
-  .snake-dpad-right { right: 0; top: 50%;  transform: translateY(-50%); }
-  .snake-dpad-center {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--surface2); border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: .65rem; font-weight: 700; color: var(--muted);
-    cursor: pointer;
-  }
-  .snake-dpad-center:active { background: var(--yellow); border-color: var(--yellow); color: #000; }
-  @media (max-width: 600px) {
-    .snake-dpad { display: block; }
-    .snake-controls-hint { display: none; }
-  }
-  @media (min-width: 601px) {
-    .snake-dpad { display: none; }
-  }
+  /* D-pad — dans snake.js */
 
   /* ── BOUTIQUE GROUPE ── */
   .group-shop-modal { max-width: 620px; display: flex; flex-direction: column; gap: 20px; }
@@ -3631,8 +3511,31 @@ async function dbGetAll(path) {
 
 // ── ACCOUNT HELPERS ──────────────────────────────
 async function getAccount(code) { return dbGet('accounts/' + code); }
-async function getAllAccounts() { return dbGetAll('accounts'); }
-async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); }
+
+// Cache getAllAccounts — évite de re-télécharger 170+ Ko à chaque appel
+// TTL de 60 secondes : après ce délai, le prochain appel refait une vraie lecture
+let _allAccountsCache = null;
+let _allAccountsCacheTime = 0;
+const _ALL_ACCOUNTS_TTL = 60000; // 60 secondes
+
+async function getAllAccounts() {
+  const now = Date.now();
+  if (_allAccountsCache && (now - _allAccountsCacheTime) < _ALL_ACCOUNTS_TTL) {
+    return _allAccountsCache;
+  }
+  const result = await dbGetAll('accounts');
+  _allAccountsCache = result;
+  _allAccountsCacheTime = now;
+  return result;
+}
+
+// Invalider le cache manuellement (après une écriture qui modifie les comptes)
+function invalidateAccountsCache() {
+  _allAccountsCache = null;
+  _allAccountsCacheTime = 0;
+}
+
+async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); invalidateAccountsCache(); }
 
 // Transaction atomique pour ajouter du solde + historique sans écraser d'autres écritures en cours
 // Retourne le compte mis à jour, ou null en cas d'échec définitif
@@ -3662,7 +3565,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
         if (historyEntry) {
           if (!Array.isArray(current.history)) current.history = [];
           current.history.unshift(historyEntry);
-          if (current.history.length > 50) current.history = current.history.slice(0, 50);
+          if (current.history.length > 30) current.history = current.history.slice(0, 30);
         }
         updatedAcc = current;
         return current;
@@ -3670,6 +3573,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
 
       // Transaction committed = résultat fiable
       if (result && result.committed) {
+        invalidateAccountsCache();
         // Lire la valeur confirmée par Firebase
         const snap = result.snapshot;
         if (snap && snap.exists()) return snap.val();
@@ -3702,7 +3606,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
           if (historyEntry) {
             if (!Array.isArray(acc.history)) acc.history = [];
             acc.history.unshift(historyEntry);
-            if (acc.history.length > 500) acc.history = acc.history.slice(0, 500);
+            if (acc.history.length > 30) acc.history = acc.history.slice(0, 30);
           }
           await dbSet('accounts/' + code, acc);
           console.warn('[pomel] addBalanceTransaction: fallback dbSet utilisé pour', code);
@@ -3828,6 +3732,10 @@ function migrateAccount(acc) {
   // Compteur de pomels gagnés cette semaine (persistant, reset hebdo)
   if (typeof acc.weekPomelsEarned !== 'number') acc.weekPomelsEarned = 0;
   if (!acc.weekPomelsKey) acc.weekPomelsKey = null;
+  // Tronquer l'historique au login (nettoyage rétroactif des vieux comptes saturés)
+  if (Array.isArray(acc.history) && acc.history.length > 30) {
+    acc.history = acc.history.slice(0, 30);
+  }
   return acc;
 }
 
@@ -3986,8 +3894,8 @@ function launchApp() {
   checkJardinReset().catch(() => {});
   checkGroupWeeklyReward().catch(() => {});
   // Vérifier les récompenses hebdomadaires des jeux (snake et 2048)
-  checkSnakeWeeklyReset().catch(() => {});
-  checkG2048WeeklyReset().catch(() => {});
+  if (typeof checkSnakeWeeklyReset === 'function') checkSnakeWeeklyReset().catch(() => {});
+  if (typeof checkG2048WeeklyReset === 'function') checkG2048WeeklyReset().catch(() => {});
   // Initialiser les pastilles de notification
   checkNotifUpdates();
   setInterval(checkNotifUpdates, 60000);
@@ -4230,13 +4138,13 @@ function _onPageLoad(id) {
   // Mettre à jour la sidenav
   setActiveSnavItem(id);
   // Stop snake if navigating away
-  if (id !== 'snake' && snakeLoop) {
+  if (id !== 'snake' && typeof snakeLoop !== 'undefined' && snakeLoop) {
     clearTimeout(snakeLoop);
     snakeLoop = null;
-    snakeState = null;
+    if (typeof snakeState !== 'undefined') snakeState = null;
   }
   // Stop 2048 if navigating away
-  if (id !== 'g2048') g2048Running = false;
+  if (id !== 'g2048' && typeof g2048Running !== 'undefined') g2048Running = false;
 
   // Stop clicker if navigating away
   if (id !== 'jardin' && jardinTimerInterval) { clearInterval(jardinTimerInterval); jardinTimerInterval = null; }
@@ -4268,8 +4176,8 @@ function _onPageLoad(id) {
   if (id === 'hotel') { renderHotel(); markPageSeen('hotel'); }
   if (id === 'proverbe') { renderProverbe(); markPageSeen('proverbe'); }
   if (id === 'quetes') renderQuetes();
-  if (id === 'snake') renderSnakePage();
-  if (id === 'g2048') render2048Page();
+  if (id === 'snake' && typeof renderSnakePage === 'function') renderSnakePage();
+  if (id === 'g2048' && typeof render2048Page === 'function') render2048Page();
   if (id === 'clicker') renderClickerPage();
   if (id === 'jardin') renderJardin();
   if (id === 'profils') renderProfils();
@@ -5037,7 +4945,7 @@ async function checkGroupWeeklyReward() {
               current.group = null;
               if (!Array.isArray(current.history)) current.history = [];
               current.history.unshift({ type: 'group', desc: `🔄 Groupe "${g.name}" dissous (renouvellement mensuel)`, amount: 0, date: now.toISOString() });
-              if (current.history.length > 500) current.history = current.history.slice(0, 500);
+              if (current.history.length > 30) current.history = current.history.slice(0, 30);
               return current;
             });
             if (code === state.code) {
@@ -5120,7 +5028,7 @@ async function checkGroupWeeklyReward() {
           current.group = null;
           if (!Array.isArray(current.history)) current.history = [];
           current.history.unshift({ type: 'group', desc: `💥 Groupe "${g.name}" dissous (classement hebdo)`, amount: 0, date: now.toISOString() });
-          if (current.history.length > 500) current.history = current.history.slice(0, 500);
+          if (current.history.length > 30) current.history = current.history.slice(0, 30);
           return current;
         });
         if (code === state.code) {
@@ -6082,7 +5990,7 @@ function goToHome() {
   document.getElementById('page-home').classList.add('active');
   setActiveSnavItem('home');
   closeUserMenu();
-  if (snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; snakeState = null; }
+  if (typeof snakeLoop !== 'undefined' && snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; if (typeof snakeState !== 'undefined') snakeState = null; }
   stopClickerPage();
   stopDiscussionListener();
   renderHome();
@@ -6762,419 +6670,13 @@ async function exchangeSeeds() {
   showWinToast(`+${pomels.toLocaleString('fr-FR')} Pomels échangés ! 💱`);
 }
 
-// ── SNAKE GAME ───────────────────────────────────
-const SNAKE_CELL = 20;       // px per cell
-const SNAKE_COLS = 20;       // 400/20
-const SNAKE_ROWS = 20;
-const SNAKE_POMEL_PER_FRUIT = 5;
-const SNAKE_MAX_LB = Infinity;
-
-let snakeState = null;       // null = not running
-let snakeLoop = null;
-let snakePaused = false;
-let snakePomelsEarned = 0;
-let snakeLastDir = null;     // buffer next direction
-
-const SNAKE_COLORS = {
-  bg:      '#0a0a0c',
-  grid:    '#111116',
-  head:    '#EB5846',
-  body:    '#c03c2c',
-  fruit:   '#3ecf6e',
-  fruitGlow: 'rgba(62,207,110,0.5)',
-  text:    '#eeeef0',
-};
-
-function snakeCanvas()  { return document.getElementById('snakeCanvas'); }
-function snakeCtx()     { return snakeCanvas().getContext('2d'); }
-function snakeOverlay() { return document.getElementById('snakeOverlay'); }
-
-function initSnakeState() {
-  return {
-    snake: [
-      { x: 10, y: 10 },
-      { x: 9,  y: 10 },
-      { x: 8,  y: 10 },
-    ],
-    dir:   { x: 1, y: 0 },
-    nextDir: { x: 1, y: 0 },
-    fruit: randomFruit([{ x:10,y:10},{x:9,y:10},{x:8,y:10}]),
-    score: 0,
-    speed: 150,   // ms per tick
-  };
-}
-
-function randomFruit(snake) {
-  let pos;
-  do {
-    pos = { x: Math.floor(Math.random() * SNAKE_COLS), y: Math.floor(Math.random() * SNAKE_ROWS) };
-  } while (snake.some(s => s.x === pos.x && s.y === pos.y));
-  return pos;
-}
-
-function startSnake() {
-  snakeState = initSnakeState();
-  snakePomelsEarned = 0;
-  snakePaused = false;
-  snakeLastDir = null;
-  snakeOverlay().classList.add('hidden');
-  updateSnakeScoreUI();
-  scheduleSnakeTick();
-  renderSnake();
-}
-
-function scheduleSnakeTick() {
-  if (snakeLoop) clearTimeout(snakeLoop);
-  snakeLoop = setTimeout(snakeTick, snakeState.speed);
-}
-
-function snakeTick() {
-  if (!snakeState || snakePaused) return;
-
-  // Apply buffered direction
-  snakeState.dir = snakeState.nextDir;
-
-  const head = snakeState.snake[0];
-  const newHead = {
-    x: (head.x + snakeState.dir.x + SNAKE_COLS) % SNAKE_COLS,
-    y: (head.y + snakeState.dir.y + SNAKE_ROWS) % SNAKE_ROWS,
-  };
-
-  // Collision with self
-  if (snakeState.snake.some(s => s.x === newHead.x && s.y === newHead.y)) {
-    gameOverSnake();
-    return;
-  }
-
-  snakeState.snake.unshift(newHead);
-
-  // Fruit eaten
-  if (newHead.x === snakeState.fruit.x && newHead.y === snakeState.fruit.y) {
-    snakeState.score++;
-    snakePomelsEarned += SNAKE_POMEL_PER_FRUIT;
-    snakeState.fruit = randomFruit(snakeState.snake);
-    // Speed up slightly every 5 fruits (min 60ms)
-    if (snakeState.score % 5 === 0 && snakeState.speed > 65) {
-      snakeState.speed = Math.max(65, snakeState.speed - 12);
-    }
-    updateSnakeScoreUI();
-  } else {
-    snakeState.snake.pop(); // No growth if no fruit eaten
-  }
-
-  renderSnake();
-  scheduleSnakeTick();
-}
-
-function updateSnakeScoreUI() {
-  document.getElementById('snakeScore').textContent = snakeState ? snakeState.score : 0;
-  document.getElementById('snakeEarned').textContent = '+' + snakePomelsEarned.toLocaleString('fr-FR') + ' 🪙';
-}
-
-function renderSnake() {
-  const ctx = snakeCtx();
-  const C = SNAKE_CELL;
-
-  // Background
-  ctx.fillStyle = SNAKE_COLORS.bg;
-  ctx.fillRect(0, 0, SNAKE_COLS * C, SNAKE_ROWS * C);
-
-  // Grid
-  ctx.strokeStyle = SNAKE_COLORS.grid;
-  ctx.lineWidth = 0.5;
-  for (let x = 0; x <= SNAKE_COLS; x++) {
-    ctx.beginPath(); ctx.moveTo(x * C, 0); ctx.lineTo(x * C, SNAKE_ROWS * C); ctx.stroke();
-  }
-  for (let y = 0; y <= SNAKE_ROWS; y++) {
-    ctx.beginPath(); ctx.moveTo(0, y * C); ctx.lineTo(SNAKE_COLS * C, y * C); ctx.stroke();
-  }
-
-  if (!snakeState) return;
-
-  // Fruit with glow
-  const f = snakeState.fruit;
-  ctx.save();
-  ctx.shadowColor = SNAKE_COLORS.fruitGlow;
-  ctx.shadowBlur = 14;
-  ctx.fillStyle = SNAKE_COLORS.fruit;
-  ctx.beginPath();
-  ctx.arc(f.x * C + C/2, f.y * C + C/2, C/2 - 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
-  // Snake body (tail → head)
-  snakeState.snake.forEach((seg, i) => {
-    const isHead = i === 0;
-    ctx.save();
-    ctx.fillStyle = isHead ? SNAKE_COLORS.head : SNAKE_COLORS.body;
-    if (isHead) { ctx.shadowColor = 'rgba(235,88,70,0.6)'; ctx.shadowBlur = 10; }
-    const r = isHead ? 6 : 4;
-    roundRect(ctx, seg.x * C + 1, seg.y * C + 1, C - 2, C - 2, r);
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // Score on canvas
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font = `bold 11px 'Space Mono', monospace`;
-  ctx.fillText(`Score: ${snakeState.score}`, 8, 16);
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-async function gameOverSnake() {
-  if (snakeLoop) clearTimeout(snakeLoop);
-  const finalScore = snakeState.score;
-  const finalPomels = snakePomelsEarned;
-
-  // Award Pomels atomiquement
-  if (finalPomels > 0) {
-    const snakeUpd = await addBalanceTransaction(state.code, finalPomels, {
-      type: 'snake', desc: `🐍 Serpent — score ${finalScore}`, amount: finalPomels, date: new Date().toISOString()
-    });
-    if (snakeUpd) { state = migrateAccount(snakeUpd); }
-    else { state.balance += finalPomels; }
-    refreshUI();
-  }
-
-  // Save leaderboard entries — await pour s'assurer que l'écriture est terminée avant le render
-  await saveSnakeScore(finalScore);
-  await saveSnakeWeeklyScore(finalScore);
-
-  // Show overlay
-  const overlay = snakeOverlay();
-  overlay.classList.remove('hidden');
-  document.getElementById('snakeOverlayTitle').textContent = '💀 Game Over !';
-  document.getElementById('snakeOverlaySub').innerHTML =
-    `Score : <strong>${finalScore}</strong> fruit${finalScore > 1 ? 's' : ''}<br>` +
-    `Tu gagnes <strong style="color:var(--green)">+${finalPomels.toLocaleString('fr-FR')} 🪙</strong>`;
-  document.getElementById('snakeStartBtn').textContent = '🔄 Rejouer';
-
-  snakeState = null;
-  updateSnakeScoreUI();
-
-  // Render après que les sauvegardes soient terminées
-  await renderSnakeLb();
-  await renderSnakeWeeklyLb();
-}
-
-// ── SNAKE LEADERBOARD (Firebase) ─────────────────
-async function saveSnakeScore(score) {
-  if (score === 0) return;
-  const path = 'snake_lb/' + state.code;
-  const existing = await dbGet(path);
-  if (!existing || score > existing.score) {
-    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
-  }
-}
-
-async function renderSnakeLb() {
-  const list = document.getElementById('snakeLbList');
-  list.innerHTML = '<div class="history-empty">Chargement…</div>';
-  const snap = await dbGet('snake_lb');
-  if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score enregistré.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score).slice(0, SNAKE_MAX_LB);
-  list.innerHTML = '';
-  const medals = ['🥇','🥈','🥉'];
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    const rank = i + 1;
-    const isMe = e.code === state.code;
-    const rankClass = rank <= 3 ? `top${rank}` : '';
-    const medal = rank <= 3 ? medals[i] : '';
-    const div = document.createElement('div');
-    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
-    const bcS = await getAccBannerClass(e.code);
-    if (bcS) div.classList.add(bcS);
-    const ccS = await getAccColorClass(e.code);
-    div.innerHTML = `
-      <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
-      <span class="snake-lb-name ${ccS}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
-      <span class="snake-lb-score">${e.score} 🍎</span>
-      <span class="snake-lb-pomels">+${(e.score * SNAKE_POMEL_PER_FRUIT).toLocaleString('fr-FR')} 🪙</span>
-    `;
-    list.appendChild(div);
-  }
-}
-
-// ── SNAKE WEEKLY LEADERBOARD ─────────────────────
-const SNAKE_WEEKLY_PRIZES = [2000, 1500, 1000];
-const SNAKE_WEEKLY_CONSOLATION = 500;
-
-// Clé de semaine : lundi de la semaine courante (YYYY-MM-DD)
-function getSnakeWeekKey() {
-  const now = new Date();
-  const day = now.getDay(); // 0=dim, 1=lun…
-  const diff = (day === 0 ? -6 : 1 - day);
-  const mon = new Date(now);
-  mon.setDate(now.getDate() + diff);
-  return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
-}
-
-// Même logique que saveSnakeScore mais sur snake_weekly_lb/
-async function saveSnakeWeeklyScore(score) {
-  if (score === 0) return;
-  // Sanitise la clé (caractères interdits Firebase)
-  const safeCode = state.code.replace(/[.#$[\]/]/g, '_');
-  const path = 'snake_weekly_lb/' + safeCode;
-  const existing = await dbGet(path);
-  if (!existing || score > existing.score) {
-    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
-  }
-}
-
-// Même logique que renderSnakeLb mais sur snake_weekly_lb/ + récompenses
-async function renderSnakeWeeklyLb() {
-  const list = document.getElementById('snakeWeeklyLbList');
-  if (!list) return;
-  list.innerHTML = '<div class="history-empty">Chargement…</div>';
-  const snap = await dbGet('snake_weekly_lb');
-  if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
-  list.innerHTML = '';
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    const rank = i + 1;
-    const isMe = e.code === state.code;
-    const rankClass = rank <= 3 ? `top${rank}` : '';
-    const medal = rank <= 3 ? ['🥇','🥈','🥉'][i] : '';
-    const div = document.createElement('div');
-    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
-    const bcSW = await getAccBannerClass(e.code);
-    if (bcSW) div.classList.add(bcSW);
-    const ccSW = await getAccColorClass(e.code);
-    div.innerHTML = `
-      <span class="snake-lb-rank ${rankClass}">${medal || rank}</span>
-      <span class="snake-lb-name ${ccSW}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
-      <span class="snake-lb-score">${e.score} 🍎</span>
-    `;
-    list.appendChild(div);
-  }
-}
-
-// Reset + distribution des récompenses le lundi à 9h
-async function checkSnakeWeeklyReset() {
-  const now = new Date();
-  if (now.getDay() !== 1 || now.getHours() < 9) return;
-
-  // Clé = lundi de la semaine PRÉCÉDENTE (celle qu'on récompense)
-  const prevMon = new Date(now);
-  prevMon.setDate(now.getDate() - 7);
-  const pDay = prevMon.getDay();
-  const pDiff = pDay === 0 ? -6 : 1 - pDay;
-  prevMon.setDate(prevMon.getDate() + pDiff);
-  const prevWeekKey = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
-
-  // Vérifier si déjà distribué pour la semaine précédente
-  const distributed = await dbGet('snake_weekly_distributed/' + prevWeekKey);
-  if (distributed) return;
-
-  // Marquer immédiatement (anti-race condition) puis re-vérifier
-  await dbSet('snake_weekly_distributed/' + prevWeekKey, true);
-  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
-  const recheck = await dbGet('snake_weekly_distributed/' + prevWeekKey);
-  if (recheck !== true) return;
-
-  // Lire le classement actuel (même logique que renderSnakeWeeklyLb)
-  const snap = await dbGet('snake_weekly_lb');
-  if (!snap) return;
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
-
-  // Distribuer les récompenses avec retry automatique
-  await distributeReliably(entries.map((e, i) => ({
-    code: e.code, amount: i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION,
-    historyEntry: { type: 'snake', desc: `🐍 Classement hebdo Serpent — #${i+1}`, amount: i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION, date: new Date().toISOString() }
-  })));
-
-  // Reset du classement hebdo (le général snake_lb n'est PAS touché)
-  await dbDelete('snake_weekly_lb');
-}
-
-// (contrôles clavier et tactile gérés dans les handlers unifiés ci-dessus)
-
-function renderSnakePage() {
-  // Draw idle canvas
-  const ctx = snakeCtx();
-  ctx.fillStyle = SNAKE_COLORS.bg;
-  ctx.fillRect(0, 0, SNAKE_COLS * SNAKE_CELL, SNAKE_ROWS * SNAKE_CELL);
-  ctx.strokeStyle = SNAKE_COLORS.grid;
-  ctx.lineWidth = 0.5;
-  for (let x = 0; x <= SNAKE_COLS; x++) {
-    ctx.beginPath(); ctx.moveTo(x*SNAKE_CELL,0); ctx.lineTo(x*SNAKE_CELL,SNAKE_ROWS*SNAKE_CELL); ctx.stroke();
-  }
-  for (let y = 0; y <= SNAKE_ROWS; y++) {
-    ctx.beginPath(); ctx.moveTo(0,y*SNAKE_CELL); ctx.lineTo(SNAKE_COLS*SNAKE_CELL,y*SNAKE_CELL); ctx.stroke();
-  }
-  document.getElementById('snakeOverlayTitle').textContent = '🐍 Serpent';
-  document.getElementById('snakeOverlaySub').textContent = 'Mange des fruits pour gagner des Pomels !';
-  document.getElementById('snakeStartBtn').textContent = 'Jouer !';
-  snakeOverlay().classList.remove('hidden');
-  document.getElementById('snakeScore').textContent = '0';
-  document.getElementById('snakeEarned').textContent = '+0 🪙';
-  renderSnakeLb();
-  renderSnakeWeeklyLb();
-  checkSnakeWeeklyReset().catch(() => {});
-}
-
-// ── SNAKE MOBILE CONTROLS ───────────────────────
-// D-pad buttons
-function snakeDpadDir(x, y) {
-  if (!snakeState) return;
-  const cur = snakeState.dir;
-  // Ne pas autoriser le demi-tour
-  if (x === -cur.x && y === -cur.y) return;
-  snakeState.nextDir = { x, y };
-}
-function snakeTogglePause() {
-  if (!snakeState) return;
-  snakePaused = !snakePaused;
-  if (!snakePaused) scheduleSnakeTick();
-  const centerBtn = document.querySelector('.snake-dpad-center');
-  if (centerBtn) centerBtn.textContent = snakePaused ? '▶' : '⏸';
-}
-
-// Swipe pour serpent sur mobile (touchstart/touchend sur le canvas uniquement)
-let _snakeTouchStart = null;
-(function() {
-  const canvasWrap = () => document.querySelector('.snake-canvas-wrap');
-  document.addEventListener('touchstart', e => {
-    if (!snakeState) return;
-    const wrap = canvasWrap();
-    if (!wrap || !wrap.contains(e.target)) return;
-    _snakeTouchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }, { passive: true });
-
-  document.addEventListener('touchend', e => {
-    if (!snakeState || !_snakeTouchStart) return;
-    const dx = e.changedTouches[0].clientX - _snakeTouchStart.x;
-    const dy = e.changedTouches[0].clientY - _snakeTouchStart.y;
-    _snakeTouchStart = null;
-    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return; // tap, not swipe
-    const dir = Math.abs(dx) > Math.abs(dy)
-      ? { x: dx > 0 ? 1 : -1, y: 0 }
-      : { x: 0, y: dy > 0 ? 1 : -1 };
-    const cur = snakeState.dir;
-    if (dir.x === -cur.x && dir.y === -cur.y) return;
-    snakeState.nextDir = dir;
-  }, { passive: true });
-})();
+// ── SNAKE — code extrait dans snake.js ──
 
 // Empêcher le scroll de la page pendant le jeu sur mobile
 document.addEventListener('touchmove', e => {
-  if (!snakeState && !g2048Running) return;
-  // Si on touche le canvas ou le d-pad, empêcher le scroll
+  const snakeActive = typeof snakeState !== 'undefined' && snakeState;
+  const g2048Active = typeof g2048Running !== 'undefined' && g2048Running;
+  if (!snakeActive && !g2048Active) return;
   const target = e.target;
   if (target.closest('.snake-canvas-wrap') || target.closest('.snake-dpad') ||
       target.closest('.g2048-board-outer')) {
@@ -7182,236 +6684,7 @@ document.addEventListener('touchmove', e => {
   }
 }, { passive: false });
 
-// ── 2048 GAME ENGINE ─────────────────────────────
-let g2048Grid = [];
-let g2048Score = 0;
-let g2048Running = false;
-let g2048Won = false;
-let g2048TouchStart = null;
-const G2048_POMEL_RATE = 10; // 1 Pomel par 7 points
-
-function g2048NewGrid() {
-  return Array.from({ length: 4 }, () => [0, 0, 0, 0]);
-}
-
-function g2048AddTile() {
-  const empties = [];
-  for (let r = 0; r < 4; r++)
-    for (let c = 0; c < 4; c++)
-      if (g2048Grid[r][c] === 0) empties.push([r, c]);
-  if (!empties.length) return;
-  const [r, c] = empties[Math.floor(Math.random() * empties.length)];
-  g2048Grid[r][c] = Math.random() < 0.9 ? 2 : 4;
-}
-
-// Slide + merge a single row left; returns { row, gained }
-function g2048SlideRow(row) {
-  let arr = row.filter(v => v !== 0);
-  let gained = 0;
-  for (let i = 0; i < arr.length - 1; i++) {
-    if (arr[i] === arr[i + 1]) {
-      arr[i] *= 2;
-      gained += arr[i];
-      arr.splice(i + 1, 1);
-    }
-  }
-  while (arr.length < 4) arr.push(0);
-  return { row: arr, gained };
-}
-
-// Rotate grid 90° clockwise
-function g2048Rotate(grid) {
-  const n = 4;
-  return Array.from({ length: n }, (_, r) =>
-    Array.from({ length: n }, (_, c) => grid[n - 1 - c][r])
-  );
-}
-
-// Move in direction; returns true if board changed
-function g2048Move(dir) {
-  const rotations = { left: 0, up: 3, right: 2, down: 1 };
-  let rots = rotations[dir];
-  let grid = JSON.parse(JSON.stringify(g2048Grid));
-  for (let i = 0; i < rots; i++) grid = g2048Rotate(grid);
-
-  let changed = false;
-  let gained = 0;
-  for (let r = 0; r < 4; r++) {
-    const res = g2048SlideRow(grid[r]);
-    if (res.row.some((v, i) => v !== grid[r][i])) changed = true;
-    grid[r] = res.row;
-    gained += res.gained;
-  }
-
-  let back = (4 - rots) % 4;
-  for (let i = 0; i < back; i++) grid = g2048Rotate(grid);
-
-  if (changed) {
-    g2048Grid = grid;
-    g2048Score += gained;
-    g2048AddTile();
-    g2048Render();
-    g2048UpdateUI();
-  }
-  return changed;
-}
-
-function g2048Render() {
-  const board = document.getElementById('g2048Board');
-  if (!board) return;
-  board.innerHTML = '';
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const val = g2048Grid[r][c];
-      const cell = document.createElement('div');
-      if (val === 0) {
-        cell.className = 'g2048-tile empty';
-      } else {
-        const cls = val <= 8192 ? 't' + val : 't8192';
-        cell.className = 'g2048-tile ' + cls;
-        cell.textContent = val.toLocaleString('fr-FR');
-      }
-      board.appendChild(cell);
-    }
-  }
-}
-
-function g2048UpdateUI() {
-  const scoreEl = document.getElementById('g2048Score');
-  const earnedEl = document.getElementById('g2048Earned');
-  if (scoreEl) scoreEl.textContent = g2048Score.toLocaleString('fr-FR');
-  if (earnedEl) earnedEl.textContent = '+' + Math.floor(g2048Score / G2048_POMEL_RATE).toLocaleString('fr-FR') + ' 🪙';
-}
-
-function g2048IsOver() {
-  for (let r = 0; r < 4; r++)
-    for (let c = 0; c < 4; c++) {
-      if (g2048Grid[r][c] === 0) return false;
-      if (c < 3 && g2048Grid[r][c] === g2048Grid[r][c + 1]) return false;
-      if (r < 3 && g2048Grid[r][c] === g2048Grid[r + 1][c]) return false;
-    }
-  return true;
-}
-
-function g2048Has2048() {
-  return g2048Grid.some(row => row.some(v => v >= 2048));
-}
-
-const G2048_DAILY_LIMIT = 20;
-
-function g2048TodayPlays() {
-  // Utiliser state pour la limite (synchronisé avec Firebase)
-  const today = getTodayKey();
-  if (!state._g2048PlaysDate || state._g2048PlaysDate !== today) return 0;
-  return state._g2048PlaysCount || 0;
-}
-function g2048IncrPlays() {
-  const today = getTodayKey();
-  if (!state._g2048PlaysDate || state._g2048PlaysDate !== today) {
-    state._g2048PlaysDate = today;
-    state._g2048PlaysCount = 1;
-  } else {
-    state._g2048PlaysCount = (state._g2048PlaysCount || 0) + 1;
-  }
-  saveAccount(state);
-}
-
-function start2048() {
-  const plays = g2048TodayPlays();
-  if (plays >= G2048_DAILY_LIMIT) {
-    document.getElementById('g2048OverlayTitle').textContent = '🚫 Limite atteinte';
-    document.getElementById('g2048OverlaySub').textContent = `Tu as joué ${G2048_DAILY_LIMIT} parties aujourd'hui. Reviens demain !`;
-    document.getElementById('g2048StartBtn').textContent = 'Demain…';
-    document.getElementById('g2048StartBtn').disabled = true;
-    return;
-  }
-  g2048IncrPlays();
-  g2048Grid = g2048NewGrid();
-  g2048Score = 0;
-  g2048Won = false;
-  g2048Running = true;
-  document.getElementById('g2048StartBtn').disabled = false;
-  document.getElementById('g2048Overlay').classList.add('hidden');
-  g2048AddTile();
-  g2048AddTile();
-  g2048Render();
-  g2048UpdateUI();
-}
-
-async function g2048GameOver() {
-  g2048Running = false;
-  const finalScore = g2048Score;
-  const pomels = Math.floor(finalScore / G2048_POMEL_RATE);
-
-  if (pomels > 0) {
-    const g2048Upd = await addBalanceTransaction(state.code, pomels, {
-      type: '2048', desc: `🔢 2048 — ${finalScore.toLocaleString('fr-FR')} pts`, amount: pomels, date: new Date().toISOString()
-    });
-    if (g2048Upd) { state = migrateAccount(g2048Upd); }
-    else { state.balance += pomels; } // fallback local
-    refreshUI();
-  }
-
-  await g2048SaveScore(finalScore);
-  await g2048SaveWeeklyScore(finalScore);
-
-  const overlay = document.getElementById('g2048Overlay');
-  document.getElementById('g2048OverlayTitle').textContent = g2048Won ? '🎉 Bravo !' : '💀 Game Over !';
-  const remaining = Math.max(0, G2048_DAILY_LIMIT - g2048TodayPlays());
-  document.getElementById('g2048OverlaySub').innerHTML =
-    `Score : <strong>${finalScore.toLocaleString('fr-FR')}</strong><br>` +
-    `Tu gagnes <strong style="color:var(--green)">+${pomels.toLocaleString('fr-FR')} 🪙</strong><br>` +
-    `<span style="font-size:.78rem;color:var(--muted);">Parties restantes aujourd'hui : ${remaining}/${G2048_DAILY_LIMIT}</span>`;
-  const startBtn = document.getElementById('g2048StartBtn');
-  if (remaining === 0) {
-    startBtn.textContent = 'Demain…';
-    startBtn.disabled = true;
-  } else {
-    startBtn.textContent = '🔄 Rejouer';
-    startBtn.disabled = false;
-  }
-  overlay.classList.remove('hidden');
-
-  await g2048RenderLb();
-  await g2048RenderWeeklyLb();
-}
-
-function render2048Page() {
-  g2048Running = false;
-  g2048Grid = g2048NewGrid();
-  g2048Score = 0;
-  document.getElementById('g2048Score').textContent = '0';
-  document.getElementById('g2048Earned').textContent = '+0 🪙';
-  const remaining = Math.max(0, G2048_DAILY_LIMIT - g2048TodayPlays());
-  document.getElementById('g2048OverlayTitle').textContent = '🔢 2048';
-  const startBtn = document.getElementById('g2048StartBtn');
-  if (remaining === 0) {
-    document.getElementById('g2048OverlaySub').textContent = `Limite de ${G2048_DAILY_LIMIT} parties atteinte — reviens demain !`;
-    startBtn.textContent = 'Demain…';
-    startBtn.disabled = true;
-  } else {
-    document.getElementById('g2048OverlaySub').innerHTML = `Fusionne les tuiles identiques pour atteindre 2048 !<br><span style="font-size:.78rem;color:var(--muted);">${remaining} partie${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''} aujourd'hui</span>`;
-    startBtn.textContent = 'Jouer !';
-    startBtn.disabled = false;
-  }
-  document.getElementById('g2048StartBtn').textContent = 'Jouer !';
-  document.getElementById('g2048Overlay').classList.remove('hidden');
-  g2048Render();
-  g2048RenderLb();
-  g2048RenderWeeklyLb();
-  checkG2048WeeklyReset().catch(() => {});
-}
-
-// ── 2048 LEADERBOARD ─────────────────────────────
-async function g2048SaveScore(score) {
-  if (score === 0) return;
-  const path = 'g2048_lb/' + state.code;
-  const existing = await dbGet(path);
-  if (!existing || score > existing.score) {
-    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
-  }
-}
-
+// ── 2048 ENGINE — code extrait dans g2048.js ──
 // ── BANNER & COLOR LB HELPER ─────────────────────────────
 // Cache léger des comptes pour la résolution de bannière et couleur dans les classements de jeux
 let _accBannerCache = null;
@@ -7471,145 +6744,7 @@ async function g2048RenderLb() {
   }
 }
 
-// ── 2048 WEEKLY LEADERBOARD ───────────────────────
-const G2048_WEEKLY_PRIZES = [2000, 1500, 1000];
-const G2048_WEEKLY_CONSOLATION = 500;
-
-async function g2048SaveWeeklyScore(score) {
-  if (score === 0) return;
-  const safeCode = state.code.replace(/[.#$[\]/]/g, '_');
-  const path = 'g2048_weekly_lb/' + safeCode;
-  const existing = await dbGet(path);
-  if (!existing || score > existing.score) {
-    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
-  }
-}
-
-async function g2048RenderWeeklyLb() {
-  const list = document.getElementById('g2048WeeklyLbList');
-  if (!list) return;
-  list.innerHTML = '<div class="history-empty">Chargement…</div>';
-  const snap = await dbGet('g2048_weekly_lb');
-  if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
-  list.innerHTML = '';
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    const rank = i + 1;
-    const isMe = e.code === state.code;
-    const rankClass = rank <= 3 ? `top${rank}` : '';
-    const prize = i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION;
-    const div = document.createElement('div');
-    div.className = 'snake-lb-item' + (isMe ? ' me' : '');
-    const bc2 = await getAccBannerClass(e.code);
-    if (bc2) div.classList.add(bc2);
-    const cc2 = await getAccColorClass(e.code);
-    div.innerHTML = `
-    <span class="snake-lb-rank ${rankClass}">${['🥇','🥈','🥉'][i] || rank}</span>
-    <span class="snake-lb-name ${cc2}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
-    <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
-    `;
-    list.appendChild(div);
-  }
-}
-
-async function checkG2048WeeklyReset() {
-  const now = new Date();
-  if (now.getDay() !== 1 || now.getHours() < 9) return;
-  // Clé = lundi de la semaine PRÉCÉDENTE (celle qu'on récompense)
-  const prevMon = new Date(now);
-  prevMon.setDate(now.getDate() - 7);
-  const pDay2 = prevMon.getDay();
-  const pDiff2 = pDay2 === 0 ? -6 : 1 - pDay2;
-  prevMon.setDate(prevMon.getDate() + pDiff2);
-  const prevWeekKey2048 = `${prevMon.getFullYear()}-${String(prevMon.getMonth()+1).padStart(2,'0')}-${String(prevMon.getDate()).padStart(2,'0')}`;
-  const distributed = await dbGet('g2048_weekly_distributed/' + prevWeekKey2048);
-  if (distributed) return;
-  await dbSet('g2048_weekly_distributed/' + prevWeekKey2048, true);
-  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
-  const recheck2048 = await dbGet('g2048_weekly_distributed/' + prevWeekKey2048);
-  if (recheck2048 !== true) return;
-  const snap = await dbGet('g2048_weekly_lb');
-  if (!snap) return;
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
-  await distributeReliably(entries.map((e, i) => ({
-    code: e.code, amount: i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION,
-    historyEntry: { type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION, date: new Date().toISOString() }
-  })));
-  await dbDelete('g2048_weekly_lb');
-}
-
-// ── CONTRÔLES 2048 (clavier) ─────────────────────
-document.addEventListener('keydown', e => {
-  // Serpent
-  if (snakeState) {
-    if (e.code === 'Space') {
-      e.preventDefault();
-      snakePaused = !snakePaused;
-      if (!snakePaused) scheduleSnakeTick();
-      return;
-    }
-    const dirs = {
-      ArrowUp: {x:0,y:-1}, KeyZ: {x:0,y:-1},
-      ArrowDown: {x:0,y:1}, KeyS: {x:0,y:1},
-      ArrowLeft: {x:-1,y:0}, KeyQ: {x:-1,y:0},
-      ArrowRight: {x:1,y:0}, KeyD: {x:1,y:0},
-    };
-    const newDir = dirs[e.code];
-    if (!newDir) return;
-    e.preventDefault();
-    const cur = snakeState.dir;
-    if (newDir.x === -cur.x && newDir.y === -cur.y) return;
-    snakeState.nextDir = newDir;
-    return;
-  }
-  // 2048
-  if (g2048Running) {
-    const dirMap = {
-      ArrowLeft:'left', KeyQ:'left',
-      ArrowRight:'right', KeyD:'right',
-      ArrowUp:'up', KeyZ:'up',
-      ArrowDown:'down', KeyS:'down',
-    };
-    const dir = dirMap[e.code];
-    if (!dir) return;
-    e.preventDefault();
-    const changed = g2048Move(dir);
-    if (changed) {
-      if (!g2048Won && g2048Has2048()) {
-        g2048Won = true;
-        showWinToast('🎉 2048 atteint ! Continue pour un meilleur score !');
-      }
-      if (g2048IsOver()) g2048GameOver();
-    }
-  }
-});
-
-// ── CONTRÔLES 2048 (tactile) ─────────────────────
-document.addEventListener('touchstart', e => {
-  if (snakeState) {
-    g2048TouchStart = null;
-    return;
-  }
-  if (g2048Running) g2048TouchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  if (!g2048Running || !g2048TouchStart) return;
-  const dx = e.changedTouches[0].clientX - g2048TouchStart.x;
-  const dy = e.changedTouches[0].clientY - g2048TouchStart.y;
-  g2048TouchStart = null;
-  if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
-  const dir = Math.abs(dx) > Math.abs(dy)
-    ? (dx > 0 ? 'right' : 'left')
-    : (dy > 0 ? 'down' : 'up');
-  const changed = g2048Move(dir);
-  if (changed) {
-    if (!g2048Won && g2048Has2048()) { g2048Won = true; showWinToast('🎉 2048 atteint !'); }
-    if (g2048IsOver()) g2048GameOver();
-  }
-}, { passive: true });
-
+// ── 2048 WEEKLY + CONTRÔLES — code extrait dans g2048.js ──
 // ── HOTEL DES VENTES ─────────────────────────────
 async function cleanupHotelListings() {
   const all = await getAllHotelListings();
@@ -9648,8 +8783,8 @@ async function handleTransfer() {
 // ── HISTORY ──────────────────────────────────────
 function trimHistory() {
   // Garde seulement les 20 entrées les plus récentes
-  if (state.history && state.history.length > 20) {
-    state.history = state.history.slice(0, 20);
+  if (state.history && state.history.length > 30) {
+    state.history = state.history.slice(0, 30);
   }
 }
 
@@ -10013,6 +9148,7 @@ const MAX_SINGLE_GAIN = 500_000;
 // Utilise une transaction pour éviter d'écraser un solde modifié concurrentiellement
 async function saveAccount(acc) {
   if (!acc || typeof acc !== 'object' || !acc.code) return;
+  invalidateAccountsCache(); // Le cache getAllAccounts est périmé après un save
 
   // Validation locale avant écriture
   if (typeof acc.balance === 'number') {
@@ -10022,7 +9158,7 @@ async function saveAccount(acc) {
     acc.history = acc.history.filter(h =>
       h && typeof h.amount === 'number' && (Math.abs(h.amount) <= MAX_SINGLE_GAIN || h.amount === 0)
     );
-    if (acc.history.length > 50) acc.history = acc.history.slice(0, 50);
+    if (acc.history.length > 30) acc.history = acc.history.slice(0, 30);
   }
   if (acc.ownedTitles) {
     acc.ownedTitles = acc.ownedTitles.filter(t => typeof t === 'string' && t.length < 80);
@@ -11723,7 +10859,7 @@ function goToHome() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   setActiveSnavItem('home');
-  if (typeof snakeLoop !== 'undefined' && snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; snakeState = null; }
+  if (typeof snakeLoop !== 'undefined' && snakeLoop) { clearTimeout(snakeLoop); snakeLoop = null; if (typeof snakeState !== 'undefined') snakeState = null; }
   if (typeof stopClickerPage === 'function') stopClickerPage();
   if (typeof stopDiscussionListener === 'function') stopDiscussionListener();
   if (typeof renderHome === 'function') renderHome();
@@ -11838,5 +10974,8 @@ init();
     </div>
   </div>
 
+<script src="g2048.js"></script>
+<script src="snake.js"></script>
+<script src="pommon.js"></script>
 </body>
 </html>
