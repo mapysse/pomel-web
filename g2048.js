@@ -64,7 +64,7 @@ let g2048Score = 0;
 let g2048Running = false;
 let g2048Won = false;
 let g2048TouchStart = null;
-const G2048_POMEL_RATE = 10; // 1 Pomel par 7 points
+const G2048_POMEL_RATE = 20; // 1 Pomel par 20 points
 
 function g2048NewGrid() {
   return Array.from({ length: 4 }, () => [0, 0, 0, 0]);
@@ -173,7 +173,7 @@ function g2048Has2048() {
   return g2048Grid.some(row => row.some(v => v >= 2048));
 }
 
-const G2048_DAILY_LIMIT = 20;
+const G2048_DAILY_LIMIT = 10;
 
 function g2048TodayPlays() {
   // Utiliser state pour la limite (synchronisé avec Firebase)
