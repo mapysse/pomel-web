@@ -3834,7 +3834,7 @@ function launchApp() {
   takeStateSnapshot();
   // Vérifier si les récompenses du jardin sont à distribuer (lundi après 12h)
   // S'exécute en arrière-plan sans bloquer le chargement
-  checkJardinReset().catch(() => {});
+  if (typeof checkJardinReset === 'function') checkJardinReset().catch(() => {});
   checkGroupWeeklyReward().catch(() => {});
   // Vérifier les récompenses hebdomadaires des jeux (snake et 2048)
   if (typeof checkSnakeWeeklyReset === 'function') checkSnakeWeeklyReset().catch(() => {});
