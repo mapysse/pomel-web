@@ -4600,9 +4600,10 @@ async function saveGroup(g) {
     await db.ref('groups/' + g.id).transaction(current => {
       if (!current) return g;
       const merged = { ...g };
-      // Garder le max des compteurs pour éviter d'écraser des gains concurrents
-      merged.pomcoins    = Math.max(g.pomcoins    || 0, current.pomcoins    || 0);
+      // pfcWeekBonus : garder le max (incréments concurrents)
       merged.pfcWeekBonus = Math.max(g.pfcWeekBonus || 0, current.pfcWeekBonus || 0);
+      // pomcoins : on prend la valeur locale (inclut les achats/récompenses)
+      // Pas de Math.max ici, sinon les dépenses de la boutique sont annulées
       return merged;
     });
   } catch(e) {
@@ -4628,8 +4629,9 @@ function getGroupMonthKey() {
 }
 
 // Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine + graines récoltées cette semaine (via compteurs persistants) + bonus PFC
-async function computeGroupWeekScore(group, allAccounts, allClicker) {
-  const weekKey = getGroupWeekKey();
+// weekKeyOverride permet de forcer la lecture d'une semaine spécifique (utile pour la distribution du lundi)
+async function computeGroupWeekScore(group, allAccounts, allClicker, weekKeyOverride) {
+  const weekKey = weekKeyOverride || getGroupWeekKey();
   let pomels = 0, seeds = 0;
   for (const code of (group.members || [])) {
     const acc = allAccounts.find(a => a.code === code);
@@ -5003,10 +5005,10 @@ async function checkGroupWeeklyReward() {
   if (!groups.length) return;
   const allAccounts = await getAllAccounts();
 
-  // Calculer les scores hebdo
+  // Calculer les scores de la semaine PRÉCÉDENTE (pas la semaine courante, puisqu'on est lundi)
   const scored = await Promise.all(groups.map(async g => ({
     ...g,
-    score: await computeGroupWeekScore(g, allAccounts, {}),
+    score: await computeGroupWeekScore(g, allAccounts, {}, prevKey),
   })));
   scored.sort((a, b) => b.score - a.score);
 
@@ -5633,6 +5635,11 @@ async function renderHomeQuetes() {
 async function renderHomeRoulette() {
   const el = document.getElementById('homeRouletteStatus');
   const card = document.getElementById('homeRouletteCard');
+  // Rafraîchir lastSpin depuis Firebase pour éviter un état local périmé
+  try {
+    const freshAcc = await getAccount(state.code);
+    if (freshAcc && freshAcc.lastSpin) state.lastSpin = freshAcc.lastSpin;
+  } catch(e) {}
   const available = canSpin();
   const now = new Date();
   const beforeTime = now.getHours() < 9 || (now.getHours() === 9 && now.getMinutes() < 15);
