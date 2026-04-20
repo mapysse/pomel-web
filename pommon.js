@@ -903,7 +903,7 @@ let _pmLoaded = false;
 let _pmLoadedForCode = null;  // code de l'utilisateur pour lequel les données sont chargées
 let _pmSaveTimer = null;
 
-function pmPath() { return 'pokepom/' + state.code; }
+function pmPath() { return 'pommon/' + state.code; }
 
 // Charge depuis Firebase (appelé une fois au démarrage / navigation)
 // Garantit que toutes les propriétés attendues existent
@@ -1008,7 +1008,7 @@ function pmSavePlayer(data) {
 async function pmSaveLeagueLb(score) {
   if (score <= 0 || typeof dbGet !== 'function' || typeof dbSet !== 'function') return;
   if (!state || !state.code) return;
-  const path = 'pokepom_league_lb/' + state.code;
+  const path = 'pommon_league_lb/' + state.code;
   try {
     const existing = await dbGet(path);
     if (!existing || score > existing.score) {
@@ -1481,7 +1481,7 @@ function pmGenerateLeagueOpponent(roundNum) {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // ── État UI PokePom ──
-let _pmView = 'home'; // home, collection, team, wild, gym, gymPick, league, battle, starter
+let _pmView = 'home'; // home, collection, team, info, wild, gym, gymPick, league, battle, starter
 let _pmBattleState = null; // État du combat en cours
 let _pmPendingGym = null; // Arène sélectionnée en attente du choix du combattant
 
@@ -1711,6 +1711,7 @@ function pmRenderPage() {
   switch (_pmView) {
     case 'home': pmRenderHome(page, player); break;
     case 'collection': pmRenderCollection(page, player); break;
+    case 'info': pmRenderInfo(page, player); break;
     case 'team': pmRenderTeamManager(page, player); break;
     case 'wild': pmRenderWildBattle(page, player); break;
     case 'gym': pmRenderGyms(page, player); break;
@@ -1800,6 +1801,7 @@ function pmRenderHome(page, player) {
             ⭐ Ligue PokePom ${canLeague ? `(${PM_DAILY_LEAGUE - player.dailyLeagueCount}/${PM_DAILY_LEAGUE} runs)` : '(verrouillé — 7 badges requis)'}
           </button>
           <button class="btn-outline" onclick="pmGoTo('collection')">📚 Collection (${player.collection.length} PokePoms)</button>
+          <button class="btn-outline" onclick="pmGoTo('info')">📖 Infos & Guide</button>
         </div>
       </div>
 
@@ -1837,6 +1839,137 @@ function pmRenderHome(page, player) {
     }
     slotsEl.appendChild(slot);
   }
+}
+
+// ── Écran « Infos & Guide » ──
+function pmRenderInfo(page, player) {
+  // Générer la table des types dynamiquement
+  const types = ['plante','feu','eau','electrique','air','ombre','lumiere'];
+  let typeTableRows = '';
+  for (const t of types) {
+    const weakTo = [], resistTo = [];
+    for (const atk of types) {
+      const mod = (PM_WEAK[t] && PM_WEAK[t][atk]) || 1.0;
+      if (mod > 1) weakTo.push(atk);
+      if (mod < 1) resistTo.push(atk);
+    }
+    typeTableRows += `
+      <tr>
+        <td style="font-weight:700;">
+          <span style="display:inline-block; padding:2px 8px; border-radius:6px; background:${PM_TYPE_COLOR[t]}; font-size:.75rem; color:#fff;">
+            ${PM_TYPE_EMOJI[t]} ${PM_TYPE_LABEL[t]}
+          </span>
+        </td>
+        <td style="color:var(--red); font-size:.82rem;">
+          ${weakTo.map(w => `<span style="display:inline-block; padding:1px 6px; border-radius:4px; background:${PM_TYPE_COLOR[w]}; color:#fff; font-size:.7rem; margin:1px;">${PM_TYPE_EMOJI[w]} ${PM_TYPE_LABEL[w]}</span>`).join(' ')}
+        </td>
+        <td style="color:var(--green); font-size:.82rem;">
+          ${resistTo.map(r => `<span style="display:inline-block; padding:1px 6px; border-radius:4px; background:${PM_TYPE_COLOR[r]}; color:#fff; font-size:.7rem; margin:1px;">${PM_TYPE_EMOJI[r]} ${PM_TYPE_LABEL[r]}</span>`).join(' ')}
+        </td>
+      </tr>`;
+  }
+
+  page.innerHTML = `
+    <div class="pm-wrap">
+      <div class="pm-header">
+        <div>
+          <div class="pm-title">📖 Infos & Guide</div>
+          <div class="pm-sub">Tout ce qu'il faut savoir pour devenir maître PokePom</div>
+        </div>
+        <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">⚔️ Les statistiques</h3>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div><strong style="color:var(--green);">❤️ HP</strong> — Points de vie. Quand ils tombent à 0, le PokePom est K.O.</div>
+          <div><strong style="color:var(--primary);">⚔️ ATK</strong> — Attaque. Plus c'est haut, plus les coups font mal.</div>
+          <div><strong style="color:var(--yellow);">🛡️ DEF</strong> — Défense. Réduit les dégâts subis.</div>
+          <div><strong style="color:#00d4ff;">💨 VIT</strong> — Vitesse. Le PokePom le plus rapide attaque en premier.</div>
+        </div>
+        <div style="margin-top:12px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          <strong>Formule de dégâts :</strong> (ATK × Puissance / DEF) ÷ 3 × STAB × Type<br>
+          Un combat dure en moyenne 3 à 4 tours.
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">✨ Le STAB</h3>
+        <div style="font-size:.85rem; line-height:1.6; color:var(--text);">
+          <strong>STAB</strong> = <em>Same Type Attack Bonus</em>. Quand un PokePom utilise une attaque <strong>du même type que lui</strong>, les dégâts sont multipliés par <strong style="color:var(--green);">×${PM_STAB}</strong>.
+        </div>
+        <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.8rem; color:var(--muted); line-height:1.5;">
+          Exemple : un PokePom 🔥 Feu qui utilise une attaque Feu fait ×${PM_STAB} dégâts.<br>
+          Mais s'il utilise une attaque 💧 Eau, pas de bonus.
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">🔥 Table des types</h3>
+        <div style="font-size:.82rem; line-height:1.5; color:var(--text); margin-bottom:10px;">
+          Chaque type a des <strong style="color:var(--red);">faiblesses</strong> (×1.4 dégâts subis) et des <strong style="color:var(--green);">résistances</strong> (×0.6 dégâts subis).
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:.82rem;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border);">
+                <th style="text-align:left; padding:8px 6px; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em;">Type</th>
+                <th style="text-align:left; padding:8px 6px; color:var(--red); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em;">Faible contre (×1.4)</th>
+                <th style="text-align:left; padding:8px 6px; color:var(--green); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em;">Résiste à (×0.6)</th>
+              </tr>
+            </thead>
+            <tbody>${typeTableRows}</tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          💡 <strong>Astuce :</strong> Utilise le bouton "🔄 Changer de PokePom" en combat pour switcher vers un PokePom qui résiste au type adverse !
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">🏆 Paliers de puissance</h3>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div><strong>Starter</strong> (total 220) — Les 3 PokePoms de départ</div>
+          <div><strong>Normal</strong> (total 240) — Trouvables en combat sauvage</div>
+          <div><strong>Champion</strong> (total 260) — Plus rares, plus forts</div>
+          <div><strong>Légendaire</strong> (total 290) — Extrêmement rares !</div>
+        </div>
+        <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          Le total = HP + ATK + DEF + VIT. Un légendaire n'est pas invincible : avec les bons types, un normal peut le battre.
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">🎮 Modes de jeu</h3>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div><strong>🌿 Combat sauvage</strong> — Affronte un PokePom aléatoire. Tu peux le capturer si tu le bats ! (${PM_DAILY_WILD} combats/jour)</div>
+          <div><strong>🏆 Arènes</strong> — 7 arènes de type, chacune avec un champion. Bats-les tous pour débloquer la Ligue ! (${PM_DAILY_GYM_WINS} victoire/jour)</div>
+          <div><strong>⭐ Ligue PokePom</strong> — Enchaîne des combats contre des adversaires de plus en plus forts. Nécessite 7 badges. (${PM_DAILY_LEAGUE} runs/jour)</div>
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">📈 Niveaux & XP</h3>
+        <div style="font-size:.85rem; line-height:1.6; color:var(--text);">
+          Chaque PokePom gagne de l'XP en combattant. En montant de niveau (max 10), ses stats augmentent de <strong>+2 HP, +1 ATK, +1 DEF, +1 VIT</strong> par niveau.
+        </div>
+        <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          XP gagnée : 🌿 sauvage = ${PM_XP_GAIN.wild} XP · 🏆 arène = ${PM_XP_GAIN.gym} XP · ⭐ ligue = ${PM_XP_GAIN.league} XP
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">💡 Conseils</h3>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div>• Compose une équipe de <strong>3 types différents</strong> pour couvrir un maximum de matchups</div>
+          <div>• Le <strong>switch en combat</strong> coûte un tour (l'adversaire attaque), mais peut sauver un PokePom faible</div>
+          <div>• Quand un PokePom tombe K.O., tu dois en choisir un autre — ce changement est <strong>gratuit</strong></div>
+          <div>• Les types <strong>Ombre</strong> et <strong>Lumière</strong> sont très forts mais aussi vulnérables l'un à l'autre</div>
+          <div>• Un PokePom déjà capturé ne peut pas être recapturé — tu gagnes juste de l'XP</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ── Écran « Gérer l'équipe » : stats + moves, focus fonctionnel ──
@@ -2248,7 +2381,7 @@ async function pmRenderLeagueLb() {
   if (!list) return;
   if (typeof dbGet !== 'function') { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Classement non disponible.</div>'; return; }
   try {
-    const snap = await dbGet('pokepom_league_lb');
+    const snap = await dbGet('pommon_league_lb');
     if (!snap) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score enregistré — sois le premier !</div>'; return; }
     const entries = Object.values(snap).sort((a, b) => b.score - a.score).slice(0, 10);
     if (entries.length === 0) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score enregistré.</div>'; return; }
