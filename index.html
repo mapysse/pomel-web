@@ -1966,6 +1966,14 @@
         <span class="sidenav-item-icon">🐍</span>
         <span class="sidenav-item-label">Serpent</span>
       </button>
+      <button class="sidenav-item" id="snav-dino" onclick="navTo('dino')">
+        <span class="sidenav-item-icon">🦕</span>
+        <span class="sidenav-item-label">Dino Run</span>
+      </button>
+      <button class="sidenav-item" id="snav-tetris" onclick="navTo('tetris')">
+        <span class="sidenav-item-icon">🧱</span>
+        <span class="sidenav-item-label">Tetris</span>
+      </button>
       <button class="sidenav-item" id="snav-g2048" onclick="navTo('g2048')">
         <span class="sidenav-item-icon">🔢</span>
         <span class="sidenav-item-label">2048</span>
@@ -2528,6 +2536,118 @@
           <div class="history-empty">Chargement…</div>
         </div>
       </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DINO RUN -->
+  <div class="page" id="page-dino">
+    <div class="dino-wrap">
+      <div class="dino-header">
+        <div>
+          <div class="section-title">🦕 Dino Run</div>
+          <div class="section-sub">Saute par-dessus les cactus pour survivre — 2 🪙 par obstacle !</div>
+        </div>
+        <div class="dino-score-box">
+          <div class="dino-score-label">Score</div>
+          <div class="dino-score-val" id="dinoScore">0</div>
+          <div class="dino-score-label" style="margin-top:4px;">Gains</div>
+          <div class="dino-score-val" id="dinoEarned" style="color:var(--green);">+0 🪙</div>
+        </div>
+      </div>
+      <div class="dino-canvas-wrap">
+        <canvas id="dinoCanvas" width="600" height="200"></canvas>
+        <div class="dino-overlay" id="dinoOverlay">
+          <div class="dino-overlay-title" id="dinoOverlayTitle">🦕 Dino Run</div>
+          <div class="dino-overlay-sub" id="dinoOverlaySub">Appuie sur Espace ou touche l'écran pour sauter !</div>
+          <button class="btn-primary" id="dinoStartBtn" onclick="startDino()" style="margin-top:16px;width:auto;padding:12px 36px;">Jouer !</button>
+        </div>
+      </div>
+      <div class="dino-controls-hint">
+        <span>Espace / ↑ / clic pour sauter</span>
+        <span>↓ pour se baisser</span>
+      </div>
+      <div class="snake-lb-row">
+        <div class="snake-lb-card">
+          <div class="snake-lb-title">🏆 Meilleurs scores</div>
+          <div class="snake-lb-list" id="dinoLbList">
+            <div class="history-empty">Aucun score enregistré.</div>
+          </div>
+        </div>
+        <div class="snake-lb-card">
+          <div class="snake-lb-title">📅 Leaderboard Hebdo</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">🥇 2 000 🪙 · 🥈 1 500 🪙 · 🥉 1 000 🪙 · autres 500 🪙</div>
+          <div class="snake-lb-list" id="dinoWeeklyLbList">
+            <div class="history-empty">Chargement…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TETRIS -->
+  <div class="page" id="page-tetris">
+    <div class="tetris-wrap">
+      <div class="tetris-header">
+        <div>
+          <div class="section-title">🧱 Tetris</div>
+          <div class="section-sub">Complète des lignes pour gagner des Pomels — 3 🪙 par ligne !</div>
+        </div>
+        <div class="tetris-info-row">
+          <div class="tetris-score-box">
+            <div class="tetris-score-label">Lignes</div>
+            <div class="tetris-score-val" id="tetrisLines">0</div>
+          </div>
+          <div class="tetris-score-box">
+            <div class="tetris-score-label">Gains</div>
+            <div class="tetris-score-val" id="tetrisEarned" style="color:var(--green);">+0 🪙</div>
+          </div>
+        </div>
+      </div>
+      <div class="tetris-game-row">
+        <div class="tetris-canvas-wrap">
+          <canvas id="tetrisCanvas" width="250" height="500"></canvas>
+          <div class="tetris-overlay" id="tetrisOverlay">
+            <div class="tetris-overlay-title" id="tetrisOverlayTitle">🧱 Tetris</div>
+            <div class="tetris-overlay-sub" id="tetrisOverlaySub">Empile les blocs, complète des lignes !</div>
+            <button class="btn-primary" id="tetrisStartBtn" onclick="startTetris()" style="margin-top:16px;width:auto;padding:12px 36px;">Jouer !</button>
+          </div>
+        </div>
+        <div class="tetris-side">
+          <div class="tetris-next-box">
+            <div class="tetris-score-label">Suivant</div>
+            <canvas id="tetrisNextCanvas" width="100" height="100"></canvas>
+          </div>
+          <div class="tetris-controls-hint">
+            <span>← → déplacer</span>
+            <span>↑ / Z tourner</span>
+            <span>↓ accélérer</span>
+            <span>Espace poser</span>
+          </div>
+          <!-- D-pad mobile -->
+          <div class="tetris-dpad" id="tetrisDpad">
+            <button class="tetris-dpad-btn tetris-dpad-left" ontouchstart="tetrisMove('left');event.preventDefault();">◀</button>
+            <button class="tetris-dpad-btn tetris-dpad-rotate" ontouchstart="tetrisMove('rotate');event.preventDefault();">🔄</button>
+            <button class="tetris-dpad-btn tetris-dpad-right" ontouchstart="tetrisMove('right');event.preventDefault();">▶</button>
+            <button class="tetris-dpad-btn tetris-dpad-down" ontouchstart="tetrisMove('down');event.preventDefault();">▼</button>
+            <button class="tetris-dpad-btn tetris-dpad-drop" ontouchstart="tetrisMove('drop');event.preventDefault();">⏬</button>
+          </div>
+        </div>
+      </div>
+      <div class="snake-lb-row">
+        <div class="snake-lb-card">
+          <div class="snake-lb-title">🏆 Meilleurs scores</div>
+          <div class="snake-lb-list" id="tetrisLbList">
+            <div class="history-empty">Aucun score enregistré.</div>
+          </div>
+        </div>
+        <div class="snake-lb-card">
+          <div class="snake-lb-title">📅 Leaderboard Hebdo</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">🥇 2 000 🪙 · 🥈 1 500 🪙 · 🥉 1 000 🪙 · autres 500 🪙</div>
+          <div class="snake-lb-list" id="tetrisWeeklyLbList">
+            <div class="history-empty">Chargement…</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -4075,6 +4195,8 @@ function _onPageLoad(id) {
   if (id === 'proverbe') { renderProverbe(); markPageSeen('proverbe'); }
   if (id === 'quetes') renderQuetes();
   if (id === 'snake' && typeof renderSnakePage === 'function') renderSnakePage();
+  if (id === 'dino' && typeof renderDinoPage === 'function') renderDinoPage();
+  if (id === 'tetris' && typeof renderTetrisPage === 'function') renderTetrisPage();
   if (id === 'g2048' && typeof render2048Page === 'function') render2048Page();
   if (id === 'clicker' && typeof renderClickerPage === 'function') renderClickerPage();
   if (id === 'jardin' && typeof renderJardin === 'function') renderJardin();
@@ -9369,7 +9491,7 @@ function startTimerInterval() {
 // ══════════════════════════════════════════════════
 const PAGE_TITLES = {
   home:'Accueil', roulette:'🎰 Roulette', discussion:'💬 Chat',
-  snake:'🐍 Serpent', g2048:'🔢 2048', clicker:'🌱 Clicker',
+  snake:'🐍 Serpent', dino:'🦕 Dino Run', tetris:'🧱 Tetris', g2048:'🔢 2048', clicker:'🌱 Clicker',
   jardin:'🌸 Jardin', pfc:'🪨 Pierre Feuille Ciseaux',
   boutique:'🛒 Boutique', hotel:'🏨 Hôtel des Ventes',
   classement:'🏆 Classement', profils:'👥 Profils',
@@ -9380,7 +9502,7 @@ const PAGE_TITLES = {
 // Map page → id du bouton sidenav
 const SNAV_MAP = {
   home:'snav-home', roulette:'snav-roulette', discussion:'snav-chat',
-  snake:'snav-snake', g2048:'snav-g2048', clicker:'snav-clicker',
+  snake:'snav-snake', dino:'snav-dino', tetris:'snav-tetris', g2048:'snav-g2048', clicker:'snav-clicker',
   jardin:'snav-jardin', pfc:'snav-pfc', boutique:'snav-boutique',
   hotel:'snav-hotel', profils:'snav-profils', quetes:'snav-quetes',
   paris:'snav-paris', proverbe:'snav-proverbe',
@@ -9577,7 +9699,9 @@ init();
 <!-- <script src="pommon.js"></script> -->
 <script src="boutique.js"></script>
 <script src="clicker_jardin.js"></script>
-<script src="g2048.js?v=5"></script>
+<script src="dino.js"></script>
+<script src="tetris.js"></script>
+<script src="g2048.js?v=4"></script>
 <script src="snake.js"></script>
 </body>
 </html>
