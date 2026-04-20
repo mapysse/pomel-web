@@ -39,12 +39,12 @@
 const DINO_W = 600;
 const DINO_H = 200;
 const DINO_GROUND = 160;
-const DINO_GRAVITY = 0.6;
-const DINO_JUMP_FORCE = -11;
+const DINO_GRAVITY = 0.63;
+const DINO_JUMP_FORCE = -11.2;
 const DINO_POMEL_PER_OBSTACLE = 2;
-const DINO_INITIAL_SPEED = 5;
-const DINO_MAX_SPEED = 12;
-const DINO_ACCEL = 0.001; // accélération par frame
+const DINO_INITIAL_SPEED = 5.5;
+const DINO_MAX_SPEED = 15;
+const DINO_ACCEL = 0.0025; // accélération par frame (3× plus rapide qu'avant)
 
 const DINO_COLORS = {
   bg:     '#1a1a2e',
@@ -75,7 +75,7 @@ function initDinoState() {
     score: 0,
     speed: DINO_INITIAL_SPEED,
     frame: 0,
-    nextObstacle: 80,
+    nextObstacle: 50,
     running: true,
   };
 }
@@ -111,14 +111,25 @@ function dinoTick() {
   // Obstacles
   s.nextObstacle--;
   if (s.nextObstacle <= 0) {
-    const type = Math.random() < 0.2 && s.speed > 7 ? 'bird' : 'cactus';
+    const type = Math.random() < (s.speed > 8 ? 0.25 : s.speed > 6 ? 0.1 : 0) ? 'bird' : 'cactus';
     const variants = type === 'cactus'
-      ? [{ w: 14, h: 30 }, { w: 20, h: 35 }, { w: 28, h: 25 }, { w: 10, h: 40 }]
-      : [{ w: 22, h: 18 }];
+      ? [{ w: 14, h: 30 }, { w: 20, h: 35 }, { w: 28, h: 25 }, { w: 10, h: 40 }, { w: 36, h: 28 }]
+      : [{ w: 22, h: 18 }, { w: 26, h: 14 }];
     const v = variants[Math.floor(Math.random() * variants.length)];
     const oy = type === 'bird' ? DINO_GROUND - 25 - Math.floor(Math.random() * 30) : DINO_GROUND + 30 - v.h;
     s.obstacles.push({ x: DINO_W + 10, y: oy, w: v.w, h: v.h, type, passed: false });
-    s.nextObstacle = 50 + Math.floor(Math.random() * 60) + Math.floor(80 / s.speed * 5);
+
+    // Double obstacle : à haute vitesse, 20% de chance (réduit vs 30%)
+    if (type === 'cactus' && s.speed >= 10 && Math.random() < 0.2) {
+      const v2 = variants[Math.floor(Math.random() * 3)];
+      const gap2 = 45 + Math.floor(Math.random() * 20);
+      s.obstacles.push({ x: DINO_W + 10 + gap2, y: DINO_GROUND + 30 - v2.h, w: v2.w, h: v2.h, type: 'cactus', passed: false });
+    }
+
+    // Gap : mix 75% nouveau (serré) / 25% ancien (large)
+    const minGap = Math.max(22, Math.floor(38 - s.speed * 1.1));
+    const maxGap = Math.max(35, Math.floor(65 - s.speed * 1.3));
+    s.nextObstacle = minGap + Math.floor(Math.random() * (maxGap - minGap));
   }
 
   // Bouger les obstacles
@@ -171,6 +182,10 @@ function dinoJump() {
 function dinoDuck(active) {
   if (!_dinoState) return;
   _dinoState.dino.ducking = active;
+  // Fast fall : si en l'air et qu'on appuie sur bas, accélérer la descente
+  if (active && _dinoState.dino.y < DINO_GROUND) {
+    _dinoState.dino.vy = Math.max(_dinoState.dino.vy, 8);
+  }
 }
 
 

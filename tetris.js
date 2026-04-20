@@ -46,12 +46,12 @@
 
 // ── CONSTANTES ───────────────────────────────────
 const TET_COLS = 10;
-const TET_ROWS = 20;
+const TET_ROWS = 18;
 const TET_CELL = 25;
 const TET_POMEL_PER_LINE = 3;
-const TET_INITIAL_SPEED = 800; // ms entre chaque descente
-const TET_MIN_SPEED = 80;
-const TET_SPEED_DECREASE = 40; // ms plus rapide par 5 lignes
+const TET_INITIAL_SPEED = 500; // ms entre chaque descente (était 800)
+const TET_MIN_SPEED = 60;
+const TET_SPEED_DECREASE = 35; // ms plus rapide par 5 lignes
 
 // Les 7 pièces classiques (I, O, T, S, Z, L, J)
 const TET_PIECES = {

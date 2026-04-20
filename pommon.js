@@ -1620,26 +1620,8 @@ function pmInjectStyles() {
   document.head.appendChild(style);
 }
 
-// Injection du bouton sidenav et de la page
+// Injection de la page (le bouton sidenav est dans index.html)
 function pmInjectUI() {
-  // Bouton sidenav (ajouter avant le footer)
-  const sidenav = document.getElementById('sidenav');
-  if (sidenav && !document.getElementById('snav-pokepom')) {
-    const scroll = sidenav.querySelector('.sidenav-scroll');
-    if (scroll) {
-      const btn = document.createElement('button');
-      btn.className = 'sidenav-item';
-      btn.id = 'snav-pokepom';
-      btn.onclick = () => pmGoTo('home');
-      btn.innerHTML = `
-        <span class="sidenav-item-icon">🐾</span>
-        <span class="sidenav-item-label">PokePom</span>
-      `;
-      scroll.appendChild(btn);
-    }
-  }
-
-  // Bouton mobile bottom nav (optionnel)
   // Page
   const mainContent = document.getElementById('main-content');
   if (mainContent && !document.getElementById('page-pokepom')) {
@@ -1648,11 +1630,21 @@ function pmInjectUI() {
     page.className = 'page';
     page.style.maxWidth = '900px';
     mainContent.appendChild(page);
+
+    // Masquer le bouton info flottant quand on quitte PomMon
+    const observer = new MutationObserver(() => {
+      const floatBtn = document.getElementById('pm-info-float');
+      if (!floatBtn) return;
+      floatBtn.style.display = page.classList.contains('active') ? 'flex' : 'none';
+    });
+    observer.observe(page, { attributes: true, attributeFilter: ['class'] });
   }
 }
 
 // Navigation vers PokePom (async pour pouvoir charger depuis Firebase)
 async function pmGoTo(view) {
+  // Stopper la map si on quitte la home
+  if (typeof pmStopMap === 'function') pmStopMap();
   // Cacher toutes les pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   // Activer page pokepom
@@ -1720,6 +1712,33 @@ function pmRenderPage() {
     case 'battle': pmRenderBattle(page, player); break;
     default: pmRenderHome(page, player);
   }
+
+  // Bouton info flottant (visible sur toutes les vues sauf info, attaché au body pour survivre aux innerHTML)
+  let floatBtn = document.getElementById('pm-info-float');
+  if (_pmView === 'info') {
+    if (floatBtn) floatBtn.style.display = 'none';
+  } else {
+    if (!floatBtn) {
+      floatBtn = document.createElement('button');
+      floatBtn.id = 'pm-info-float';
+      floatBtn.onclick = () => pmGoTo('info');
+      floatBtn.textContent = '📖';
+      floatBtn.title = 'Infos & Guide';
+      Object.assign(floatBtn.style, {
+        position:'fixed', bottom:'24px', right:'24px', zIndex:'90',
+        width:'48px', height:'48px', borderRadius:'50%',
+        background:'var(--surface)', border:'2px solid var(--border)',
+        boxShadow:'0 4px 16px rgba(0,0,0,0.3)',
+        fontSize:'1.3rem', cursor:'pointer', display:'flex',
+        alignItems:'center', justifyContent:'center',
+        transition:'all .2s',
+      });
+      floatBtn.onmouseenter = () => { floatBtn.style.borderColor = 'var(--primary)'; floatBtn.style.transform = 'scale(1.1)'; };
+      floatBtn.onmouseleave = () => { floatBtn.style.borderColor = 'var(--border)'; floatBtn.style.transform = 'scale(1)'; };
+      document.body.appendChild(floatBtn);
+    }
+    floatBtn.style.display = 'flex';
+  }
 }
 
 // ── Écran choix du starter ──
@@ -1768,77 +1787,555 @@ function pmChooseStarter(id) {
 }
 
 // ── Écran d'accueil PokePom ──
-function pmRenderHome(page, player) {
-  const team = pmGetTeam(player);
-  const badgeCount = player.badges.length;
-  const canLeague = badgeCount >= 7;
+// ═══════════════════════════════════════════════════════════════════════════
+// MAP WORLD — Style Pokémon Rubis/Saphir GBA
+// ═══════════════════════════════════════════════════════════════════════════
 
+const PM_MAP_W = 800;
+const PM_MAP_H = 600;
+const PM_TILE = 16;
+const PM_ENCOUNTER_CHANCE = 0.12;
+const PM_STEP_COOLDOWN = 130;
+
+// Personnages disponibles
+const PM_AVATARS = [
+  { id: 'red',    label: 'Rouge',  body: '#c03c2c', hair: '#6a1a1a', skin: '#f5d0a0' },
+  { id: 'blue',   label: 'Bleu',   body: '#2a5aaa', hair: '#1a2a5a', skin: '#f5d0a0' },
+  { id: 'green',  label: 'Vert',   body: '#2a8a3a', hair: '#1a4a1a', skin: '#e8c890' },
+  { id: 'purple', label: 'Violet', body: '#7a3aaa', hair: '#3a1a5a', skin: '#f0d0b0' },
+  { id: 'gold',   label: 'Doré',   body: '#c0962c', hair: '#5a4010', skin: '#f5d8a8' },
+];
+
+const PM_ZONES = {
+  elementaire: { label: 'Prairie Élémentaire', grass1: '#48a848', grass2: '#58c058', ground: '#78c850', types: ['plante','feu','eau','electrique'], legendRate: 0 },
+  montagne:    { label: 'Mont des Vents',      grass1: '#688868', grass2: '#78a878', ground: '#90a880', types: ['air'], legendRate: 0.05 },
+  lumiere:     { label: 'Plaine Lumineuse',     grass1: '#a8a848', grass2: '#c0c058', ground: '#c8c078', types: ['lumiere'], legendRate: 0.05 },
+  grotte:      { label: 'Grotte du Crépuscule', grass1: '#585868', grass2: '#686880', ground: '#606068', types: ['ombre'], legendRate: 0.05 },
+};
+
+// Couleurs GBA
+const GBA = {
+  grass:     '#48a848', grassDark: '#389838', grassLight: '#58c058',
+  path:      '#c8b07a', pathDark: '#b89858', pathLight: '#d8c898',
+  water:     '#3890f8', waterDark: '#2870d0', waterLight: '#58a8f8',
+  tree:      '#206020', treeTrunk: '#885830', treeLight: '#30a030',
+  wall:      '#b0a090', wallDark: '#908070', wallLight: '#c8b8a8',
+  roof:      '#c83030', roofGym: '#c83030', roofLigue: '#6838a8', roofCentre: '#3878c8',
+  flower1:   '#f06060', flower2: '#f0a0a0', flower3: '#f0e060',
+};
+
+let _pmMapGrid = null;
+let _pmMapPlayer = null;
+let _pmMapLoop = null;
+let _pmMapKeys = {};
+let _pmMapLastStep = 0;
+let _pmMapZoneGrid = null;
+let _pmMapCanvas = null;
+let _pmMapViewX = 0;
+let _pmMapViewY = 0;
+let _pmMapAvatar = 'red';
+let _pmPendingZoneEncounter = null;
+
+const PM_MAP_FULL_W = 50;
+const PM_MAP_FULL_H = 38;
+
+// Cell types: 0=grass, 1=tallgrass, 2=wall, 3=arene, 4=ligue, 5=centre, 6=water, 7=path, 8=tree, 9=flower
+
+function pmBuildMap() {
+  const W = PM_MAP_FULL_W, H = PM_MAP_FULL_H;
+  const grid = [], zones = [];
+  for (let r = 0; r < H; r++) { grid[r] = []; zones[r] = []; for (let c = 0; c < W; c++) { grid[r][c] = 0; zones[r][c] = null; } }
+
+  // Murs extérieurs = arbres
+  for (let c = 0; c < W; c++) { grid[0][c] = 8; grid[H-1][c] = 8; }
+  for (let r = 0; r < H; r++) { grid[r][0] = 8; grid[r][W-1] = 8; }
+
+  const cx = Math.floor(W / 2), cy = Math.floor(H / 2);
+
+  // Chemins principaux (croix au centre)
+  for (let c = 3; c < W - 3; c++) { grid[cy][c] = 7; grid[cy+1][c] = 7; }
+  for (let r = 3; r < H - 3; r++) { grid[r][cx] = 7; grid[r][cx-1] = 7; }
+
+  // Arène (3×4) au centre
+  for (let dr = -2; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+    grid[cy-3+dr][cx+dc] = 2;
+  }
+  grid[cy-1][cx] = 3; // porte
+
+  // Centre PokePom (3×3) à gauche
+  for (let dr = 0; dr <= 2; dr++) for (let dc = 0; dc <= 2; dc++) {
+    grid[cy-3+dr][cx-6+dc] = 2;
+  }
+  grid[cy-1][cx-5] = 5; // porte
+
+  // Ligue (3×3) à droite
+  for (let dr = 0; dr <= 2; dr++) for (let dc = 0; dc <= 2; dc++) {
+    grid[cy-3+dr][cx+4+dc] = 2;
+  }
+  grid[cy-1][cx+5] = 4; // porte
+
+  // Dégager autour des bâtiments (chemin)
+  for (let dc = -8; dc <= 8; dc++) { grid[cy-1][cx+dc] = grid[cy-1][cx+dc] || 7; if (grid[cy-1][cx+dc] === 0) grid[cy-1][cx+dc] = 7; }
+
+  // Zones d'herbes hautes
+  const zoneDefs = [
+    { id: 'elementaire', startR: 2,    startC: 2,    rows: 14, cols: 20 },
+    { id: 'montagne',    startR: 2,    startC: W-18, rows: 14, cols: 16 },
+    { id: 'lumiere',     startR: H-14, startC: 2,    rows: 12, cols: 20 },
+    { id: 'grotte',      startR: H-14, startC: W-18, rows: 12, cols: 16 },
+  ];
+
+  for (const z of zoneDefs) {
+    for (let r = z.startR; r < z.startR + z.rows && r < H - 1; r++) {
+      for (let c = z.startC; c < z.startC + z.cols && c < W - 1; c++) {
+        if (grid[r][c] !== 0) continue;
+        const rnd = Math.random();
+        if (rnd < 0.55) grid[r][c] = 1;       // herbe haute
+        else if (rnd < 0.80) grid[r][c] = 0;  // herbe courte
+        else if (rnd < 0.88) grid[r][c] = 6;  // eau
+        else if (rnd < 0.93) grid[r][c] = 9;  // fleur
+        else grid[r][c] = 8;                   // arbre
+        zones[r][c] = z.id;
+      }
+    }
+  }
+
+  // Arbres bordure entre zones et chemin
+  for (let r = 1; r < H - 1; r++) {
+    for (let c = 1; c < W - 1; c++) {
+      if (grid[r][c] === 0 && !zones[r][c]) {
+        // Herbe normale hors zone
+        if (Math.random() < 0.04) grid[r][c] = 8;
+        else if (Math.random() < 0.06) grid[r][c] = 9;
+      }
+    }
+  }
+
+  _pmMapGrid = grid;
+  _pmMapZoneGrid = zones;
+}
+
+function pmGetZoneAt(r, c) {
+  if (!_pmMapZoneGrid || r < 0 || c < 0 || r >= PM_MAP_FULL_H || c >= PM_MAP_FULL_W) return null;
+  return _pmMapZoneGrid[r][c];
+}
+
+// ── Rencontre par zone ──
+function pmGenerateZoneEncounter(zoneId) {
+  const zone = PM_ZONES[zoneId];
+  if (!zone) return pmGenerateWildEncounter();
+  const type = zone.types[Math.floor(Math.random() * zone.types.length)];
+  const candidates = PM_DEX_IDS.filter(id => PM_DEX[id].type === type);
+  const legends = candidates.filter(id => PM_DEX[id].legendary);
+  let chosen;
+  if (legends.length > 0 && Math.random() < zone.legendRate) {
+    chosen = legends[Math.floor(Math.random() * legends.length)];
+  } else {
+    const nonLegends = candidates.filter(id => !PM_DEX[id].legendary);
+    chosen = nonLegends[Math.floor(Math.random() * nonLegends.length)] || candidates[0];
+  }
+  const player = pmGetPlayer();
+  const team = pmGetTeam(player);
+  const avgLvl = team.length > 0 ? Math.floor(team.reduce((s,p) => s+p.level, 0) / team.length) : 1;
+  const wildLvl = Math.max(1, Math.min(10, avgLvl + (Math.floor(Math.random() * 3) - 1)));
+  return pmCreatePokePomInstance(chosen, wildLvl);
+}
+
+// ── Rendu GBA ──
+function pmRenderMap() {
+  const canvas = _pmMapCanvas;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const T = PM_TILE;
+  const viewCols = Math.ceil(canvas.width / T) + 1;
+  const viewRows = Math.ceil(canvas.height / T) + 1;
+
+  _pmMapViewX = Math.max(0, Math.min(PM_MAP_FULL_W - viewCols + 1, _pmMapPlayer.c - Math.floor(viewCols / 2)));
+  _pmMapViewY = Math.max(0, Math.min(PM_MAP_FULL_H - viewRows + 1, _pmMapPlayer.r - Math.floor(viewRows / 2)));
+
+  ctx.imageSmoothingEnabled = false;
+
+  for (let vr = 0; vr < viewRows; vr++) {
+    for (let vc = 0; vc < viewCols; vc++) {
+      const mr = vr + _pmMapViewY, mc = vc + _pmMapViewX;
+      if (mr < 0 || mr >= PM_MAP_FULL_H || mc < 0 || mc >= PM_MAP_FULL_W) continue;
+      const cell = _pmMapGrid[mr][mc];
+      const zone = _pmMapZoneGrid[mr][mc];
+      const px = vc * T, py = vr * T;
+      const seed = (mr * 97 + mc * 31) % 17;
+      const zDef = zone ? PM_ZONES[zone] : null;
+
+      // Base grass
+      ctx.fillStyle = zDef ? zDef.ground : GBA.grass;
+      ctx.fillRect(px, py, T, T);
+      // Grass texture
+      if (cell === 0 || cell === 1 || cell === 9) {
+        ctx.fillStyle = (seed % 3 === 0) ? (zDef ? zDef.grass2 : GBA.grassLight) : (zDef ? zDef.grass1 : GBA.grassDark);
+        ctx.fillRect(px + (seed % 5), py + (seed % 4), T - 2, T - 2);
+      }
+
+      if (cell === 1) {
+        // Tall grass — motif en V GBA style
+        ctx.fillStyle = zDef ? zDef.grass2 : GBA.grassLight;
+        ctx.fillRect(px, py, T, T);
+        ctx.strokeStyle = zDef ? zDef.grass1 : GBA.grassDark;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 3; i++) {
+          const bx = px + 2 + i * 5 + (seed % 3);
+          ctx.beginPath(); ctx.moveTo(bx, py + T - 1); ctx.lineTo(bx + 2, py + 4 + (seed % 4)); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx + 4, py + T - 1); ctx.lineTo(bx + 2, py + 4 + (seed % 4)); ctx.stroke();
+        }
+      } else if (cell === 7) {
+        // Path — sandy GBA style
+        ctx.fillStyle = GBA.path;
+        ctx.fillRect(px, py, T, T);
+        ctx.fillStyle = GBA.pathLight;
+        ctx.fillRect(px + 1, py + 1, T - 2, 1);
+        ctx.fillStyle = GBA.pathDark;
+        ctx.fillRect(px + 1, py + T - 2, T - 2, 1);
+      } else if (cell === 6) {
+        // Water — animated
+        ctx.fillStyle = GBA.water;
+        ctx.fillRect(px, py, T, T);
+        ctx.fillStyle = GBA.waterLight;
+        const waveOff = Math.floor(Date.now() / 400 + mc) % 4;
+        ctx.fillRect(px + waveOff * 3, py + 4, 6, 2);
+        ctx.fillRect(px + ((waveOff + 2) % 4) * 3, py + 10, 5, 2);
+      } else if (cell === 8) {
+        // Tree — GBA style round canopy + trunk
+        ctx.fillStyle = zDef ? zDef.ground : GBA.grass;
+        ctx.fillRect(px, py, T, T);
+        ctx.fillStyle = GBA.treeTrunk;
+        ctx.fillRect(px + 6, py + 10, 4, 6);
+        ctx.fillStyle = GBA.tree;
+        ctx.beginPath();
+        ctx.arc(px + T / 2, py + 6, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = GBA.treeLight;
+        ctx.beginPath();
+        ctx.arc(px + T / 2 - 2, py + 4, 3, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (cell === 9) {
+        // Flower
+        const fc = [GBA.flower1, GBA.flower2, GBA.flower3][seed % 3];
+        ctx.fillStyle = '#40a040';
+        ctx.fillRect(px + 7, py + 8, 2, 6);
+        ctx.fillStyle = fc;
+        ctx.beginPath(); ctx.arc(px + 8, py + 7, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f8f870';
+        ctx.fillRect(px + 7, py + 6, 2, 2);
+      } else if (cell === 2) {
+        // Wall / building body
+        ctx.fillStyle = GBA.wall;
+        ctx.fillRect(px, py, T, T);
+        ctx.fillStyle = GBA.wallLight;
+        ctx.fillRect(px + 1, py + 1, T - 2, 1);
+        ctx.fillStyle = GBA.wallDark;
+        ctx.fillRect(px, py + T - 1, T, 1);
+      } else if (cell === 3) {
+        // Arène door
+        ctx.fillStyle = GBA.path;
+        ctx.fillRect(px, py, T, T);
+        ctx.fillStyle = GBA.roofGym;
+        ctx.fillRect(px + 2, py, T - 4, T - 2);
+        ctx.fillStyle = '#f8d878';
+        ctx.fillRect(px + 5, py + 4, 6, 8);
+        // Pokeball symbol
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(px + 8, py + 7, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = GBA.roofGym;
+        ctx.beginPath(); ctx.arc(px + 8, py + 7, 3, 0, Math.PI); ctx.fill();
+      } else if (cell === 4) {
+        // Ligue door
+        ctx.fillStyle = GBA.path;
+        ctx.fillRect(px, py, T, T);
+        ctx.fillStyle = GBA.roofLigue;
+        ctx.fillRect(px + 2, py, T - 4, T - 2);
+        ctx.fillStyle = '#d0a0f0';
+        ctx.fillRect(px + 5, py + 4, 6, 8);
+        ctx.fillStyle = '#f8f870';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', px + 8, py + 11);
+        ctx.textAlign = 'left';
+      } else if (cell === 5) {
+        // Centre door
+        ctx.fillStyle = GBA.path;
+        ctx.fillRect(px, py, T, T);
+        ctx.fillStyle = GBA.roofCentre;
+        ctx.fillRect(px + 2, py, T - 4, T - 2);
+        ctx.fillStyle = '#90d0f8';
+        ctx.fillRect(px + 5, py + 4, 6, 8);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('+', px + 8, py + 11);
+        ctx.textAlign = 'left';
+      }
+
+      // Building roofs (row above doors)
+      if (mr > 0) {
+        const above = _pmMapGrid[mr - 1] ? _pmMapGrid[mr - 1][mc] : -1;
+        if (cell === 2 && mr >= 2) {
+          // Check if this is the top row of a building
+          const below = mr + 1 < PM_MAP_FULL_H ? _pmMapGrid[mr + 1][mc] : -1;
+          if (below === 3 || below === 4 || below === 5) {
+            // Roof row
+            const roofColor = below === 3 ? GBA.roofGym : below === 4 ? GBA.roofLigue : GBA.roofCentre;
+            ctx.fillStyle = roofColor;
+            ctx.fillRect(px - 2, py, T + 4, T);
+            ctx.fillStyle = roofColor;
+            ctx.fillRect(px - 1, py + 2, T + 2, T - 2);
+          }
+        }
+      }
+    }
+  }
+
+  // Player sprite — GBA style
+  const ppx = (_pmMapPlayer.c - _pmMapViewX) * T;
+  const ppy = (_pmMapPlayer.r - _pmMapViewY) * T;
+  const av = PM_AVATARS.find(a => a.id === _pmMapAvatar) || PM_AVATARS[0];
+  const walkFrame = Math.floor(Date.now() / 200) % 2;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(ppx + T/2, ppy + T - 1, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
+  // Body
+  ctx.fillStyle = av.body;
+  ctx.fillRect(ppx + 4, ppy + 6, 8, 7);
+  // Head
+  ctx.fillStyle = av.skin;
+  ctx.fillRect(ppx + 4, ppy + 1, 8, 6);
+  // Hair
+  ctx.fillStyle = av.hair;
+  ctx.fillRect(ppx + 3, ppy, 10, 3);
+  ctx.fillRect(ppx + 3, ppy + 1, 2, 3);
+  // Eyes
+  ctx.fillStyle = '#000';
+  ctx.fillRect(ppx + 6, ppy + 4, 1, 1);
+  ctx.fillRect(ppx + 9, ppy + 4, 1, 1);
+  // Legs (animated)
+  ctx.fillStyle = av.body;
+  if (walkFrame === 0) {
+    ctx.fillRect(ppx + 5, ppy + 13, 3, 3);
+    ctx.fillRect(ppx + 9, ppy + 13, 3, 3);
+  } else {
+    ctx.fillRect(ppx + 4, ppy + 13, 3, 3);
+    ctx.fillRect(ppx + 10, ppy + 13, 3, 3);
+  }
+
+  // Zone label
+  const currentZone = pmGetZoneAt(_pmMapPlayer.r, _pmMapPlayer.c);
+  const currentCell = _pmMapGrid[_pmMapPlayer.r][_pmMapPlayer.c];
+  let label = '';
+  if (currentZone && PM_ZONES[currentZone]) label = PM_ZONES[currentZone].label;
+  else if (currentCell === 3) label = '🏆 Arène';
+  else if (currentCell === 4) label = '⭐ Ligue PokePom';
+  else if (currentCell === 5) label = '🏥 Centre PokePom';
+  const labelEl = document.getElementById('pm-map-zone-label');
+  if (labelEl) labelEl.textContent = label || 'Pomel World';
+
+  const hudEl = document.getElementById('pm-map-hud');
+  if (hudEl) {
+    const player = pmGetPlayer();
+    hudEl.textContent = `🌿 ${Math.max(0, PM_DAILY_WILD - player.dailyWildCount)}/${PM_DAILY_WILD}`;
+  }
+}
+
+// ── Mouvement & interactions ──
+function pmMapTryMove(dr, dc) {
+  const now = Date.now();
+  if (now - _pmMapLastStep < PM_STEP_COOLDOWN) return;
+  _pmMapLastStep = now;
+  const nr = _pmMapPlayer.r + dr, nc = _pmMapPlayer.c + dc;
+  if (nr < 0 || nr >= PM_MAP_FULL_H || nc < 0 || nc >= PM_MAP_FULL_W) return;
+  const cell = _pmMapGrid[nr][nc];
+
+  if (cell === 3) { pmStopMap(); pmGoTo('gym'); return; }
+  if (cell === 4) { pmStopMap(); pmGoTo('league'); return; }
+  if (cell === 5) { pmStopMap(); _pmShowCentreMenu(); return; }
+  if (cell === 2 || cell === 6 || cell === 8) return; // mur, eau, arbre
+
+  _pmMapPlayer.r = nr;
+  _pmMapPlayer.c = nc;
+
+  if (cell === 1) {
+    const zone = pmGetZoneAt(nr, nc);
+    if (zone && Math.random() < PM_ENCOUNTER_CHANCE) {
+      const player = pmGetPlayer();
+      if (player.dailyWildCount < PM_DAILY_WILD) {
+        _pmPendingZoneEncounter = zone;
+        pmStopMap();
+        pmGoTo('wild');
+        return;
+      }
+    }
+  }
+
+  pmRenderMap();
+}
+
+function _pmShowCentreMenu() {
+  const page = document.getElementById('page-pokepom');
+  if (!page) return;
+  const player = pmGetPlayer();
   page.innerHTML = `
     <div class="pm-wrap">
       <div class="pm-header">
         <div>
-          <div class="pm-title">🐾 PokePom</div>
-          <div class="pm-sub">${player.collection.length} capturés · ${badgeCount}/7 badges · Meilleur score Ligue : ${player.leagueBestScore}</div>
+          <div class="pm-title">🏥 Centre PokePom</div>
+          <div class="pm-sub">Gère ton équipe et consulte ta collection</div>
         </div>
+        <button class="btn-outline" onclick="pmGoTo('home')">← Retour à la map</button>
       </div>
-
       <div class="pm-card">
-        <h3 style="font-size:.75rem; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px;">Ton équipe</h3>
-        <div class="pm-team-slots" id="pm-team-slots"></div>
-        <button class="btn-outline" style="margin-top:14px;" onclick="pmGoTo('team')">🔄 Gérer l'équipe</button>
-      </div>
-
-      <div class="pm-card">
-        <h3 style="font-size:.75rem; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px;">Modes de jeu</h3>
         <div style="display:flex; flex-direction:column; gap:10px;">
-          <button class="btn-primary" onclick="pmGoTo('wild')" ${player.dailyWildCount >= PM_DAILY_WILD ? 'disabled' : ''}>
-            🌿 Combat sauvage (${PM_DAILY_WILD - player.dailyWildCount}/${PM_DAILY_WILD} restants)
-          </button>
-          <button class="btn-primary" onclick="pmGoTo('gym')" style="background:var(--yellow); color:#000;">
-            🏆 Arènes (${badgeCount}/7 badges) · ${player.dailyGymWins >= PM_DAILY_GYM_WINS ? "Victoire déjà obtenue aujourd'hui" : "Disponible aujourd'hui"}
-          </button>
-          <button class="btn-primary" onclick="pmGoTo('league')" ${!canLeague || player.dailyLeagueCount >= PM_DAILY_LEAGUE ? 'disabled' : ''} style="background:${canLeague ? 'var(--primary)' : 'var(--muted)'};">
-            ⭐ Ligue PokePom ${canLeague ? `(${PM_DAILY_LEAGUE - player.dailyLeagueCount}/${PM_DAILY_LEAGUE} runs)` : '(verrouillé — 7 badges requis)'}
-          </button>
-          <button class="btn-outline" onclick="pmGoTo('collection')">📚 Collection (${player.collection.length} PokePoms)</button>
+          <button class="btn-primary" onclick="pmGoTo('team')">🔄 Gérer l'équipe</button>
+          <button class="btn-primary" onclick="pmGoTo('collection')" style="background:var(--yellow); color:#000;">📚 Collection (${player.collection.length} PokePoms)</button>
           <button class="btn-outline" onclick="pmGoTo('info')">📖 Infos & Guide</button>
         </div>
       </div>
-
       <div class="pm-card">
-        <h3 style="font-size:.75rem; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px;">Badges obtenus</h3>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          ${PM_GYMS.map(g => `
-            <div style="display:flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid ${player.badges.includes(g.id) ? PM_TYPE_COLOR[g.id] : 'var(--border)'}; border-radius:8px; padding:6px 12px; ${player.badges.includes(g.id) ? '' : 'opacity:.4;'}">
-              <span>${PM_TYPE_EMOJI[g.id]}</span>
-              <span style="font-size:.75rem; font-weight:600;">${PM_TYPE_LABEL[g.id]}</span>
-              ${player.badges.includes(g.id) ? '<span style="color:var(--green);">✓</span>' : ''}
+        <h3 style="font-size:.75rem; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px;">Changer de personnage</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+          ${PM_AVATARS.map(av => `
+            <div onclick="_pmMapAvatar='${av.id}'; pmGoTo('home');" style="cursor:pointer; padding:8px 14px; border-radius:10px; border:2px solid ${_pmMapAvatar === av.id ? 'var(--primary)' : 'var(--border)'}; background:${_pmMapAvatar === av.id ? 'var(--primary-subtle)' : 'var(--surface2)'}; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all .2s;">
+              <canvas width="16" height="16" id="pm-av-preview-${av.id}" style="width:32px; height:32px; image-rendering:pixelated;"></canvas>
+              <span style="font-size:.7rem; font-weight:600; color:${_pmMapAvatar === av.id ? 'var(--primary)' : 'var(--muted)'};">${av.label}</span>
             </div>
           `).join('')}
         </div>
       </div>
     </div>
   `;
+  // Dessiner les previews
+  PM_AVATARS.forEach(av => {
+    setTimeout(() => {
+      const c = document.getElementById('pm-av-preview-' + av.id);
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#48a848';
+      ctx.fillRect(0, 0, 16, 16);
+      ctx.fillStyle = av.body;
+      ctx.fillRect(4, 6, 8, 7);
+      ctx.fillStyle = av.skin;
+      ctx.fillRect(4, 1, 8, 6);
+      ctx.fillStyle = av.hair;
+      ctx.fillRect(3, 0, 10, 3);
+      ctx.fillRect(3, 1, 2, 3);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(6, 4, 1, 1);
+      ctx.fillRect(9, 4, 1, 1);
+      ctx.fillStyle = av.body;
+      ctx.fillRect(5, 13, 3, 3);
+      ctx.fillRect(9, 13, 3, 3);
+    }, 10);
+  });
+}
 
-  const slotsEl = document.getElementById('pm-team-slots');
-  for (let i = 0; i < 3; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'pm-team-slot' + (team[i] ? '' : ' empty');
-    slot.onclick = () => pmGoTo('team');
-    if (team[i]) {
-      const p = PM_DEX[team[i].pokepomId];
-      slot.innerHTML = `
-        <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-team-${i}"></canvas>
-        <div style="font-weight:700; font-size:.85rem;">${p.name}</div>
-        <div style="font-size:.7rem; color:var(--muted); font-family:'Space Mono',monospace;">Niv ${team[i].level}</div>
-        <span class="pm-type-badge" style="background:${PM_TYPE_COLOR[p.type]};">${PM_TYPE_EMOJI[p.type]}</span>
-      `;
-      setTimeout(() => drawPokePom(document.getElementById('pm-team-' + i), team[i].pokepomId), 10);
-    } else {
-      slot.innerHTML = `<div style="color:var(--muted); font-size:.85rem;">Emplacement vide</div>`;
-    }
-    slotsEl.appendChild(slot);
+// ── Contrôles ──
+function pmMapKeyDown(e) {
+  const dirs = {
+    ArrowUp:[-1,0], ArrowDown:[1,0], ArrowLeft:[0,-1], ArrowRight:[0,1],
+    KeyZ:[-1,0], KeyS:[1,0], KeyQ:[0,-1], KeyD:[0,1],
+  };
+  const d = dirs[e.code];
+  if (d && _pmMapGrid) { e.preventDefault(); pmMapTryMove(d[0], d[1]); }
+}
+
+function pmMapDpadMove(dr, dc) { if (_pmMapGrid) pmMapTryMove(dr, dc); }
+
+function pmStartMap() {
+  if (!_pmMapGrid) pmBuildMap();
+  if (!_pmMapPlayer) {
+    _pmMapPlayer = { r: Math.floor(PM_MAP_FULL_H / 2) + 2, c: Math.floor(PM_MAP_FULL_W / 2) };
   }
+  document.addEventListener('keydown', pmMapKeyDown);
+  if (_pmMapLoop) cancelAnimationFrame(_pmMapLoop);
+  function loop() { pmRenderMap(); _pmMapLoop = requestAnimationFrame(loop); }
+  _pmMapLoop = requestAnimationFrame(loop);
+}
+
+function pmStopMap() {
+  document.removeEventListener('keydown', pmMapKeyDown);
+  if (_pmMapLoop) { cancelAnimationFrame(_pmMapLoop); _pmMapLoop = null; }
+}
+
+// ── pmRenderHome — la map GBA ──
+function pmRenderHome(page, player) {
+  const team = pmGetTeam(player);
+  const badgeCount = player.badges.length;
+
+  page.innerHTML = `
+    <div class="pm-wrap">
+      <div class="pm-header" style="margin-bottom:0;">
+        <div>
+          <div class="pm-title">🐾 PokePom</div>
+          <div class="pm-sub">${player.collection.length} capturés · ${badgeCount}/7 badges</div>
+        </div>
+        <span id="pm-map-hud" style="font-size:.75rem; color:var(--muted); background:var(--surface2); padding:4px 10px; border-radius:6px; font-family:'Space Mono',monospace;"></span>
+      </div>
+
+      <div id="pm-map-zone-label" style="text-align:center; font-size:.8rem; font-weight:700; color:var(--primary); min-height:1.2em; margin-bottom:4px;">Pomel World</div>
+
+      <div style="position:relative; width:${PM_MAP_W}px; max-width:100%; margin:0 auto; border-radius:8px; overflow:hidden; border:3px solid #505868; box-shadow:0 0 0 3px #282830, 0 4px 20px rgba(0,0,0,0.5); background:#000;">
+        <canvas id="pm-map-canvas" width="${PM_MAP_W}" height="${PM_MAP_H}" style="display:block; width:100%; height:auto; image-rendering:pixelated;"></canvas>
+      </div>
+
+      <!-- D-pad mobile -->
+      <div class="pm-map-dpad" id="pm-map-dpad">
+        <button class="pm-map-dpad-btn pm-dpad-up" ontouchstart="pmMapDpadMove(-1,0);event.preventDefault();">▲</button>
+        <button class="pm-map-dpad-btn pm-dpad-left" ontouchstart="pmMapDpadMove(0,-1);event.preventDefault();">◀</button>
+        <button class="pm-map-dpad-btn pm-dpad-right" ontouchstart="pmMapDpadMove(0,1);event.preventDefault();">▶</button>
+        <button class="pm-map-dpad-btn pm-dpad-down" ontouchstart="pmMapDpadMove(1,0);event.preventDefault();">▼</button>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:4px;">
+        <div style="display:flex; align-items:center; gap:4px; font-size:.7rem; color:var(--muted);">
+          <span style="width:12px;height:12px;border-radius:2px;background:${GBA.grassLight};display:inline-block;border:1px solid ${GBA.grassDark};"></span> Herbes
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; font-size:.7rem; color:var(--muted);">
+          <span style="width:12px;height:12px;border-radius:2px;background:${GBA.roofGym};display:inline-block;"></span> Arène
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; font-size:.7rem; color:var(--muted);">
+          <span style="width:12px;height:12px;border-radius:2px;background:${GBA.roofLigue};display:inline-block;"></span> Ligue
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; font-size:.7rem; color:var(--muted);">
+          <span style="width:12px;height:12px;border-radius:2px;background:${GBA.roofCentre};display:inline-block;"></span> Centre
+        </div>
+        <div onclick="pmGoTo('info')" style="display:flex; align-items:center; gap:5px; font-size:.72rem; color:#fff; cursor:pointer; font-weight:700; background:var(--primary); padding:4px 12px; border-radius:6px; transition:all .2s;" onmouseenter="this.style.filter='brightness(1.15)'" onmouseleave="this.style.filter=''">
+          📖 Infos & Guide
+        </div>
+      </div>
+
+      <div style="text-align:center; font-size:.65rem; color:var(--muted); margin-top:2px;">
+        ⬆⬇⬅➡ / ZQSD pour se déplacer · Marche dans les herbes pour rencontrer des PokePoms
+      </div>
+    </div>
+  `;
+
+  // Injecter le CSS dpad si pas déjà fait
+  if (!document.getElementById('pm-map-dpad-css')) {
+    const s = document.createElement('style');
+    s.id = 'pm-map-dpad-css';
+    s.textContent = `
+      .pm-map-dpad { display:none; margin:0 auto; width:160px; height:160px; position:relative; user-select:none; -webkit-user-select:none; }
+      .pm-map-dpad-btn { position:absolute; width:50px; height:50px; border-radius:12px; background:var(--surface); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.3rem; cursor:pointer; transition:all .1s; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+      .pm-map-dpad-btn:active { background:var(--primary); border-color:var(--primary); transform:scale(.9); }
+      .pm-dpad-up    { top:0;   left:50%; transform:translateX(-50%); }
+      .pm-dpad-down  { bottom:0;left:50%; transform:translateX(-50%); }
+      .pm-dpad-left  { left:0;  top:50%;  transform:translateY(-50%); }
+      .pm-dpad-right { right:0; top:50%;  transform:translateY(-50%); }
+      @media (max-width:600px) { .pm-map-dpad { display:block; } }
+      @media (min-width:601px) { .pm-map-dpad { display:none; } }
+    `;
+    document.head.appendChild(s);
+  }
+
+  _pmMapCanvas = document.getElementById('pm-map-canvas');
+  pmStartMap();
 }
 
 // ── Écran « Infos & Guide » ──
@@ -1877,6 +2374,43 @@ function pmRenderInfo(page, player) {
           <div class="pm-sub">Tout ce qu'il faut savoir pour devenir maître PokePom</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">🗺️ Comment jouer</h3>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div>Bienvenue dans <strong>PokePom</strong> ! Tu explores un monde ouvert avec ton personnage. Déplace-toi avec les <strong>flèches / ZQSD</strong> (ou le d-pad sur mobile).</div>
+          <div>Le monde contient <strong>4 zones d'herbes hautes</strong>, chacune avec des PokePoms différents. Quand tu marches dans les herbes, tu as une chance de déclencher un <strong>combat sauvage</strong>. Bats le PokePom adverse pour le capturer et l'ajouter à ta collection !</div>
+          <div>Au centre de la map, tu trouveras <strong>3 bâtiments</strong> :</div>
+        </div>
+        <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div>🏆 <strong style="color:#c03c2c;">Arène</strong> (rouge) — Entre dedans pour défier les champions de chaque type et gagner des badges</div>
+          <div>⭐ <strong style="color:#8a5acc;">Ligue PokePom</strong> (violet) — Accessible avec 7 badges, enchaîne des combats de plus en plus durs</div>
+          <div>🏥 <strong style="color:#3a8acc;">Centre PokePom</strong> (bleu) — Gère ton équipe, consulte ta collection et ce guide</div>
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">🌿 Les zones de la map</h3>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div><span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:#3a7a28; vertical-align:middle; margin-right:6px;"></span><strong>Prairie Élémentaire</strong> (haut-gauche) — Feu 🔥, Plante 🌿, Eau 💧, Électrique ⚡. Idéale pour débuter !</div>
+          <div><span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:#6a7a5a; vertical-align:middle; margin-right:6px;"></span><strong>Mont des Vents</strong> (haut-droite) — Air 🌀 uniquement. Chance rare de croiser un légendaire.</div>
+          <div><span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:#a89a40; vertical-align:middle; margin-right:6px;"></span><strong>Plaine Lumineuse</strong> (bas-gauche) — Lumière ✨ uniquement. Chance rare de légendaire.</div>
+          <div><span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:#3a2a40; vertical-align:middle; margin-right:6px;"></span><strong>Grotte du Crépuscule</strong> (bas-droite) — Ombre 🌑 uniquement. Chance rare de légendaire.</div>
+        </div>
+        <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          Tu as <strong>${PM_DAILY_WILD} rencontres sauvages par jour</strong>. Choisis bien dans quelle zone tu chasses ! Le nombre de combats restants est affiché en haut de la map.
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">🎯 Objectif du jeu</h3>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div><strong>1.</strong> Choisis ton starter parmi Pomalis 🌿, Flamèche 🔥 ou Goutapom 💧</div>
+          <div><strong>2.</strong> Explore les zones, capture des PokePoms et compose une équipe de 3</div>
+          <div><strong>3.</strong> Bats les 7 champions d'arène pour obtenir tous les badges</div>
+          <div><strong>4.</strong> Débloque la Ligue PokePom et tente le meilleur score !</div>
+        </div>
       </div>
 
       <div class="pm-card">
@@ -2110,9 +2644,16 @@ function pmRenderWildBattle(page, player) {
     page.innerHTML = `
       <div class="pm-wrap">
         <div class="pm-header"><div class="pm-title">🌿 Combats sauvages</div></div>
-        <div class="pm-card">Tu n'as aucun PokePom en équipe ! Retourne dans ta collection.</div>
+        <div class="pm-card">Tu n'as aucun PokePom en équipe ! Va au Centre PokePom pour gérer ton équipe.</div>
+        <button class="btn-outline" onclick="pmGoTo('home')">← Retour à la map</button>
       </div>
     `;
+    return;
+  }
+
+  // Si un seul PokePom dans l'équipe, lancer directement le combat
+  if (team.length === 1) {
+    pmStartWildBattle(team[0]);
     return;
   }
 
@@ -2126,7 +2667,7 @@ function pmRenderWildBattle(page, player) {
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
       </div>
       <div class="pm-card" style="text-align:center;">
-        <p style="margin-bottom:14px; color:var(--muted);">Un PokePom sauvage peut apparaître... choisis lequel de ton équipe envoyer au combat.</p>
+        <p style="margin-bottom:14px; color:var(--muted);">Un PokePom sauvage apparaît ! Choisis qui envoyer au combat.</p>
         <div class="pm-team-slots" id="pm-team-pick"></div>
       </div>
     </div>
@@ -2161,7 +2702,10 @@ function pmStartWildBattle(firstInstance) {
   let firstIdx = team.findIndex(t => t.uid === firstInstance.uid);
   if (firstIdx < 0) firstIdx = 0;
 
-  const wild = pmGenerateWildEncounter();
+  const wild = _pmPendingZoneEncounter
+    ? pmGenerateZoneEncounter(_pmPendingZoneEncounter)
+    : pmGenerateWildEncounter();
+  _pmPendingZoneEncounter = null;
   const wildFighter = pmCreateFighter(wild, PM_WILD_NERF);
 
   _pmBattleState = {
@@ -2937,7 +3481,7 @@ function pmRenderBattleEnd(bs) {
         <div>+${PM_XP_GAIN.wild} XP</div>
         <div class="pm-quick-btns">
           <button class="btn-outline" onclick="pmGoTo('home')">Accueil</button>
-          <button class="btn-primary" onclick="pmGoTo('wild')">Nouveau combat</button>
+          <button class="btn-primary" onclick="pmGoTo('home')">Retour à la map</button>
         </div>
       `;
     } else {
