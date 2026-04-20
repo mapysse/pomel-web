@@ -328,10 +328,11 @@ function getSnakeWeekKey() {
 async function saveSnakeWeeklyScore(score) {
   if (score === 0) return;
   const safeCode = state.code.replace(/[.#$[\]/]/g, '_');
+  const weekKey = getSnakeWeekKey();
   const path = 'snake_weekly_lb/' + safeCode;
   const existing = await dbGet(path);
-  if (!existing || score > existing.score) {
-    await dbSet(path, { name: state.name, code: state.code, score, date: new Date().toISOString() });
+  if (!existing || existing.weekKey !== weekKey || score > existing.score) {
+    await dbSet(path, { name: state.name, code: state.code, score, weekKey, date: new Date().toISOString() });
   }
 }
 
@@ -341,7 +342,10 @@ async function renderSnakeWeeklyLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('snake_weekly_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const currentWeek = getSnakeWeekKey();
+  const entries = Object.values(snap)
+    .filter(e => !e.weekKey || e.weekKey === currentWeek)
+    .sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
@@ -379,12 +383,23 @@ async function checkSnakeWeeklyReset() {
   if (recheck !== true) return;
   const snap = await dbGet('snake_weekly_lb');
   if (!snap) return;
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  // Filtrer les scores de la semaine précédente (compatibilité : si pas de weekKey, inclure quand même)
+  const entries = Object.values(snap)
+    .filter(e => !e.weekKey || e.weekKey === prevWeekKey)
+    .sort((a, b) => b.score - a.score);
+  if (entries.length === 0) return;
   await distributeReliably(entries.map((e, i) => ({
     code: e.code, amount: i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION,
     historyEntry: { type: 'snake', desc: '🐍 Classement hebdo Serpent — #' + (i+1), amount: i < 3 ? SNAKE_WEEKLY_PRIZES[i] : SNAKE_WEEKLY_CONSOLATION, date: new Date().toISOString() }
   })));
-  await dbDelete('snake_weekly_lb');
+  // Supprimer seulement les entrées de la semaine précédente, garder les scores de la semaine en cours
+  const allKeys = Object.keys(snap);
+  for (const key of allKeys) {
+    const entry = snap[key];
+    if (!entry.weekKey || entry.weekKey === prevWeekKey) {
+      await dbDelete('snake_weekly_lb/' + key);
+    }
+  }
 }
 
 
