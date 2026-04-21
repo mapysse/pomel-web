@@ -82,11 +82,12 @@ const SHOP_TITLES = [
   // ── SAISON 2 ──────────────────────────────────────
   { id: 'fan_malicieux', name: 'Fan des Malicieux', price: 10000, type: 'title', hidden: true },
   { id: 'fan_foufoufdefou', name: 'Fan des Foufous de Fou', price: 10000, type: 'title', hidden: true },
+  { id: 'fan_etincelles', name: 'Fan des Étincelles', price: 10000, type: 'title', hidden: true },
   { id: 'guerrier_saison2', name: '🥷 Guerrier/ère de la Saison 2', price: 50000, type: 'title', hidden: true },
   { id: 'survivant_saison1', name: '🪖 Survivant/te de la Saison 1', price: 100000, type: 'title', hidden: true },
-  { id: 'badge_casquette', name: 'Casquette Corpo 🧢', price: 1000, type: 'badge', emoji: '🧢', hidden: true },
-  { id: 'badge_pomfest', name: 'PomFest 2026 🎉', price: 5000, type: 'badge', emoji: '🎉', hidden: true },
-  { id: 'badge_pomies', name: 'Pomies Money 💰', price: 10000, type: 'badge', emoji: '💰', hidden: true },
+  { id: 'badge_casquette', name: 'Badge Corpo 🧢', price: 1000, type: 'badge', emoji: '🧢', hidden: true },
+  { id: 'badge_pomfest', name: 'Badge PomFest 🎉', price: 5000, type: 'badge', emoji: '🎉', hidden: true },
+  { id: 'badge_pomies', name: 'Badge Pomies 💰', price: 10000, type: 'badge', emoji: '💰', hidden: true },
   // ── BANNIÈRES ──────────────────────────────────────
   // Couleurs unies
   { id: 'banner_gold',    name: '🟨 Bannière Dorée',   price: 5000,  type: 'banner', bannerClass: 'banner-gold',    desc: 'Fond dorée sur ta carte de profil', hidden: true },
