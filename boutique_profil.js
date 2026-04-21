@@ -90,7 +90,7 @@ const SHOP_TITLES = [
   // ── BANNIÈRES ──────────────────────────────────────
   // Couleurs unies
   { id: 'banner_gold',    name: '🟨 Bannière Dorée',   price: 5000,  type: 'banner', bannerClass: 'banner-gold',    desc: 'Fond dorée sur ta carte de profil', hidden: true },
-  { id: 'banner_black',    name: '⬛ Bannière Noire',   price: 5000,  type: 'banner', bannerClass: 'banner-black',    desc: 'Fond dorée sur ta carte de profil', hidden: true },
+  { id: 'banner_black',    name: '⬛ Bannière Noire',   price: 5000,  type: 'banner', bannerClass: 'banner-black',    desc: 'Fond noir sur ta carte de profil', hidden: true },
   // Motifs
   
   // Effets animés
