@@ -3461,61 +3461,7 @@ const db = firebase.database();
 
 // Groupes : gérés dynamiquement dans Firebase (cf. /groups/)
 
-const SHOP_TITLES = [
-  // ── SAISON 1 ──────────────────────────────────────
-  { id: 'survivant_bug_30mars', name: '🐛 Survivant du bug du 30 mars', price: 0, type: 'title', hidden: true },
-  { id: 'migration', name: '📡 Migration réussie. Over.', price: 0, type: 'title', hidden: true  },
-  { id: 'free_plstn', name: 'Free Palestine', price: 1000, type: 'title' },
-  { id: 'larry_malicieux', name: 'Larry le Malicieux', price: 1000, type: 'title' },
-  { id: 'fan_burger_lidl', name: 'Fan 2 burgers LIDL', price: 1000, type: 'title' },
-  { id: 'maitre_pokemon', name: 'Maître Pokemon', price: 10000, type: 'title' },
-  { id: 'criminel_wc', name: 'Criminel des WC', price: 10000, type: 'title' },
-  { id: 'expert_pomdoc', name: 'Expert Pomdoc', price: 100000, type: 'title' },
-  { id: 'rainbow', name: 'Effet Arc-en-ciel', price: 50000, type: 'color', desc: 'Pseudo arc-en-ciel animé !' },
-  { id: 'sparkle', name: '✨ Effet Particules Brillantes', price: 50000, type: 'color', desc: 'Pseudo entouré de particules colorées scintillantes !' },
-  { id: 'color_green', name: '🟢 Pseudo Vert', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en vert' },
-  { id: 'color_blue', name: '🔵 Pseudo Bleu', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en bleu' },
-  { id: 'color_orange', name: '🟠 Pseudo Orange', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en orange' },
-  { id: 'color_red', name: '🔴 Pseudo Rouge', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en rouge' },
-  { id: 'color_brown', name: '🟤 Pseudo Marron', price: 1000, type: 'color', desc: 'Ton pseudo s\'affiche en marron' },
-  { id: 'badge_survivant_30mars', name: 'Badge Survivant 🪲', price: 0, type: 'badge', emoji: '🪲', hidden: true },
-  { id: 'badge_plstn', name: 'Badge Palestine 🇵🇸', price: 500, type: 'badge', emoji: '🇵🇸' },
-  { id: 'badge_expert', name: 'Badge Expert 🎖️', price: 1000, type: 'badge', emoji: '🎖️' },
-  { id: 'badge_toilettes', name: 'Badge Trône du criminel 🚽', price: 2500, type: 'badge', emoji: '🚽' },
-  { id: 'badge_pomelien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟' },
-  { id: 'badge_censure', name: 'Badge Censure 🚫', price: 10000, type: 'badge', emoji: '🚫' },
-  // ── BANNIÈRES ──────────────────────────────────────
-  // Couleurs unies
-  { id: 'banner_red',    name: '🟥 Bannière Rouge',   price: 5000,  type: 'banner', bannerClass: 'banner-red',    desc: 'Fond rouge sur ta carte de profil' },
-  { id: 'banner_green',  name: '🟩 Bannière Verte',   price: 5000,  type: 'banner', bannerClass: 'banner-green',  desc: 'Fond vert sur ta carte de profil' },
-  { id: 'banner_blue',   name: '🟦 Bannière Bleue',   price: 5000,  type: 'banner', bannerClass: 'banner-blue',   desc: 'Fond bleu sur ta carte de profil' },
-  { id: 'banner_orange', name: '🟧 Bannière Orange',  price: 5000,  type: 'banner', bannerClass: 'banner-orange', desc: 'Fond orange sur ta carte de profil' },
-  { id: 'banner_purple', name: '🟪 Bannière Violette',price: 5000,  type: 'banner', bannerClass: 'banner-purple', desc: 'Fond violet sur ta carte de profil' },
-  // Motifs
-  { id: 'banner_damier',        name: '🔲 Motif Damier',       price: 25000, type: 'banner', bannerClass: 'banner-damier',        desc: 'Fond en damier subtil' },
-  { id: 'banner_vagues',        name: '〰️ Motif Vagues',        price: 25000, type: 'banner', bannerClass: 'banner-vagues',        desc: 'Fond orné de vagues ondulées' },
-  { id: 'banner_constellation', name: '✦ Motif Constellation', price: 25000, type: 'banner', bannerClass: 'banner-constellation', desc: 'Fond étoilé comme un ciel nocturne' },
-  // Effets animés
-  { id: 'banner_rainbow', name: '🌈 Effet Arc-en-ciel', price: 75000, type: 'banner', bannerClass: 'banner-rainbow', desc: 'Fond arc-en-ciel animé en boucle !' },
-  { id: 'banner_aurora',  name: '🌌 Effet Aurore',     price: 75000, type: 'banner', bannerClass: 'banner-aurora',  desc: 'Blobs de lumière qui dérivent doucement' },
-  { id: 'banner_plasma',  name: '⚡ Effet Plasma',     price: 75000, type: 'banner', bannerClass: 'banner-plasma',  desc: 'Pulsation électrique rouge intense' },
-  // ── SAISON 2 ──────────────────────────────────────
-  { id: 'fan_malicieux', name: 'Fan des Malicieux', price: 10000, type: 'title', hidden: true },
-  { id: 'fan_foufoufdefou', name: 'Fan des Foufous de Fou', price: 10000, type: 'title', hidden: true },
-  { id: 'guerrier_saison2', name: '🥷 Guerrier/ère de la Saison 2', price: 50000, type: 'title', hidden: true },
-  { id: 'survivant_saison1', name: '🪖 Survivant/te de la Saison 1', price: 100000, type: 'title', hidden: true },
-  { id: 'badge_casquette', name: 'Casquette Corpo 🧢', price: 1000, type: 'badge', emoji: '🧢', hidden: true },
-  { id: 'badge_pomfest', name: 'PomFest 2026 🎉', price: 5000, type: 'badge', emoji: '🎉', hidden: true },
-  { id: 'badge_pomies', name: 'Pomies Money 💰', price: 10000, type: 'badge', emoji: '💰', hidden: true },
-  // ── BANNIÈRES ──────────────────────────────────────
-  // Couleurs unies
-  { id: 'banner_gold',    name: '🟨 Bannière Dorée',   price: 5000,  type: 'banner', bannerClass: 'banner-gold',    desc: 'Fond dorée sur ta carte de profil', hidden: true },
-  { id: 'banner_black',    name: '⬛ Bannière Noire',   price: 5000,  type: 'banner', bannerClass: 'banner-black',    desc: 'Fond dorée sur ta carte de profil', hidden: true },
-  // Motifs
-  
-  // Effets animés
-  
-];
+// ── SHOP_TITLES — extrait dans boutique_profil.js ──
   
 // ── STORAGE LAYER (FIREBASE) ────────────────────
 async function dbGet(path) {
@@ -9727,6 +9673,7 @@ init();
   </div>
 
 <!-- <script src="pommon.js"></script> -->
+<script src="boutique_profil.js"></script>
 <script src="boutique.js"></script>
 <script src="clicker_jardin.js"></script>
 <!-- <script src="dino.js"></script> -->

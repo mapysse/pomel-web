@@ -951,25 +951,32 @@ async function pmLoadFromFirebase() {
   return _pmCache;
 }
 
-// Sauvegarde avec debounce (toutes les 400ms max — évite le spam sur actions rapides)
+// Sauvegarde avec debounce (toutes les 2 secondes max — réduit le bandwidth Firebase)
+let _pmDirty = false;
+
 function pmScheduleSave() {
   if (!_pmLoaded || !_pmCache) return;
-  if (_pmSaveTimer) clearTimeout(_pmSaveTimer);
+  _pmDirty = true;
+  if (_pmSaveTimer) return; // un save est déjà programmé, on attend
   _pmSaveTimer = setTimeout(async () => {
     _pmSaveTimer = null;
+    if (!_pmDirty) return;
+    _pmDirty = false;
     if (typeof dbSet !== 'function' || !state || !state.code) return;
     try {
       await dbSet(pmPath(), _pmCache);
     } catch(e) {
       console.error('[pokepom] save error', e);
+      _pmDirty = true; // re-marquer dirty pour réessayer
     }
-  }, 400);
+  }, 2000);
 }
 
 // Sauvegarde immédiate (utilisée aux fins de combat pour garantir la persistance)
 async function pmSaveNow() {
   if (!_pmLoaded || !_pmCache) return;
   if (_pmSaveTimer) { clearTimeout(_pmSaveTimer); _pmSaveTimer = null; }
+  _pmDirty = false;
   if (typeof dbSet !== 'function' || !state || !state.code) return;
   try {
     await dbSet(pmPath(), _pmCache);
@@ -1018,6 +1025,7 @@ async function pmSaveLeagueLb(score) {
         score: score,
         date: new Date().toISOString()
       });
+      _pmLeagueLbCache = null; // Invalider le cache
     }
   } catch(e) { console.error('[pokepom] saveLeagueLb error', e); }
 }
@@ -1631,11 +1639,15 @@ function pmInjectUI() {
     page.style.maxWidth = '900px';
     mainContent.appendChild(page);
 
-    // Masquer le bouton info flottant quand on quitte PomMon
+    // Masquer le bouton info flottant ET stopper la map quand on quitte PomMon
     const observer = new MutationObserver(() => {
+      const isActive = page.classList.contains('active');
       const floatBtn = document.getElementById('pm-info-float');
-      if (!floatBtn) return;
-      floatBtn.style.display = page.classList.contains('active') ? 'flex' : 'none';
+      if (floatBtn) floatBtn.style.display = isActive ? 'flex' : 'none';
+      if (!isActive && typeof pmStopMap === 'function') {
+        pmStopMap();
+        _pmMapNeedsResume = true; // Forcer un "Continuer" au retour
+      }
     });
     observer.observe(page, { attributes: true, attributeFilter: ['class'] });
   }
@@ -1835,6 +1847,7 @@ let _pmMapViewX = 0;
 let _pmMapViewY = 0;
 let _pmMapAvatar = 'red';
 let _pmPendingZoneEncounter = null;
+let _pmMapNeedsResume = false;
 
 const PM_MAP_FULL_W = 50;
 const PM_MAP_FULL_H = 38;
@@ -2335,7 +2348,35 @@ function pmRenderHome(page, player) {
   }
 
   _pmMapCanvas = document.getElementById('pm-map-canvas');
-  pmStartMap();
+
+  if (_pmMapNeedsResume) {
+    // Afficher la map figée avec un overlay "Continuer"
+    if (!_pmMapGrid) pmBuildMap();
+    if (!_pmMapPlayer) _pmMapPlayer = { r: Math.floor(PM_MAP_FULL_H / 2) + 2, c: Math.floor(PM_MAP_FULL_W / 2) };
+    // Rendre un seul frame
+    pmRenderMap();
+
+    // Overlay par-dessus le canvas
+    const wrap = _pmMapCanvas.parentElement;
+    if (wrap) {
+      const overlay = document.createElement('div');
+      overlay.id = 'pm-map-resume-overlay';
+      overlay.style.cssText = 'position:absolute;inset:0;background:rgba(13,13,15,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;backdrop-filter:blur(3px);z-index:5;cursor:pointer;';
+      overlay.innerHTML = `
+        <div style="font-size:1.4rem;font-weight:800;color:var(--primary);">🐾 PokePom</div>
+        <button class="btn-primary" style="padding:12px 36px;">▶ Continuer</button>
+      `;
+      overlay.onclick = () => {
+        overlay.remove();
+        _pmMapNeedsResume = false;
+        pmStartMap();
+      };
+      wrap.style.position = 'relative';
+      wrap.appendChild(overlay);
+    }
+  } else {
+    pmStartMap();
+  }
 }
 
 // ── Écran « Infos & Guide » ──
@@ -2913,19 +2954,36 @@ function pmRenderLeague(page, player) {
         <h3 style="font-size:.75rem; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px;">🏆 Classement général</h3>
         <div id="pm-league-lb-list"><div style="color:var(--muted); font-size:.85rem;">Chargement…</div></div>
       </div>
+      <div class="pm-card">
+        <h3 style="font-size:.75rem; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px;">📅 Classement hebdo</h3>
+        <div style="font-size:.75rem; color:var(--muted); margin-bottom:10px;">🥇 2 000 🪙 · 🥈 1 500 🪙 · 🥉 1 000 🪙 · autres 500 🪙</div>
+        <div id="pm-league-weekly-lb-list"><div style="color:var(--muted); font-size:.85rem;">Chargement…</div></div>
+      </div>
     </div>
   `;
-  // Charger et afficher le classement en async
   pmRenderLeagueLb();
+  pmRenderLeagueWeeklyLb();
+  checkPmLeagueWeeklyReset().catch(() => {});
 }
 
-// Rendu du leaderboard Ligue (async, chargé après affichage principal)
+// Rendu du leaderboard Ligue (async, chargé après affichage principal, cache 60s)
+let _pmLeagueLbCache = null;
+let _pmLeagueLbCacheTime = 0;
+
 async function pmRenderLeagueLb() {
   const list = document.getElementById('pm-league-lb-list');
   if (!list) return;
   if (typeof dbGet !== 'function') { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Classement non disponible.</div>'; return; }
   try {
-    const snap = await dbGet('pommon_league_lb');
+    const now = Date.now();
+    let snap;
+    if (_pmLeagueLbCache && (now - _pmLeagueLbCacheTime) < 60000) {
+      snap = _pmLeagueLbCache;
+    } else {
+      snap = await dbGet('pommon_league_lb');
+      _pmLeagueLbCache = snap;
+      _pmLeagueLbCacheTime = now;
+    }
     if (!snap) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score enregistré — sois le premier !</div>'; return; }
     const entries = Object.values(snap).sort((a, b) => b.score - a.score).slice(0, 10);
     if (entries.length === 0) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score enregistré.</div>'; return; }
@@ -2949,6 +3007,104 @@ async function pmRenderLeagueLb() {
   } catch (e) {
     console.error('[pokepom] renderLeagueLb error', e);
     list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Erreur de chargement.</div>';
+  }
+}
+
+// ── Leaderboard Ligue HEBDO ──
+const PM_LEAGUE_WEEKLY_PRIZES = [2000, 1500, 1000];
+const PM_LEAGUE_WEEKLY_CONSOLATION = 500;
+
+function getPmLeagueWeekKey() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  const mon = new Date(now);
+  mon.setDate(now.getDate() + diff);
+  return mon.getFullYear() + '-' + String(mon.getMonth()+1).padStart(2,'0') + '-' + String(mon.getDate()).padStart(2,'0');
+}
+
+async function pmSaveLeagueWeeklyScore(score) {
+  if (score <= 0 || typeof dbGet !== 'function' || typeof dbSet !== 'function') return;
+  if (!state || !state.code) return;
+  const safeCode = state.code.replace(/[.#$[\]/]/g, '_');
+  const weekKey = getPmLeagueWeekKey();
+  const path = 'pommon_league_weekly_lb/' + safeCode;
+  try {
+    const existing = await dbGet(path);
+    if (!existing || existing.weekKey !== weekKey || score > existing.score) {
+      await dbSet(path, { name: state.name, code: state.code, score, weekKey, date: new Date().toISOString() });
+    }
+  } catch(e) { console.error('[pokepom] saveLeagueWeekly error', e); }
+}
+
+async function pmRenderLeagueWeeklyLb() {
+  const list = document.getElementById('pm-league-weekly-lb-list');
+  if (!list || typeof dbGet !== 'function') return;
+  list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Chargement…</div>';
+  try {
+    const snap = await dbGet('pommon_league_weekly_lb');
+    if (!snap) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score cette semaine.</div>'; return; }
+    const currentWeek = getPmLeagueWeekKey();
+    const entries = Object.values(snap)
+      .filter(e => !e.weekKey || e.weekKey === currentWeek)
+      .sort((a, b) => b.score - a.score);
+    if (entries.length === 0) { list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Aucun score cette semaine.</div>'; return; }
+    const medals = ['🥇', '🥈', '🥉'];
+    list.innerHTML = '';
+    for (let i = 0; i < entries.length; i++) {
+      const e = entries[i];
+      const rank = i + 1;
+      const isMe = state && e.code === state.code;
+      const safeName = typeof escapeHTML === 'function' ? escapeHTML(e.name) : (e.name || '').replace(/</g,'&lt;');
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 12px; background:var(--surface2); border:1px solid ' + (isMe ? 'var(--primary)' : 'var(--border)') + '; border-radius:8px; margin-bottom:6px;';
+      row.innerHTML = `
+        <span style="font-weight:700; font-size:.95rem; min-width:30px;">${medals[i] || rank}</span>
+        <span style="flex:1; font-weight:600; font-size:.88rem; overflow:hidden; text-overflow:ellipsis;">${safeName}${isMe ? ' <span style="background:var(--primary); color:#fff; padding:1px 8px; border-radius:100px; font-size:.65rem; margin-left:4px;">Moi</span>' : ''}</span>
+        <span style="font-family:'Space Mono',monospace; font-weight:700; color:var(--primary); font-size:.9rem;">${e.score} victoires</span>
+      `;
+      list.appendChild(row);
+    }
+  } catch(e) {
+    console.error('[pokepom] renderLeagueWeeklyLb error', e);
+    list.innerHTML = '<div style="color:var(--muted); font-size:.85rem;">Erreur de chargement.</div>';
+  }
+}
+
+async function checkPmLeagueWeeklyReset() {
+  const now = new Date();
+  if (now.getDay() !== 1 || now.getHours() < 9) return;
+  const prevMon = new Date(now);
+  prevMon.setDate(now.getDate() - 7);
+  const pDay = prevMon.getDay();
+  const pDiff = pDay === 0 ? -6 : 1 - pDay;
+  prevMon.setDate(prevMon.getDate() + pDiff);
+  const prevWeekKey = prevMon.getFullYear() + '-' + String(prevMon.getMonth()+1).padStart(2,'0') + '-' + String(prevMon.getDate()).padStart(2,'0');
+  if (typeof dbGet !== 'function') return;
+  const distributed = await dbGet('pommon_league_weekly_distributed/' + prevWeekKey);
+  if (distributed) return;
+  await dbSet('pommon_league_weekly_distributed/' + prevWeekKey, true);
+  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+  const recheck = await dbGet('pommon_league_weekly_distributed/' + prevWeekKey);
+  if (recheck !== true) return;
+  const snap = await dbGet('pommon_league_weekly_lb');
+  if (!snap) return;
+  const entries = Object.values(snap)
+    .filter(e => !e.weekKey || e.weekKey === prevWeekKey)
+    .sort((a, b) => b.score - a.score);
+  if (entries.length === 0) return;
+  if (typeof distributeReliably === 'function') {
+    await distributeReliably(entries.map((e, i) => ({
+      code: e.code, amount: i < 3 ? PM_LEAGUE_WEEKLY_PRIZES[i] : PM_LEAGUE_WEEKLY_CONSOLATION,
+      historyEntry: { type: 'pokepom_league', desc: '🐾 Classement hebdo Ligue PokePom — #' + (i+1), amount: i < 3 ? PM_LEAGUE_WEEKLY_PRIZES[i] : PM_LEAGUE_WEEKLY_CONSOLATION, date: new Date().toISOString() }
+    })));
+  }
+  const allKeys = Object.keys(snap);
+  for (const key of allKeys) {
+    const entry = snap[key];
+    if (!entry.weekKey || entry.weekKey === prevWeekKey) {
+      await dbDelete('pommon_league_weekly_lb/' + key);
+    }
   }
 }
 
@@ -3351,8 +3507,9 @@ function pmHandleBattleEnd() {
         player.leagueBestScore = bs.winsInRun;
       }
       pmSavePlayer(player);
-      // Leaderboard Ligue + flush Firebase
+      // Leaderboard Ligue (général + hebdo) + flush Firebase
       pmSaveLeagueLb(bs.winsInRun);
+      pmSaveLeagueWeeklyScore(bs.winsInRun);
       pmSaveNow();
     }
   } else if (bs.mode === 'wild') {
@@ -3536,3 +3693,15 @@ if (document.readyState === 'loading') {
 // Retry en cas où le sidenav n'existe pas encore
 setTimeout(() => { if (!document.getElementById('snav-pokepom')) pmInjectUI(); }, 2000);
 setTimeout(() => { if (!document.getElementById('snav-pokepom')) pmInjectUI(); }, 5000);
+
+// Flush PomMon data avant de quitter la page
+window.addEventListener('beforeunload', () => {
+  if (_pmDirty && _pmCache && typeof dbSet === 'function' && state && state.code) {
+    try { dbSet(pmPath(), _pmCache); } catch(e) {}
+  }
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && _pmDirty) {
+    pmSaveNow();
+  }
+});

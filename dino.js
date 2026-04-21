@@ -74,11 +74,15 @@ function initDinoState() {
     clouds: [],
     score: 0,
     speed: DINO_INITIAL_SPEED,
-    frame: 0,
-    nextObstacle: 50,
+    elapsed: 0, // temps total en secondes
+    nextObstacleTimer: 0.8, // secondes avant prochain obstacle
     running: true,
+    lastTime: 0,
   };
 }
+
+const DINO_TARGET_FPS = 60;
+const DINO_FRAME_TIME = 1 / DINO_TARGET_FPS; // ~0.01667s
 
 function startDino() {
   _dinoState = initDinoState();
@@ -86,20 +90,28 @@ function startDino() {
   dinoOverlay().classList.add('hidden');
   updateDinoUI();
   if (_dinoLoop) cancelAnimationFrame(_dinoLoop);
+  _dinoState.lastTime = performance.now();
   _dinoLoop = requestAnimationFrame(dinoTick);
 }
 
-function dinoTick() {
+function dinoTick(timestamp) {
   if (!_dinoState || !_dinoState.running) return;
   const s = _dinoState;
   const d = s.dino;
 
-  s.frame++;
-  s.speed = Math.min(DINO_MAX_SPEED, DINO_INITIAL_SPEED + s.frame * DINO_ACCEL);
+  // Delta time : temps écoulé depuis la dernière frame, normalisé à 60fps
+  const rawDt = (timestamp - s.lastTime) / 1000; // en secondes
+  s.lastTime = timestamp;
+  // Clamp dt pour éviter les sauts énormes (ex: onglet en arrière-plan)
+  const dtSec = Math.min(rawDt, 0.05); // max 50ms (= 20fps min)
+  const dt = dtSec / DINO_FRAME_TIME; // 1.0 = une frame à 60fps, 0.5 = 120fps, 2.0 = 30fps
 
-  // Gravité
-  d.vy += DINO_GRAVITY;
-  d.y += d.vy;
+  s.elapsed += dtSec;
+  s.speed = Math.min(DINO_MAX_SPEED, DINO_INITIAL_SPEED + s.elapsed * 0.15); // accélère avec le temps réel
+
+  // Gravité (ajustée par dt)
+  d.vy += DINO_GRAVITY * dt;
+  d.y += d.vy * dt;
   if (d.y >= DINO_GROUND) {
     d.y = DINO_GROUND;
     d.vy = 0;
@@ -108,9 +120,9 @@ function dinoTick() {
   // Taille du dino (baissé ou debout)
   d.h = d.ducking ? 18 : 30;
 
-  // Obstacles
-  s.nextObstacle--;
-  if (s.nextObstacle <= 0) {
+  // Obstacles — timer en secondes réelles
+  s.nextObstacleTimer -= dtSec;
+  if (s.nextObstacleTimer <= 0) {
     const type = Math.random() < (s.speed > 8 ? 0.25 : s.speed > 6 ? 0.1 : 0) ? 'bird' : 'cactus';
     const variants = type === 'cactus'
       ? [{ w: 14, h: 30 }, { w: 20, h: 35 }, { w: 28, h: 25 }, { w: 10, h: 40 }, { w: 36, h: 28 }]
@@ -119,23 +131,23 @@ function dinoTick() {
     const oy = type === 'bird' ? DINO_GROUND - 25 - Math.floor(Math.random() * 30) : DINO_GROUND + 30 - v.h;
     s.obstacles.push({ x: DINO_W + 10, y: oy, w: v.w, h: v.h, type, passed: false });
 
-    // Double obstacle : à haute vitesse, 20% de chance (réduit vs 30%)
+    // Double obstacle à haute vitesse
     if (type === 'cactus' && s.speed >= 10 && Math.random() < 0.2) {
       const v2 = variants[Math.floor(Math.random() * 3)];
       const gap2 = 45 + Math.floor(Math.random() * 20);
       s.obstacles.push({ x: DINO_W + 10 + gap2, y: DINO_GROUND + 30 - v2.h, w: v2.w, h: v2.h, type: 'cactus', passed: false });
     }
 
-    // Gap : mix 75% nouveau (serré) / 25% ancien (large)
-    const minGap = Math.max(22, Math.floor(38 - s.speed * 1.1));
-    const maxGap = Math.max(35, Math.floor(65 - s.speed * 1.3));
-    s.nextObstacle = minGap + Math.floor(Math.random() * (maxGap - minGap));
+    // Prochain obstacle : timer en secondes (adaptatif à la vitesse)
+    const minSec = Math.max(0.3, 0.6 - s.speed * 0.02);
+    const maxSec = Math.max(0.5, 1.1 - s.speed * 0.03);
+    s.nextObstacleTimer = minSec + Math.random() * (maxSec - minSec);
   }
 
-  // Bouger les obstacles
+  // Bouger les obstacles (dt-based)
   for (let i = s.obstacles.length - 1; i >= 0; i--) {
     const o = s.obstacles[i];
-    o.x -= s.speed;
+    o.x -= s.speed * dt;
     // Score quand passé
     if (!o.passed && o.x + o.w < d.x) {
       o.passed = true;
@@ -147,12 +159,12 @@ function dinoTick() {
     if (o.x + o.w < -20) s.obstacles.splice(i, 1);
   }
 
-  // Nuages décoratifs
-  if (s.frame % 120 === 0) {
+  // Nuages décoratifs (basé sur le temps réel)
+  if (Math.random() < dtSec * 0.5) { // ~1 nuage toutes les 2 secondes
     s.clouds.push({ x: DINO_W + 10, y: 20 + Math.random() * 40, w: 40 + Math.random() * 30 });
   }
   for (let i = s.clouds.length - 1; i >= 0; i--) {
-    s.clouds[i].x -= s.speed * 0.3;
+    s.clouds[i].x -= s.speed * 0.3 * dt;
     if (s.clouds[i].x + s.clouds[i].w < -10) s.clouds.splice(i, 1);
   }
 
@@ -211,7 +223,7 @@ function renderDino() {
   ctx.fillStyle = DINO_COLORS.ground;
   ctx.fillRect(0, DINO_GROUND + 30, DINO_W, 2);
   // Petits traits au sol pour effet de vitesse
-  const dash = (s.frame * s.speed) % 40;
+  const dash = (s.elapsed * s.speed * 60) % 40;
   ctx.strokeStyle = DINO_COLORS.ground;
   ctx.lineWidth = 1;
   for (let x = -dash; x < DINO_W; x += 40) {
@@ -240,7 +252,7 @@ function renderDino() {
   // Pattes (animation de course)
   if (d.y >= DINO_GROUND && !d.ducking) {
     ctx.fillStyle = DINO_COLORS.dino;
-    const legPhase = Math.floor(s.frame / 6) % 2;
+    const legPhase = Math.floor(s.elapsed * 10) % 2;
     ctx.fillRect(d.x + 4 + legPhase * 4, dinoY + d.h, 4, 6);
     ctx.fillRect(d.x + 14 - legPhase * 4, dinoY + d.h, 4, 6);
   }
@@ -268,7 +280,7 @@ function renderDino() {
       ctx.fill();
       ctx.restore();
       // Ailes
-      const wingOff = Math.sin(s.frame * 0.3) * 6;
+      const wingOff = Math.sin(s.elapsed * 18) * 6;
       ctx.fillStyle = DINO_COLORS.bird;
       ctx.beginPath();
       ctx.moveTo(o.x + 4, o.y + o.h / 2);
