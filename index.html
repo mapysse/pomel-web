@@ -1191,6 +1191,42 @@
   .name-color-red    { color: #EB5846 !important; -webkit-text-fill-color: #EB5846; }
   .name-color-brown  { color: #a0622a !important; -webkit-text-fill-color: #a0622a; }
 
+  /* EFFETS DE PSEUDO ANIMÉS */
+  .pulse-text {
+    animation: pulse-glow 2s ease-in-out infinite;
+    font-weight: 700;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; text-shadow: 0 0 4px rgba(235,88,70,0.6); }
+    50% { opacity: .55; text-shadow: none; }
+  }
+
+  .glitch-text {
+    font-weight: 700;
+    position: relative;
+    animation: glitch-color 3s steps(4, end) infinite;
+  }
+  @keyframes glitch-color {
+    0%, 90% { text-shadow: none; transform: translate(0); }
+    91% { color: #0ff; text-shadow: -2px 0 #f0f; transform: translate(-2px, 1px); }
+    93% { color: #f0f; text-shadow: 2px 0 #0ff; transform: translate(2px, -1px); }
+    95% { color: inherit; text-shadow: -1px 0 #f0f, 1px 0 #0ff; transform: translate(1px, 0); }
+    97% { text-shadow: 2px 0 #f0f, -2px 0 #0ff; transform: translate(-1px, 1px); }
+    100% { text-shadow: none; transform: translate(0); }
+  }
+
+  .neon-text {
+    font-weight: 700;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff;
+    text-shadow: 0 0 7px #ff2d95, 0 0 10px #ff2d95, 0 0 21px #ff2d95, 0 0 42px #c0144d, 0 0 60px #c0144d;
+    animation: neon-flicker 3s ease-in-out infinite;
+  }
+  @keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 7px #ff2d95, 0 0 10px #ff2d95, 0 0 21px #ff2d95, 0 0 42px #c0144d; }
+    20%, 24%, 55% { text-shadow: none; }
+  }
+
   /* BADGES */
   .user-badge-emoji { font-size: 1rem; }
 
@@ -1280,6 +1316,97 @@
   @keyframes banner-plasma-pulse {
     0%,100% { background-position: 0%   50%; opacity: 0.85; }
     50%      { background-position: 100% 50%; opacity: 1;    }
+  }
+
+  /* Motif Diagonales */
+  .banner-diagonales {
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(235,88,70,0.15),
+      rgba(235,88,70,0.15) 8px,
+      rgba(91,141,239,0.12) 8px,
+      rgba(91,141,239,0.12) 16px
+    ) !important;
+    border-color: rgba(235,88,70,0.35) !important;
+  }
+
+  /* Motif Grille Pastel */
+  .banner-grille-pastel {
+    background:
+      linear-gradient(rgba(255,182,193,0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(173,216,230,0.2) 1px, transparent 1px),
+      linear-gradient(135deg,
+        rgba(255,182,193,0.15) 0%,
+        rgba(173,216,230,0.15) 33%,
+        rgba(221,160,221,0.15) 66%,
+        rgba(255,218,185,0.15) 100%
+      ) !important;
+    background-size: 20px 20px, 20px 20px, 100% 100% !important;
+    border-color: rgba(221,160,221,0.4) !important;
+  }
+
+  /* Effet Flammes */
+  .banner-flammes {
+    background: var(--surface) !important;
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(255,100,20,0.5) !important;
+  }
+  .banner-flammes::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 70%;
+    pointer-events: none;
+    background: linear-gradient(to top,
+      rgba(255,80,0,0.6) 0%,
+      rgba(255,160,20,0.4) 30%,
+      rgba(255,200,50,0.15) 60%,
+      transparent 100%);
+    animation: banner-flammes-dance 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes banner-flammes-dance {
+    0%   { transform: scaleY(1) translateY(0); opacity: 0.8; }
+    33%  { transform: scaleY(1.08) translateY(-2px); opacity: 1; }
+    66%  { transform: scaleY(0.95) translateY(1px); opacity: 0.85; }
+    100% { transform: scaleY(1.05) translateY(-1px); opacity: 0.95; }
+  }
+
+  /* Effet Neige */
+  .banner-neige {
+    background: linear-gradient(180deg, rgba(100,140,180,0.25) 0%, rgba(200,220,240,0.15) 100%) !important;
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(180,210,240,0.5) !important;
+  }
+  .banner-neige::before,
+  .banner-neige::after {
+    content: '';
+    position: absolute; top: -10%; left: 0; width: 100%; height: 120%;
+    pointer-events: none;
+    background-image:
+      radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,0.8) 50%, transparent 50%),
+      radial-gradient(2px 2px at 30% 60%, rgba(255,255,255,0.6) 50%, transparent 50%),
+      radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.7) 50%, transparent 50%),
+      radial-gradient(2px 2px at 70% 40%, rgba(255,255,255,0.5) 50%, transparent 50%),
+      radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.6) 50%, transparent 50%),
+      radial-gradient(2px 2px at 20% 90%, rgba(255,255,255,0.7) 50%, transparent 50%),
+      radial-gradient(1px 1px at 60% 75%, rgba(255,255,255,0.5) 50%, transparent 50%),
+      radial-gradient(2px 2px at 80% 15%, rgba(255,255,255,0.6) 50%, transparent 50%);
+    background-size: 100% 100%;
+    animation: banner-neige-fall 4s linear infinite;
+  }
+  .banner-neige::after {
+    animation-delay: -2s;
+    opacity: .7;
+    background-image:
+      radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,0.7) 50%, transparent 50%),
+      radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.5) 50%, transparent 50%),
+      radial-gradient(2px 2px at 65% 20%, rgba(255,255,255,0.6) 50%, transparent 50%),
+      radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,0.7) 50%, transparent 50%),
+      radial-gradient(2px 2px at 25% 85%, rgba(255,255,255,0.5) 50%, transparent 50%);
+  }
+  @keyframes banner-neige-fall {
+    0%   { transform: translateY(-10%); }
+    100% { transform: translateY(100%); }
   }
 
   @media (max-width: 600px) {
@@ -1962,9 +2089,10 @@
         <span class="sidenav-item-label">Chat</span>
       </button>
 
-      <!-- JEUX -->
+      <!-- JEUX -->  
+      <!-- style="display:none" --> 
       <div class="sidenav-section">Jeux</div>
-      <button class="sidenav-item" id="snav-pokepom" onclick="if(typeof pmGoTo==='function')pmGoTo('home')" style="display:none">
+      <button class="sidenav-item" id="snav-pokepom" onclick="if(typeof pmGoTo==='function')pmGoTo('home')">
         <span class="sidenav-item-icon">🐾</span>
         <span class="sidenav-item-label">PokePom</span>
       </button>
@@ -1972,11 +2100,11 @@
         <span class="sidenav-item-icon">🐍</span>
         <span class="sidenav-item-label">Serpent</span>
       </button>
-      <button class="sidenav-item" id="snav-dino" onclick="navTo('dino')" style="display:none">
+      <button class="sidenav-item" id="snav-dino" onclick="navTo('dino')">
         <span class="sidenav-item-icon">🦕</span>
         <span class="sidenav-item-label">Dino Run</span>
       </button>
-      <button class="sidenav-item" id="snav-tetris" onclick="navTo('tetris')" style="display:none">
+      <button class="sidenav-item" id="snav-tetris" onclick="navTo('tetris')">
         <span class="sidenav-item-icon">🧱</span>
         <span class="sidenav-item-label">Tetris</span>
       </button>
@@ -4337,6 +4465,9 @@ function getNameColorClass(activeColor) {
   if (!activeColor) return '';
   if (activeColor === 'rainbow') return 'rainbow-text';
   if (activeColor === 'sparkle') return 'sparkle-text';
+  if (activeColor === 'pulse') return 'pulse-text';
+  if (activeColor === 'glitch') return 'glitch-text';
+  if (activeColor === 'neon') return 'neon-text';
   if (activeColor === 'color_green')  return 'name-color-green';
   if (activeColor === 'color_blue')   return 'name-color-blue';
   if (activeColor === 'color_orange') return 'name-color-orange';
@@ -9671,13 +9802,14 @@ init();
       </div>
     </div>
   </div>
-
-<!-- <script src="pommon.js"></script> -->
+  
+<!-- <script src="xxx.js"></script> -->
+<script src="pommon.js"></script>
 <script src="boutique_profil.js"></script>
-<script src="boutique.js"></script>
+<script src="boutique.js?v=2"></script>
 <script src="clicker_jardin.js"></script>
-<!-- <script src="dino.js"></script> -->
-<!-- <script src="tetris.js"></script> -->
+<script src="dino.js"></script>
+<script src="tetris.js"></script>
 <script src="g2048.js?v=4"></script>
 <script src="snake.js"></script>
 </body>

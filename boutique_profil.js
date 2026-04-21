@@ -80,22 +80,27 @@ const SHOP_TITLES = [
   { id: 'banner_aurora',  name: '🌌 Effet Aurore',     price: 75000, type: 'banner', bannerClass: 'banner-aurora',  desc: 'Blobs de lumière qui dérivent doucement' },
   { id: 'banner_plasma',  name: '⚡ Effet Plasma',     price: 75000, type: 'banner', bannerClass: 'banner-plasma',  desc: 'Pulsation électrique rouge intense' },
   // ── SAISON 2 ──────────────────────────────────────
-  { id: 'fan_malicieux', name: 'Fan des Malicieux', price: 10000, type: 'title', hidden: true },
-  { id: 'fan_foufoufdefou', name: 'Fan des Foufous de Fou', price: 10000, type: 'title', hidden: true },
-  { id: 'fan_etincelles', name: 'Fan des Étincelles', price: 10000, type: 'title', hidden: true },
-  { id: 'guerrier_saison2', name: '🥷 Guerrier/ère de la Saison 2', price: 50000, type: 'title', hidden: true },
-  { id: 'survivant_saison1', name: '🪖 Survivant/te de la Saison 1', price: 100000, type: 'title', hidden: true },
-  { id: 'badge_casquette', name: 'Badge Corpo 🧢', price: 1000, type: 'badge', emoji: '🧢', hidden: true },
-  { id: 'badge_pomfest', name: 'Badge PomFest 🎉', price: 5000, type: 'badge', emoji: '🎉', hidden: true },
-  { id: 'badge_pomies', name: 'Badge Pomies 💰', price: 10000, type: 'badge', emoji: '💰', hidden: true },
+  { id: 'fan_malicieux', name: 'Fan des Malicieux', price: 10000, type: 'title' },
+  { id: 'fan_foufoufdefou', name: 'Fan des Foufous de Fou', price: 10000, type: 'title' },
+  { id: 'fan_etincelles', name: 'Fan des Étincelles', price: 10000, type: 'title' },
+  { id: 'guerrier_saison2', name: '🥷 Guerrier/ère de la Saison 2', price: 50000, type: 'title' },
+  { id: 'survivant_saison1', name: '🪖 Survivant/te de la Saison 1', price: 100000, type: 'title' },
+  { id: 'badge_casquette', name: 'Badge Corpo 🧢', price: 1000, type: 'badge', emoji: '🧢' },
+  { id: 'badge_pomfest', name: 'Badge PomFest 🎉', price: 5000, type: 'badge', emoji: '🎉' },
+  { id: 'badge_pomies', name: 'Badge Pomies 💰', price: 10000, type: 'badge', emoji: '💰' },
+  { id: 'pulse', name: '💓 Effet Pulsant', price: 35000, type: 'color', desc: 'Ton pseudo pulse doucement entre brillant et sombre' },
+  { id: 'glitch', name: '👾 Effet Glitch', price: 50000, type: 'color', desc: 'Ton pseudo glitche comme un écran cassé !' },
+  { id: 'neon', name: '💡 Effet Néon', price: 50000, type: 'color', desc: 'Ton pseudo brille comme une enseigne néon !' },
   // ── BANNIÈRES ──────────────────────────────────────
   // Couleurs unies
-  { id: 'banner_gold',    name: '🟨 Bannière Dorée',   price: 5000,  type: 'banner', bannerClass: 'banner-gold',    desc: 'Fond dorée sur ta carte de profil', hidden: true },
-  { id: 'banner_black',    name: '⬛ Bannière Noire',   price: 5000,  type: 'banner', bannerClass: 'banner-black',    desc: 'Fond noir sur ta carte de profil', hidden: true },
+  { id: 'banner_gold',    name: '🟨 Bannière Dorée',   price: 5000,  type: 'banner', bannerClass: 'banner-gold',    desc: 'Fond dorée sur ta carte de profil' },
+  { id: 'banner_black',    name: '⬛ Bannière Noire',   price: 5000,  type: 'banner', bannerClass: 'banner-black',    desc: 'Fond noir sur ta carte de profil' },
   // Motifs
-  
+  { id: 'banner_diagonales', name: '╲ Motif Diagonales', price: 25000, type: 'banner', bannerClass: 'banner-diagonales', desc: 'Lignes diagonales élégantes sur ta carte' },
+  { id: 'banner_grille_pastel', name: '🎨 Motif Grille Pastel', price: 25000, type: 'banner', bannerClass: 'banner-grille-pastel', desc: 'Grille aux couleurs pastel douces' },
   // Effets animés
-  
+  { id: 'banner_flammes', name: '🔥 Effet Flammes', price: 75000, type: 'banner', bannerClass: 'banner-flammes', desc: 'Des flammes dansent au bas de ta carte !' },
+  { id: 'banner_neige', name: '❄️ Effet Neige', price: 75000, type: 'banner', bannerClass: 'banner-neige', desc: 'Des flocons tombent doucement sur ta carte' },
 ];
 
 // ── BOUTIQUE / SHOP ─────────────────────────────
