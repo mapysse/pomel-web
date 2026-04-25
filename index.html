@@ -76,6 +76,82 @@
 
   .site-footer { width: 100%; text-align: center; padding: 14px 24px; font-size: .68rem; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.6; opacity: .5; }
 
+  /* MODALE SAISON 2 — popup de rappel */
+  #s2Modal {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: s2ModalFadeIn .25s ease-out;
+  }
+  #s2Modal.visible { display: flex; }
+  @keyframes s2ModalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes s2ModalPop { from { opacity: 0; transform: scale(.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .s2-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 36px 30px 28px;
+    width: 100%; max-width: 460px;
+    box-shadow: 0 0 80px var(--primary-glow), var(--shadow-lg);
+    text-align: center;
+    position: relative;
+    animation: s2ModalPop .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .s2-modal-close {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--surface2); border: 1px solid var(--border-subtle);
+    width: 32px; height: 32px; border-radius: 50%;
+    color: var(--text-soft); font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--transition); line-height: 1;
+  }
+  .s2-modal-close:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .s2-modal-emoji { font-size: 3rem; margin-bottom: 10px; line-height: 1; }
+  .s2-modal-title {
+    font-size: 1.4rem; font-weight: 800; color: var(--primary);
+    letter-spacing: -.02em; margin-bottom: 14px; line-height: 1.2;
+  }
+  .s2-modal-text {
+    font-size: .95rem; color: var(--text-soft); line-height: 1.55;
+    margin-bottom: 22px;
+  }
+  .s2-modal-text strong { color: var(--text); font-weight: 700; }
+  .s2-modal-timer-wrap {
+    background: linear-gradient(135deg, rgba(235,88,70,0.12), rgba(235,88,70,0.04));
+    border: 1px solid rgba(235,88,70,0.3);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .s2-modal-timer-label {
+    font-size: .68rem; color: var(--primary); font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+  .s2-modal-timer {
+    font-family: 'Space Mono', monospace; font-size: 1.4rem;
+    font-weight: 700; color: var(--text); letter-spacing: -.01em;
+  }
+  .s2-modal-timer span { color: var(--primary); }
+  .s2-modal-btn {
+    background: var(--primary); color: #fff; border: none;
+    border-radius: 10px; padding: 13px 24px;
+    font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+    cursor: pointer; transition: all var(--transition); width: 100%;
+    letter-spacing: -.01em;
+  }
+  .s2-modal-btn:hover { background: var(--primary-dim); box-shadow: 0 4px 20px var(--primary-glow); }
+  .s2-modal-btn:active { transform: scale(.98); }
+  @media (max-width: 480px) {
+    .s2-modal-box { padding: 30px 22px 22px; }
+    .s2-modal-title { font-size: 1.2rem; }
+    .s2-modal-text { font-size: .88rem; }
+    .s2-modal-timer { font-size: 1.2rem; }
+    .s2-modal-emoji { font-size: 2.5rem; }
+  }
+
   /* LOGIN */
   #loginScreen { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
   #loginScreen.hidden { display: none; }
@@ -4059,6 +4135,10 @@ function launchApp() {
   initSidenav();
   // Avatar topbar
   refreshTopbarAvatar();
+  // Popup rappel Saison 1 → Saison 2 (à chaque connexion / refresh)
+  if (typeof openS2Modal === 'function') {
+    setTimeout(openS2Modal, 400);
+  }
 }
 
 function refreshUI() {
@@ -9800,19 +9880,22 @@ function initSidenav() {
 }
 
 // ── CHRONO SAISON 2 ─────────────────────────────────
+const S2_TARGET = new Date('2026-05-04T00:00:00').getTime();
+
 (function() {
-  const TARGET = new Date('2026-05-04T00:00:00').getTime();
   const el = document.getElementById('s2Timer');
   const wrap = document.getElementById('s2Countdown');
-  if (!el) return;
+  const elModal = document.getElementById('s2ModalTimer');
+  if (!el && !elModal) return;
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
   function tick() {
     const now = Date.now();
-    const diff = TARGET - now;
+    const diff = S2_TARGET - now;
     if (diff <= 0) {
-      el.innerHTML = '<span>🎉 C\'est parti !</span>';
+      if (el) el.innerHTML = '<span>🎉 C\'est parti !</span>';
+      if (elModal) elModal.innerHTML = '<span>🎉 C\'est parti !</span>';
       if (wrap) wrap.style.borderColor = 'var(--green)';
       return;
     }
@@ -9820,19 +9903,64 @@ function initSidenav() {
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
+    let html;
     if (d > 0) {
-      el.innerHTML = `<span>${d}</span>j <span>${pad(h)}</span>h <span>${pad(m)}</span>m`;
+      html = `<span>${d}</span>j <span>${pad(h)}</span>h <span>${pad(m)}</span>m`;
     } else {
-      el.innerHTML = `<span>${pad(h)}</span>h <span>${pad(m)}</span>m <span>${pad(s)}</span>s`;
+      html = `<span>${pad(h)}</span>h <span>${pad(m)}</span>m <span>${pad(s)}</span>s`;
     }
+    if (el) el.innerHTML = html;
+    if (elModal) elModal.innerHTML = html;
     setTimeout(tick, 1000);
   }
   tick();
 })();
 
+// ── POPUP RAPPEL SAISON 1 → SAISON 2 ────────────────
+function openS2Modal() {
+  // Ne pas afficher si la Saison 2 a déjà commencé
+  if (Date.now() >= S2_TARGET) return;
+  const modal = document.getElementById('s2Modal');
+  if (modal) modal.classList.add('visible');
+}
+function closeS2Modal() {
+  const modal = document.getElementById('s2Modal');
+  if (modal) modal.classList.remove('visible');
+}
+// Fermer avec la touche Échap
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('s2Modal');
+    if (modal && modal.classList.contains('visible')) closeS2Modal();
+  }
+});
+// Fermer en cliquant sur le fond
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 's2Modal') closeS2Modal();
+});
+
 init();
 </script>
 </div><!-- /main-content -->
+
+<!-- MODALE RAPPEL SAISON 1 → SAISON 2 -->
+<div id="s2Modal" role="dialog" aria-modal="true" aria-labelledby="s2ModalTitle">
+  <div class="s2-modal-box">
+    <button class="s2-modal-close" onclick="closeS2Modal()" aria-label="Fermer">✕</button>
+    <div class="s2-modal-emoji">🪙</div>
+    <div class="s2-modal-title" id="s2ModalTitle">Fin de la Saison 1 approche&nbsp;!</div>
+    <div class="s2-modal-text">
+      N'oublie pas de <strong>dépenser tes Pomels</strong> avant la fin de la Saison&nbsp;1&nbsp;!<br><br>
+      Les compteurs seront <strong>remis à 0</strong> au début de la Saison&nbsp;2 pour ne pas pénaliser les joueurs arrivés en cours de route&nbsp;!
+    </div>
+    <div class="s2-modal-timer-wrap">
+      <div class="s2-modal-timer-label">🏆 Saison 2 dans</div>
+      <div class="s2-modal-timer" id="s2ModalTimer">…</div>
+    </div>
+    <button class="s2-modal-btn" onclick="closeS2Modal()">Compris&nbsp;!</button>
+  </div>
+</div>
+
 <footer class="site-footer">Ce site est à but humoristique, toute dérive ne sera pas tolérée. Nous ne vous réclamerons jamais aucune information personnelle ou download/upload de quelconques données.</footer>
 
   <!-- ÉCRAN ADMIN -->
