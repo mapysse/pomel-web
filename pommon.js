@@ -84,9 +84,9 @@ const PM_STAGE_MULT = [0.35, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75];
 // Limites quotidiennes
 // Limites quotidiennes
 // ⚠ MODE DEBUG : limites élevées pour tester. Remettre à 3/1/5 avant la prod !
-const PM_DAILY_WILD = 999;
-const PM_DAILY_GYM_WINS = 999;
-const PM_DAILY_LEAGUE = 999;
+const PM_DAILY_WILD = 25;
+const PM_DAILY_GYM_WINS = 7;
+const PM_DAILY_LEAGUE = 20;
 
 // Brûlure
 const PM_BURN_DAMAGE_PCT = 0.12;
