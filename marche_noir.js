@@ -45,6 +45,9 @@ let _mnSelectedColor = null;
 // Durée pendant laquelle une annonce 'sold' ou 'cancelled' reste visible avant suppression
 const MN_ARCHIVE_MS = 24 * 3600 * 1000; // 24h
 
+// Nombre maximum de titres en vente simultanément par personne
+const MN_MAX_LISTINGS = 3;
+
 // Titres du compte qui sont actuellement listés au Marché Noir (active)
 async function _getMyActivelyListedTitleIds() {
   const all = await getAllMarcheNoirListings();
@@ -181,7 +184,27 @@ async function renderMarcheNoir() {
   if (selectEl) {
     const owned = _getMyOwnedTitles();
     const alreadyListed = await _getMyActivelyListedTitleIds();
+    const activeListingsCount = alreadyListed.size;
+    const limitReached = activeListingsCount >= MN_MAX_LISTINGS;
     const available = owned.filter(t => !alreadyListed.has(t.id));
+
+    // Afficher / masquer l'info de limite
+    const limitInfoEl = document.getElementById('mnListingLimitInfo');
+    const createBtn = document.getElementById('mnCreateBtn');
+    if (limitInfoEl) {
+      if (limitReached) {
+        limitInfoEl.style.display = '';
+        limitInfoEl.textContent = `⏳ Tu as atteint la limite de ${MN_MAX_LISTINGS} titres en vente simultanément. Retire ou vends une annonce pour en créer une nouvelle.`;
+      } else {
+        limitInfoEl.style.display = 'none';
+        limitInfoEl.textContent = '';
+      }
+    }
+    if (createBtn) {
+      createBtn.disabled = limitReached;
+      createBtn.style.opacity = limitReached ? '.5' : '';
+      createBtn.style.cursor = limitReached ? 'not-allowed' : '';
+    }
 
     // Mémoriser le titre choisi pour re-sélectionner après un re-render
     const prevSelected = selectEl.value;
@@ -356,6 +379,13 @@ async function handleCreateMarcheNoirListing() {
   const alreadyListed = await _getMyActivelyListedTitleIds();
   if (alreadyListed.has(titleId)) {
     setAlert('mnCreateAlert', '❌ Ce titre est déjà en vente.', 'error');
+    renderMarcheNoir();
+    return;
+  }
+
+  // Vérifier la limite de 3 annonces actives
+  if (alreadyListed.size >= MN_MAX_LISTINGS) {
+    setAlert('mnCreateAlert', `❌ Limite atteinte — tu ne peux pas mettre plus de ${MN_MAX_LISTINGS} titres en vente en même temps.`, 'error');
     renderMarcheNoir();
     return;
   }
