@@ -82,8 +82,7 @@ const PM_LEVEL_BONUS = 0.05;    // +5% par niveau
 const PM_STAGE_MULT = [0.35, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75];
 
 // Limites quotidiennes
-// ⚠ MODE DEBUG : limites élevées pour tester. Remettre à 3/5 avant la prod !
-const PM_DAILY_WILD = 25;
+
 const PM_DAILY_GYM_WINS = 1;  // 1 arène battue par jour max
 const PM_DAILY_LEAGUE = 20;
 
@@ -2149,10 +2148,7 @@ function pmRenderMap() {
   if (labelEl) labelEl.textContent = label || 'Pomel World';
 
   const hudEl = document.getElementById('pm-map-hud');
-  if (hudEl) {
-    const player = pmGetPlayer();
-    hudEl.textContent = `🌿 ${Math.max(0, PM_DAILY_WILD - player.dailyWildCount)}/${PM_DAILY_WILD}`;
-  }
+  if (hudEl) hudEl.textContent = '';
 }
 
 // ── Mouvement & interactions ──
@@ -2175,13 +2171,10 @@ function pmMapTryMove(dr, dc) {
   if (cell === 1) {
     const zone = pmGetZoneAt(nr, nc);
     if (zone && Math.random() < PM_ENCOUNTER_CHANCE) {
-      const player = pmGetPlayer();
-      if (player.dailyWildCount < PM_DAILY_WILD) {
-        _pmPendingZoneEncounter = zone;
-        pmStopMap();
-        pmGoTo('wild');
-        return;
-      }
+      _pmPendingZoneEncounter = zone;
+      pmStopMap();
+      pmGoTo('wild');
+      return;
     }
   }
 
@@ -2439,7 +2432,7 @@ function pmRenderInfo(page, player) {
           <div><span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:#3a2a40; vertical-align:middle; margin-right:6px;"></span><strong>Grotte du Crépuscule</strong> (bas-droite) — Ombre 🌑 uniquement. Chance rare de légendaire.</div>
         </div>
         <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
-          Tu as <strong>${PM_DAILY_WILD} rencontres sauvages par jour</strong>. Choisis bien dans quelle zone tu chasses ! Le nombre de combats restants est affiché en haut de la map.
+          Choisis bien dans quelle zone tu chasses selon les types que tu veux capturer !
         </div>
       </div>
 
@@ -2516,7 +2509,7 @@ function pmRenderInfo(page, player) {
       <div class="pm-card">
         <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">🎮 Modes de jeu</h3>
         <div style="display:flex; flex-direction:column; gap:8px; font-size:.85rem; line-height:1.6; color:var(--text);">
-          <div><strong>🌿 Combat sauvage</strong> — Affronte un PokePom aléatoire. Tu peux le capturer si tu le bats ! (${PM_DAILY_WILD} combats/jour)</div>
+          <div><strong>🌿 Combat sauvage</strong> — Affronte un PokePom aléatoire. Tu peux le capturer si tu le bats !</div>
           <div><strong>🏆 Arènes</strong> — 7 arènes de type, chacune avec un champion. Bats-les tous pour débloquer la Ligue ! (${PM_DAILY_GYM_WINS} victoire/jour)</div>
           <div><strong>⭐ Ligue PokePom</strong> — Enchaîne des combats contre des adversaires de plus en plus forts. Nécessite 7 badges. (${PM_DAILY_LEAGUE} runs/jour)</div>
         </div>
@@ -2664,21 +2657,6 @@ function pmToggleTeam(uid) {
 
 // ── Écran combat sauvage (avant combat) ──
 function pmRenderWildBattle(page, player) {
-  if (player.dailyWildCount >= PM_DAILY_WILD) {
-    page.innerHTML = `
-      <div class="pm-wrap">
-        <div class="pm-header">
-          <div>
-            <div class="pm-title">🌿 Combats sauvages</div>
-            <div class="pm-sub">Limite quotidienne atteinte — reviens demain !</div>
-          </div>
-          <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
   const team = pmGetTeam(player);
   if (team.length === 0) {
     page.innerHTML = `
@@ -2702,7 +2680,6 @@ function pmRenderWildBattle(page, player) {
       <div class="pm-header">
         <div>
           <div class="pm-title">🌿 Combat sauvage</div>
-          <div class="pm-sub">${PM_DAILY_WILD - player.dailyWildCount}/${PM_DAILY_WILD} rencontres restantes aujourd'hui</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
       </div>
