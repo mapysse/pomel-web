@@ -1547,6 +1547,8 @@ function pmInjectStyles() {
     .pm-collection-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:all .15s; min-width:0; }
     .pm-collection-card:hover { border-color:var(--primary); transform:translateY(-1px); }
     .pm-collection-card.in-team { border-color:var(--green); }
+    .pm-collection-card.pm-coll-unknown { opacity:0.6; cursor:default; filter:grayscale(1); }
+    .pm-collection-card.pm-coll-unknown:hover { border-color:var(--border); transform:none; }
     .pm-collection-name { font-size:.88rem; font-weight:700; text-align:center; }
     .pm-collection-level { font-size:.72rem; color:var(--muted); font-family:'Space Mono',monospace; }
     .pm-coll-lore { font-size:.72rem; color:var(--text); opacity:.8; font-style:italic; text-align:center; line-height:1.35; padding:4px 6px; }
@@ -2197,7 +2199,7 @@ function _pmShowCentreMenu() {
       <div class="pm-card">
         <div style="display:flex; flex-direction:column; gap:10px;">
           <button class="btn-primary" onclick="pmGoTo('team')">🔄 Gérer l'équipe</button>
-          <button class="btn-primary" onclick="pmGoTo('collection')" style="background:var(--yellow); color:#000;">📚 Collection (${player.collection.length} PokePoms)</button>
+          <button class="btn-primary" onclick="pmGoTo('collection')" style="background:var(--yellow); color:#000;">📚 PomeDex (${player.collection.length}/25)</button>
           <button class="btn-outline" onclick="pmGoTo('info')">📖 Infos & Guide</button>
         </div>
       </div>
@@ -2278,7 +2280,7 @@ function pmRenderHome(page, player) {
       <div class="pm-header" style="margin-bottom:0;">
         <div>
           <div class="pm-title">🐾 PokePom</div>
-          <div class="pm-sub">${player.collection.length} capturés · ${badgeCount}/7 badges</div>
+          <div class="pm-sub">PomeDex ${player.collection.length}/25 · ${badgeCount}/7 badges</div>
         </div>
         <span id="pm-map-hud" style="font-size:.75rem; color:var(--muted); background:var(--surface2); padding:4px 10px; border-radius:6px; font-family:'Space Mono',monospace;"></span>
       </div>
@@ -2596,13 +2598,15 @@ function pmRenderTeamManager(page, player) {
   });
 }
 
-// ── Écran « Collection » : sprite + type + lore, focus encyclopédique ──
+// ── Écran « PomeDex » : sprite + type + lore, focus encyclopédique ──
 function pmRenderCollection(page, player) {
+  const capturedIds = new Set(player.collection.map(i => i.pokepomId));
+
   page.innerHTML = `
     <div class="pm-wrap">
       <div class="pm-header">
         <div>
-          <div class="pm-title">📚 Collection</div>
+          <div class="pm-title">📚 PomeDex</div>
           <div class="pm-sub">${player.collection.length}/25 PokePoms capturés</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
@@ -2614,22 +2618,54 @@ function pmRenderCollection(page, player) {
   `;
 
   const grid = document.getElementById('pm-coll-grid');
-  player.collection.forEach(inst => {
-    const base = PM_DEX[inst.pokepomId];
-    const inTeam = player.team.includes(inst.uid);
+
+  // Afficher tous les Pokepoms du Dex (capturés + non capturés)
+  Object.values(PM_DEX).forEach(base => {
+    const captured = capturedIds.has(base.id);
+    const inst = captured ? player.collection.find(i => i.pokepomId === base.id) : null;
+    const inTeam = inst ? player.team.includes(inst.uid) : false;
     const card = document.createElement('div');
-    card.className = 'pm-collection-card' + (inTeam ? ' in-team' : '');
-    // Dans la collection, clic = toggle équipe aussi (pour rester pratique)
-    card.onclick = () => pmToggleTeam(inst.uid);
-    card.innerHTML = `
-      <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-coll-${inst.uid}"></canvas>
-      <div class="pm-collection-name">${base.name}${inTeam ? ' ✓' : ''}${base.legendary ? ' ✦' : ''}</div>
-      <span class="pm-type-badge" style="background:${PM_TYPE_COLOR[base.type]};">${PM_TYPE_EMOJI[base.type]} ${PM_TYPE_LABEL[base.type]}</span>
-      <div class="pm-collection-level">Niv ${inst.level}${base.legendary ? ' · Légendaire' : ''}</div>
-      ${base.lore ? `<div class="pm-coll-lore">${base.lore}</div>` : ''}
-    `;
-    grid.appendChild(card);
-    setTimeout(() => drawPokePom(document.getElementById('pm-coll-' + inst.uid), inst.pokepomId), 10);
+
+    if (captured) {
+      card.className = 'pm-collection-card' + (inTeam ? ' in-team' : '');
+      card.onclick = () => pmToggleTeam(inst.uid);
+      card.innerHTML = `
+        <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-coll-${inst.uid}"></canvas>
+        <div class="pm-collection-name">${base.name}${inTeam ? ' ✓' : ''}${base.legendary ? ' ✦' : ''}</div>
+        <span class="pm-type-badge" style="background:${PM_TYPE_COLOR[base.type]};">${PM_TYPE_EMOJI[base.type]} ${PM_TYPE_LABEL[base.type]}</span>
+        <div class="pm-collection-level">Niv ${inst.level}${base.legendary ? ' · Légendaire' : ''}</div>
+        ${base.lore ? `<div class="pm-coll-lore">${base.lore}</div>` : ''}
+      `;
+      grid.appendChild(card);
+      setTimeout(() => drawPokePom(document.getElementById('pm-coll-' + inst.uid), base.id), 10);
+    } else {
+      // Non capturé : silhouette noire + nom ???
+      card.className = 'pm-collection-card pm-coll-unknown';
+      card.innerHTML = `
+        <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-coll-unk-${base.id}"></canvas>
+        <div class="pm-collection-name">???</div>
+        <span class="pm-type-badge" style="background:#555;">? Inconnu</span>
+        <div class="pm-collection-level">Non capturé</div>
+      `;
+      grid.appendChild(card);
+      // Dessiner le sprite puis appliquer le filtre silhouette
+      setTimeout(() => {
+        const canvas = document.getElementById('pm-coll-unk-' + base.id);
+        if (!canvas) return;
+        drawPokePom(canvas, base.id);
+        setTimeout(() => {
+          const ctx = canvas.getContext('2d');
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const d = imgData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            if (d[i + 3] > 0) { // pixel non transparent
+              d[i] = 0; d[i + 1] = 0; d[i + 2] = 0; // tout en noir
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+        }, 50);
+      }, 10);
+    }
   });
 }
 
