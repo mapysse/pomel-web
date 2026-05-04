@@ -1519,9 +1519,10 @@
   .mission-card.done { opacity: .6; }
   .mission-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
   .mission-status { font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: .05em; }
-  .mission-status.open     { background: rgba(62,207,110,0.15); color: var(--green); }
-  .mission-status.accepted { background: rgba(245,200,66,0.15); color: var(--yellow); }
-  .mission-status.done     { background: rgba(78,201,217,0.15); color: var(--accent); }
+  .mission-status.open      { background: rgba(62,207,110,0.15); color: var(--green); }
+  .mission-status.completed { background: rgba(245,200,66,0.15); color: var(--yellow); }
+  .mission-status.accepted  { background: rgba(245,200,66,0.15); color: var(--yellow); }
+  .mission-status.done      { background: rgba(78,201,217,0.15); color: var(--accent); }
   .mission-desc { font-size: .95rem; line-height: 1.5; }
   .mission-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
   .mission-meta strong { color: var(--text); }
@@ -4060,7 +4061,7 @@
     <div class="missions-wrap">
       <div>
         <div class="section-title">🎯 Missions</div>
-        <div class="section-sub">Lance une mission ouverte à tous — la première personne qui l'accepte a 24h pour la réaliser !</div>
+        <div class="section-sub">Lance une mission ouverte à tous — le premier qui la réalise et déclare "Mission effectuée !" remporte la récompense !</div>
       </div>
 
       <!-- Mission acceptée (en haut, si existe) -->
@@ -4085,7 +4086,7 @@
             <div id="missionLimitInfo" class="mission-limit-info" style="display:none;"></div>
             <button class="btn-primary" id="missionCreateBtn" onclick="handleCreateMission()">Lancer la mission 🎯</button>
             <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">
-              ℹ️ 1 mission par jour. Quand quelqu'un accepte et accomplit la mission, tu valides manuellement et reçois 75% de la récompense en bonus créateur.
+              ℹ️ 1 mission par jour. N'importe qui peut cliquer "Mission effectuée !" — tu valides ou refuses, et si refusée la mission redevient disponible. Tu reçois 75% de la récompense en bonus créateur.
             </div>
           </div>
 
@@ -4347,13 +4348,13 @@
             <span class="info-trigger-arrow">▼</span>
           </button>
           <div class="info-body">
-            <p>Comme les Quêtes, mais <strong>ouvertes à tous</strong> : tu lances une mission et le premier joueur qui l'accepte a 24h pour la réaliser.</p>
+            <p>Comme les Quêtes, mais <strong>ouvertes à tous</strong> : tu lances une mission et n'importe quel joueur peut cliquer "Mission effectuée !" une fois qu'il l'a accomplie.</p>
             <ul>
               <li><strong>1 mission par jour</strong> que tu peux créer</li>
               <li>Récompense libre — fixe ce que tu veux (versée par le système)</li>
               <li>Quand tu valides l'accomplissement : le joueur reçoit la récompense complète, et toi un <strong>bonus créateur de 75%</strong></li>
-              <li>Si l'accepteur ne tient pas les 24h, la mission redevient libre — il ne pourra pas la reprendre</li>
-              <li>Expire après <strong>3 jours</strong> si personne ne l'accepte ; les missions terminées sont supprimées 24h après</li>
+              <li>Si tu <strong>refuses</strong> la déclaration, la mission redevient disponible pour tout le monde</li>
+              <li>Expire après <strong>3 jours</strong> si personne ne la réalise ; les missions terminées sont supprimées 24h après</li>
             </ul>
           </div>
         </div>
@@ -6881,17 +6882,17 @@ async function renderHomeMissions() {
   const all = await getAllMissions();
 
   // Préparer les bandeaux d'alerte
-  const myAccepted = all.filter(m => m.acceptedBy === state.code && m.status === 'accepted');
-  const myToValidate = all.filter(m => m.creatorCode === state.code && m.status === 'accepted');
+  const myCompleted = all.filter(m => m.completedBy === state.code && m.status === 'completed');
+  const myToValidate = all.filter(m => m.creatorCode === state.code && m.status === 'completed');
 
   const doingCard = document.getElementById('homeMissionDoingCard');
   const doingEl   = document.getElementById('homeMissionDoing');
   if (doingCard && doingEl) {
-    if (myAccepted.length) {
+    if (myCompleted.length) {
       doingCard.style.display = 'flex';
-      const m = myAccepted[0];
+      const m = myCompleted[0];
       const descShort = m.desc.length > 60 ? m.desc.slice(0, 57) + '…' : m.desc;
-      doingEl.textContent = `Mission en cours : « ${descShort} » · ${m.reward.toLocaleString('fr-FR')} 🪙`;
+      doingEl.textContent = `Mission effectuée en attente : « ${descShort} » · ${m.reward.toLocaleString('fr-FR')} 🪙`;
     } else {
       doingCard.style.display = 'none';
     }
@@ -6902,21 +6903,21 @@ async function renderHomeMissions() {
     if (myToValidate.length) {
       validateCard.style.display = 'flex';
       const m = myToValidate[0];
-      validateEl.textContent = `${m.acceptedByName || 'Quelqu\'un'} a accompli ta mission « ${m.desc.length > 40 ? m.desc.slice(0, 37) + '…' : m.desc} » — à valider !`;
+      validateEl.textContent = `${m.completedByName || 'Quelqu\'un'} a effectué ta mission « ${m.desc.length > 40 ? m.desc.slice(0, 37) + '…' : m.desc} » — à valider !`;
     } else {
       validateCard.style.display = 'none';
     }
   }
 
-  // Liste des 3 dernières missions disponibles (+ mes missions acceptées en priorité)
+  // Liste des 3 dernières missions disponibles (+ mes missions en attente de validation en priorité)
   const activeMissions = all
-    .filter(m => m.status === 'open' || m.status === 'accepted')
+    .filter(m => m.status === 'open' || m.status === 'completed')
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  // On met en priorité MA mission acceptée si elle existe, puis les 3 plus récentes (sans doublon)
+  // On met en priorité MA mission "effectuée" si elle existe, puis les 3 plus récentes (sans doublon)
   const recentIds = new Set();
   const display = [];
-  if (myAccepted.length) { display.push(myAccepted[0]); recentIds.add(myAccepted[0].id); }
+  if (myCompleted.length) { display.push(myCompleted[0]); recentIds.add(myCompleted[0].id); }
   for (const m of activeMissions) {
     if (display.length >= 3) break;
     if (recentIds.has(m.id)) continue;
@@ -6932,16 +6933,16 @@ async function renderHomeMissions() {
   el.innerHTML = '';
   display.forEach(m => {
     const isMine = m.creatorCode === state.code;
-    const isAcceptedByMe = m.acceptedBy === state.code;
+    const isCompletedByMe = m.completedBy === state.code;
     let cls = 'home-mission-row';
-    if (isAcceptedByMe) cls += ' accepted-by-me';
+    if (isCompletedByMe) cls += ' accepted-by-me';
     else if (isMine) cls += ' mine';
 
     let statusLabel = '';
-    if (isAcceptedByMe) statusLabel = '<span class="home-mission-row-status accepted">🔥 À faire</span>';
-    else if (isMine && m.status === 'accepted') statusLabel = '<span class="home-mission-row-status accepted">À valider</span>';
+    if (isCompletedByMe) statusLabel = '<span class="home-mission-row-status accepted">⏳ En attente</span>';
+    else if (isMine && m.status === 'completed') statusLabel = '<span class="home-mission-row-status accepted">À valider</span>';
     else if (isMine) statusLabel = '<span class="home-mission-row-status mine">Ma mission</span>';
-    else if (m.status === 'accepted') statusLabel = '<span class="home-mission-row-status accepted">Réservée</span>';
+    else if (m.status === 'completed') statusLabel = '<span class="home-mission-row-status accepted">En attente</span>';
     else statusLabel = '<span class="home-mission-row-status open">Disponible</span>';
 
     const descShort = m.desc.length > 80 ? m.desc.slice(0, 77) + '…' : m.desc;
@@ -7484,17 +7485,17 @@ async function cancelQuete(queteId) {
 // {
 //   id, creatorCode, creatorName,
 //   desc, reward,
-//   status: 'open' | 'accepted' | 'done',
+//   status: 'open' | 'completed' | 'done',
 //   createdAt, updatedAt,
-//   acceptedBy: code | null, acceptedByName: string | null,
-//   acceptedAt: ISO | null, deadline: ISO | null, // deadline = acceptedAt + 24h
+//   completedBy: code | null, completedByName: string | null,
 //   completedAt: ISO | null,
-//   previousAccepters: [code, ...], // mémoire des gens qui ont laissé expirer
+//   doneAt: ISO | null,
 // }
+// Nouveau flux : open → (n'importe qui clique "Mission effectuée !") → completed
+//                → créateur valide (done) ou refuse (retour open)
 
 const MISSION_EXPIRE_MS        = 3 * 24 * 3600 * 1000;  // 3 jours avant suppression
 const MISSION_DONE_EXPIRE_MS   = 24 * 3600 * 1000;      // 24h après done → suppression
-const MISSION_ACCEPT_DURATION  = 24 * 3600 * 1000;      // 24h pour accomplir
 const MISSION_MAX_REWARD       = Infinity;
 
 function _missionDayKey(iso) {
@@ -7507,17 +7508,15 @@ async function _cleanupMissions() {
   const now = Date.now();
   for (const m of all) {
     // Mission 'done' depuis plus de 24h → supprimer
-    if (m.status === 'done' && m.completedAt) {
-      if (now - new Date(m.completedAt).getTime() > MISSION_DONE_EXPIRE_MS) {
+    if (m.status === 'done' && m.doneAt) {
+      if (now - new Date(m.doneAt).getTime() > MISSION_DONE_EXPIRE_MS) {
         await deleteMission(m.id);
         continue;
       }
     }
-    // Mission 'open' (ou 'accepted' non validée) créée depuis plus de 3 jours → supprimer
+    // Mission 'open' ou 'completed' créée depuis plus de 3 jours → supprimer
     if (m.status !== 'done') {
       if (now - new Date(m.createdAt).getTime() > MISSION_EXPIRE_MS) {
-        // Rembourser moralement : pas de perte pour le créateur (les Pomels viennent du système à la validation)
-        // Juste logger dans l'historique du créateur
         try {
           const creator = await getAccount(m.creatorCode);
           if (creator) {
@@ -7533,22 +7532,6 @@ async function _cleanupMissions() {
         } catch(e) {}
         await deleteMission(m.id);
         continue;
-      }
-      // Mission 'accepted' avec deadline dépassée → retour à 'open'
-      if (m.status === 'accepted' && m.deadline) {
-        if (now > new Date(m.deadline).getTime()) {
-          m.previousAccepters = m.previousAccepters || [];
-          if (m.acceptedBy && !m.previousAccepters.includes(m.acceptedBy)) {
-            m.previousAccepters.push(m.acceptedBy);
-          }
-          m.status = 'open';
-          m.acceptedBy = null;
-          m.acceptedByName = null;
-          m.acceptedAt = null;
-          m.deadline = null;
-          m.updatedAt = new Date().toISOString();
-          await saveMission(m);
-        }
       }
     }
   }
@@ -7566,30 +7549,30 @@ async function renderMissions() {
   const all = await getAllMissions();
   const now = Date.now();
 
-  // Ma mission acceptée (une seule à la fois en pratique, mais on gère multiple au cas où)
-  const myAccepted = all.filter(m => m.acceptedBy === state.code && m.status === 'accepted');
+  // Ma mission "effectuée" en attente de validation du créateur (je suis le réalisateur)
+  const myCompleted = all.filter(m => m.completedBy === state.code && m.status === 'completed');
   // Mes missions créées (pas encore supprimées)
   const myCreated = all.filter(m => m.creatorCode === state.code && m.status !== 'done');
-  // Missions disponibles (open ou accepted par quelqu'un d'autre)
+  // Missions disponibles (open) + completed par quelqu'un d'autre (visible mais verrouillées)
   const available = all
-    .filter(m => (m.status === 'open' || m.status === 'accepted'))
-    .filter(m => !(m.acceptedBy === state.code)) // mes missions acceptées sont affichées en haut
+    .filter(m => m.status === 'open' || m.status === 'completed')
+    .filter(m => !(m.completedBy === state.code)) // mes missions "effectuées" affichées en haut
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   // Missions terminées récemment (dernières 24h)
   const doneRecent = all
     .filter(m => m.status === 'done')
-    .sort((a, b) => new Date(b.completedAt || b.updatedAt).getTime() - new Date(a.completedAt || a.updatedAt).getTime());
+    .sort((a, b) => new Date(b.doneAt || b.updatedAt).getTime() - new Date(a.doneAt || a.updatedAt).getTime());
 
-  // ─ Zone "mission acceptée" en haut ─
+  // ─ Zone "mission effectuée en attente" en haut ─
   const topZone = document.getElementById('missionAcceptedTop');
   if (topZone) {
-    if (myAccepted.length) {
+    if (myCompleted.length) {
       topZone.style.display = '';
       topZone.innerHTML = '';
       const wrap = document.createElement('div');
       wrap.className = 'missions-accepted-top';
-      wrap.innerHTML = `<div class="missions-accepted-top-label">Ma mission en cours</div>`;
-      myAccepted.forEach(m => wrap.appendChild(buildMissionCard(m, 'accepted_by_me')));
+      wrap.innerHTML = `<div class="missions-accepted-top-label">⏳ Mission effectuée — en attente de validation</div>`;
+      myCompleted.forEach(m => wrap.appendChild(buildMissionCard(m, 'completed_by_me')));
       topZone.appendChild(wrap);
     } else {
       topZone.style.display = 'none';
@@ -7655,82 +7638,74 @@ async function renderMissions() {
 function buildMissionCard(m, role) {
   const card = document.createElement('div');
   const statusLabels = {
-    open:     '🟢 Disponible',
-    accepted: '🔥 En cours',
-    done:     '✅ Terminée',
+    open:      '🟢 Disponible',
+    completed: '⏳ En attente',
+    done:      '✅ Terminée',
   };
 
   // Classes
   let cls = 'mission-card';
-  if (role === 'accepted_by_me') cls += ' mine-accepted';
+  if (role === 'completed_by_me') cls += ' mine-accepted';
   else if (role === 'mine') cls += ' mine';
-  else if (m.status === 'accepted') cls += ' taken';
+  else if (m.status === 'completed') cls += ' taken';
   else if (m.status === 'done') cls += ' done';
   card.className = cls;
 
   const date = new Date(m.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-  // Timer : soit deadline (accepted), soit createdAt + 3j (open)
+  // Timer : open → expiration 3j
   let timerExp = null;
-  if (m.status === 'accepted' && m.deadline) {
-    timerExp = new Date(m.deadline).getTime();
-  } else if (m.status === 'open') {
+  if (m.status === 'open') {
     timerExp = new Date(m.createdAt).getTime() + MISSION_EXPIRE_MS;
-  } else if (m.status === 'done' && m.completedAt) {
-    timerExp = new Date(m.completedAt).getTime() + MISSION_DONE_EXPIRE_MS;
+  } else if (m.status === 'done' && m.doneAt) {
+    timerExp = new Date(m.doneAt).getTime() + MISSION_DONE_EXPIRE_MS;
   }
 
   const isMine = m.creatorCode === state.code;
-  const isAcceptedByMe = m.acceptedBy === state.code;
-  const hasPreviouslyFailed = (m.previousAccepters || []).includes(state.code);
+  const isCompletedByMe = m.completedBy === state.code;
 
   // Construction des actions selon le rôle
   let actionsHTML = '';
 
   if (role === 'available') {
     if (m.status === 'open' && !isMine) {
-      if (hasPreviouslyFailed) {
-        actionsHTML = `<div class="mission-accepted-info" style="color:var(--muted);background:var(--surface-glass);border-color:var(--border-soft);">⏳ Tu as déjà accepté cette mission et n'as pas réussi à temps.</div>`;
-      } else {
-        actionsHTML = `
-          <div class="mission-actions">
-            <button class="btn-mission accept" onclick="acceptMission('${m.id}')">🎯 Accepter la mission</button>
-          </div>`;
-      }
-    } else if (m.status === 'accepted' && !isMine) {
-      actionsHTML = `<div class="mission-accepted-info" style="color:var(--muted);background:var(--surface-glass);border-color:var(--border-soft);">🔒 Mission en cours par <strong style="color:var(--text);">${escapeHTML(m.acceptedByName || '?')}</strong>.</div>`;
-    } else if (isMine && m.status === 'open') {
-      actionsHTML = `<div class="mission-accepted-info" style="color:var(--muted);background:var(--surface-glass);border-color:var(--border-soft);">C'est ta mission — en attente d'un volontaire.</div>`;
-    } else if (isMine && m.status === 'accepted') {
+      // N'importe qui peut déclarer l'avoir effectuée
       actionsHTML = `
-        <div class="mission-accepted-info">🔥 <strong style="color:var(--text);">${escapeHTML(m.acceptedByName || '?')}</strong> a accepté ta mission !</div>
         <div class="mission-actions">
-          <button class="btn-mission validate" onclick="validateMission('${m.id}')">🏆 Valider l'accomplissement</button>
+          <button class="btn-mission accept" onclick="completeMission('${m.id}')">✅ Mission effectuée !</button>
+        </div>`;
+    } else if (m.status === 'completed' && !isMine) {
+      actionsHTML = `<div class="mission-accepted-info" style="color:var(--muted);background:var(--surface-glass);border-color:var(--border-soft);">⏳ En attente de validation par le créateur (effectuée par <strong style="color:var(--text);">${escapeHTML(m.completedByName || '?')}</strong>).</div>`;
+    } else if (isMine && m.status === 'open') {
+      actionsHTML = `<div class="mission-accepted-info" style="color:var(--muted);background:var(--surface-glass);border-color:var(--border-soft);">C'est ta mission — en attente que quelqu'un la réalise.</div>`;
+    } else if (isMine && m.status === 'completed') {
+      actionsHTML = `
+        <div class="mission-accepted-info">🔥 <strong style="color:var(--text);">${escapeHTML(m.completedByName || '?')}</strong> a effectué ta mission — valide ou refuse !</div>
+        <div class="mission-actions">
+          <button class="btn-mission validate" onclick="validateMission('${m.id}')">✅ Valider</button>
+          <button class="btn-mission abandon" onclick="rejectMission('${m.id}')">❌ Refuser</button>
         </div>`;
     }
-  } else if (role === 'accepted_by_me') {
+  } else if (role === 'completed_by_me') {
     actionsHTML = `
-      <div class="mission-accepted-info">🔥 Accomplis la mission avant expiration ! Le créateur validera manuellement.</div>
-      <div class="mission-actions">
-        <button class="btn-mission abandon" onclick="abandonMission('${m.id}')">↩️ Abandonner</button>
-      </div>`;
+      <div class="mission-accepted-info">⏳ Ta réalisation est soumise au créateur — en attente de sa validation.</div>`;
   } else if (role === 'mine') {
-    // Mes missions (création) — open ou accepted
     if (m.status === 'open') {
       actionsHTML = `
         <div class="mission-actions">
           <button class="btn-mission cancel" onclick="cancelMission('${m.id}')">🗑️ Annuler</button>
         </div>`;
-    } else if (m.status === 'accepted') {
+    } else if (m.status === 'completed') {
       actionsHTML = `
-        <div class="mission-accepted-info">🔥 Acceptée par <strong style="color:var(--text);">${escapeHTML(m.acceptedByName || '?')}</strong></div>
+        <div class="mission-accepted-info">🔥 Effectuée par <strong style="color:var(--text);">${escapeHTML(m.completedByName || '?')}</strong></div>
         <div class="mission-actions">
-          <button class="btn-mission validate" onclick="validateMission('${m.id}')">🏆 Valider l'accomplissement</button>
+          <button class="btn-mission validate" onclick="validateMission('${m.id}')">✅ Valider</button>
+          <button class="btn-mission abandon" onclick="rejectMission('${m.id}')">❌ Refuser</button>
         </div>`;
     }
   }
 
-  const showTimer = (m.status === 'open' || m.status === 'accepted') && timerExp;
+  const showTimer = (m.status === 'open') && timerExp;
   const creatorBonus = Math.ceil(m.reward * 0.75);
 
   card.innerHTML = `
@@ -7742,7 +7717,7 @@ function buildMissionCard(m, role) {
     <div class="mission-desc">${escapeHTML(m.desc)}</div>
     <div class="mission-meta">
       <span>Créée par <strong>${escapeHTML(m.creatorName)}</strong></span>
-      ${m.status === 'done' && m.acceptedByName ? `<span>Réalisée par <strong>${escapeHTML(m.acceptedByName)}</strong></span>` : ''}
+      ${m.status === 'done' && m.completedByName ? `<span>Réalisée par <strong>${escapeHTML(m.completedByName)}</strong></span>` : ''}
       <span class="mission-reward">+${m.reward.toLocaleString('fr-FR')} 🪙</span>
       <span style="color:var(--muted);font-size:.72rem;">(bonus créateur : ${creatorBonus.toLocaleString('fr-FR')} 🪙)</span>
     </div>
@@ -7775,12 +7750,10 @@ async function handleCreateMission() {
     status: 'open',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    acceptedBy: null,
-    acceptedByName: null,
-    acceptedAt: null,
-    deadline: null,
+    completedBy: null,
+    completedByName: null,
     completedAt: null,
-    previousAccepters: [],
+    doneAt: null,
   };
 
   await saveMission(mission);
@@ -7791,7 +7764,7 @@ async function handleCreateMission() {
   renderMissions();
 }
 
-async function acceptMission(missionId) {
+async function completeMission(missionId) {
   // Relire depuis la DB pour éviter race
   const m = await getMission(missionId);
   if (!m) { renderMissions(); return; }
@@ -7802,55 +7775,50 @@ async function acceptMission(missionId) {
     return;
   }
   if (m.creatorCode === state.code) {
-    setAlert('missionCreateAlert', '❌ Tu ne peux pas accepter ta propre mission.', 'error');
-    setTimeout(() => { document.getElementById('missionCreateAlert').className = 'alert'; }, 3000);
-    return;
-  }
-  if ((m.previousAccepters || []).includes(state.code)) {
-    setAlert('missionCreateAlert', '❌ Tu as déjà accepté cette mission sans la terminer à temps.', 'error');
+    setAlert('missionCreateAlert', '❌ Tu ne peux pas effectuer ta propre mission.', 'error');
     setTimeout(() => { document.getElementById('missionCreateAlert').className = 'alert'; }, 3000);
     return;
   }
 
   const now = new Date();
-  m.status = 'accepted';
-  m.acceptedBy = state.code;
-  m.acceptedByName = state.name;
-  m.acceptedAt = now.toISOString();
-  m.deadline = new Date(now.getTime() + MISSION_ACCEPT_DURATION).toISOString();
+  m.status = 'completed';
+  m.completedBy = state.code;
+  m.completedByName = state.name;
+  m.completedAt = now.toISOString();
   m.updatedAt = now.toISOString();
   await saveMission(m);
 
   // Anti-race : relire pour vérifier que notre save a pris
   const fresh = await getMission(missionId);
-  if (!fresh || fresh.acceptedBy !== state.code) {
-    setAlert('missionCreateAlert', '❌ Un autre joueur a accepté cette mission en premier.', 'error');
+  if (!fresh || fresh.completedBy !== state.code) {
+    setAlert('missionCreateAlert', '❌ Un autre joueur a déclaré cette mission en même temps — réessaie !', 'error');
     setTimeout(() => { document.getElementById('missionCreateAlert').className = 'alert'; }, 3000);
     renderMissions();
     return;
   }
 
+  setAlert('missionCreateAlert', '⏳ Mission déclarée effectuée ! Le créateur va valider.', 'success');
+  setTimeout(() => { document.getElementById('missionCreateAlert').className = 'alert'; }, 3000);
   renderMissions();
 }
 
-async function abandonMission(missionId) {
+async function rejectMission(missionId) {
   const m = await getMission(missionId);
-  if (!m || m.acceptedBy !== state.code || m.status !== 'accepted') { renderMissions(); return; }
-  showConfirm('Abandonner cette mission ? Tu ne pourras plus la reprendre.', async () => {
+  if (!m || m.creatorCode !== state.code || m.status !== 'completed') { renderMissions(); return; }
+  showConfirm(`Refuser la réalisation de ${escapeHTML(m.completedByName || '?')} ? La mission redeviendra disponible pour tout le monde.`, async () => {
     const fresh = await getMission(missionId);
-    if (!fresh || fresh.acceptedBy !== state.code || fresh.status !== 'accepted') {
+    if (!fresh || fresh.creatorCode !== state.code || fresh.status !== 'completed') {
       closeConfirm(); renderMissions(); return;
     }
-    fresh.previousAccepters = fresh.previousAccepters || [];
-    if (!fresh.previousAccepters.includes(state.code)) fresh.previousAccepters.push(state.code);
     fresh.status = 'open';
-    fresh.acceptedBy = null;
-    fresh.acceptedByName = null;
-    fresh.acceptedAt = null;
-    fresh.deadline = null;
+    fresh.completedBy = null;
+    fresh.completedByName = null;
+    fresh.completedAt = null;
     fresh.updatedAt = new Date().toISOString();
     await saveMission(fresh);
     closeConfirm();
+    setAlert('missionCreateAlert', '❌ Réalisation refusée — la mission est à nouveau disponible.', 'error');
+    setTimeout(() => { document.getElementById('missionCreateAlert').className = 'alert'; }, 3000);
     renderMissions();
   });
 }
@@ -7858,12 +7826,12 @@ async function abandonMission(missionId) {
 async function validateMission(missionId) {
   // Relire depuis la DB pour anti-race
   const m = await getMission(missionId);
-  if (!m || m.creatorCode !== state.code || m.status !== 'accepted') { renderMissions(); return; }
+  if (!m || m.creatorCode !== state.code || m.status !== 'completed') { renderMissions(); return; }
 
   // Marquer 'done' IMMÉDIATEMENT pour bloquer double-validation
   m.status = 'done';
-  m.completedAt = new Date().toISOString();
-  m.updatedAt = m.completedAt;
+  m.doneAt = new Date().toISOString();
+  m.updatedAt = m.doneAt;
   await saveMission(m);
 
   // Re-vérifier
@@ -7872,19 +7840,19 @@ async function validateMission(missionId) {
 
   const reward = m.reward;
   const creatorBonus = Math.ceil(reward * 0.75);
-  const isSamePerson = m.acceptedBy === m.creatorCode; // cas edge (ne devrait pas arriver car on bloque l'auto-acceptation)
+  const isSamePerson = m.completedBy === m.creatorCode; // cas edge (ne devrait pas arriver)
   const now = new Date().toISOString();
 
   // Récompense à la personne qui a accompli (offerte par le système)
-  const updatedTarget = await addBalanceTransaction(m.acceptedBy, reward, {
+  const updatedTarget = await addBalanceTransaction(m.completedBy, reward, {
     type: 'mission',
     desc: `🎯 Mission accomplie : "${m.desc}"`,
     amount: reward,
     date: now,
   });
-  if (updatedTarget && m.acceptedBy === state.code) { state = migrateAccount(updatedTarget); refreshUI(); }
+  if (updatedTarget && m.completedBy === state.code) { state = migrateAccount(updatedTarget); refreshUI(); }
 
-  // Bonus 75% au créateur (sauf si même personne, ce qui n'arrive pas en pratique)
+  // Bonus 75% au créateur
   if (!isSamePerson) {
     const updatedCreator = await addBalanceTransaction(m.creatorCode, creatorBonus, {
       type: 'mission',
@@ -7894,17 +7862,17 @@ async function validateMission(missionId) {
     });
     if (updatedCreator && m.creatorCode === state.code) { state = migrateAccount(updatedCreator); refreshUI(); }
   } else {
-    const updatedSame = await addBalanceTransaction(m.acceptedBy, creatorBonus, {
+    const updatedSame = await addBalanceTransaction(m.completedBy, creatorBonus, {
       type: 'mission',
       desc: `🎯 Mission validée — bonus créateur (75%) : "${m.desc}"`,
       amount: creatorBonus,
       date: now,
     });
-    if (updatedSame && m.acceptedBy === state.code) { state = migrateAccount(updatedSame); refreshUI(); }
+    if (updatedSame && m.completedBy === state.code) { state = migrateAccount(updatedSame); refreshUI(); }
   }
 
   setAlert('missionCreateAlert',
-    `🏆 Mission validée ! ${escapeHTML(m.acceptedByName)} reçoit ${reward.toLocaleString('fr-FR')} 🪙 et tu reçois ${creatorBonus.toLocaleString('fr-FR')} 🪙 (75%) en bonus créateur !`,
+    `🏆 Mission validée ! ${escapeHTML(m.completedByName)} reçoit ${reward.toLocaleString('fr-FR')} 🪙 et tu reçois ${creatorBonus.toLocaleString('fr-FR')} 🪙 (75%) en bonus créateur !`,
     'success'
   );
   setTimeout(() => { document.getElementById('missionCreateAlert').className = 'alert'; }, 5000);
@@ -9860,12 +9828,12 @@ async function checkNotifUpdates() {
       let missLatest = 0;
       for (const m of (missions || [])) {
         // Nouvelle mission créée par quelqu'un d'autre
-        if (m.creatorCode !== state.code && (m.status === 'open' || m.status === 'accepted')) {
+        if (m.creatorCode !== state.code && (m.status === 'open' || m.status === 'completed')) {
           missLatest = Math.max(missLatest, new Date(m.createdAt).getTime());
         }
-        // Ma mission a été acceptée par quelqu'un
-        if (m.creatorCode === state.code && m.status === 'accepted' && m.acceptedAt) {
-          missLatest = Math.max(missLatest, new Date(m.acceptedAt).getTime());
+        // Ma mission a été effectuée par quelqu'un
+        if (m.creatorCode === state.code && m.status === 'completed' && m.completedAt) {
+          missLatest = Math.max(missLatest, new Date(m.completedAt).getTime());
         }
       }
       if (missLatest) setLatestContent('missions', new Date(missLatest).toISOString());
@@ -11027,19 +10995,19 @@ async function checkPushNotifications() {
         }
         _prevNotifState.missionsNew.add(m.id);
       }
-      // Notifier le créateur quand quelqu'un accepte sa mission
-      if (m.creatorCode === state.code && m.status === 'accepted' && m.acceptedBy) {
-        const key = m.id + '|' + m.acceptedBy;
+      // Notifier le créateur quand quelqu'un effectue sa mission
+      if (m.creatorCode === state.code && m.status === 'completed' && m.completedBy) {
+        const key = m.id + '|' + m.completedBy;
         if (!_prevNotifState.missionsAccepted.has(key)) {
-          if (m.acceptedAt && now - new Date(m.acceptedAt).getTime() < 120000) {
-            showNotif('🎯', 'Mission acceptée !', `${escapeHTML(m.acceptedByName || '?')} a accepté ta mission — valide quand elle est accomplie !`, 'quete', () => navTo('missions'));
+          if (m.completedAt && now - new Date(m.completedAt).getTime() < 120000) {
+            showNotif('🎯', 'Mission effectuée !', `${escapeHTML(m.completedByName || '?')} a effectué ta mission — valide ou refuse !`, 'quete', () => navTo('missions'));
           }
           _prevNotifState.missionsAccepted.add(key);
         }
       }
       // Notifier l'accomplisseur quand le créateur valide
-      if (m.acceptedBy === state.code && m.status === 'done' && !_prevNotifState.missionsDone.has(m.id)) {
-        if (m.completedAt && now - new Date(m.completedAt).getTime() < 120000) {
+      if (m.completedBy === state.code && m.status === 'done' && !_prevNotifState.missionsDone.has(m.id)) {
+        if (m.doneAt && now - new Date(m.doneAt).getTime() < 120000) {
           showNotif('🏆', 'Mission validée !', `${escapeHTML(m.creatorName)} a validé ta mission — tu reçois ${m.reward.toLocaleString('fr-FR')} 🪙 !`, 'quete', () => navTo('missions'));
         }
         _prevNotifState.missionsDone.add(m.id);
