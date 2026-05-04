@@ -82,10 +82,9 @@ const PM_LEVEL_BONUS = 0.05;    // +5% par niveau
 const PM_STAGE_MULT = [0.35, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75];
 
 // Limites quotidiennes
-// Limites quotidiennes
-// ⚠ MODE DEBUG : limites élevées pour tester. Remettre à 3/1/5 avant la prod !
+// ⚠ MODE DEBUG : limites élevées pour tester. Remettre à 3/5 avant la prod !
 const PM_DAILY_WILD = 25;
-const PM_DAILY_GYM_WINS = 7;
+const PM_DAILY_GYM_WINS = 1;  // 1 arène battue par jour max
 const PM_DAILY_LEAGUE = 20;
 
 // Brûlure
@@ -2777,7 +2776,7 @@ function pmRenderGyms(page, player) {
       <div class="pm-header">
         <div>
           <div class="pm-title">🏆 Arènes</div>
-          <div class="pm-sub">${player.badges.length}/7 badges · ${player.dailyGymWins >= PM_DAILY_GYM_WINS ? 'Tu as déjà gagné une arène aujourd\'hui' : 'Tentatives illimitées aujourd\'hui (1 victoire max)'}</div>
+          <div class="pm-sub">${player.badges.length}/7 badges · ${player.dailyGymWins >= PM_DAILY_GYM_WINS ? '⛔ Reviens demain — 1 arène battue max par jour' : '✅ Tu peux battre 1 arène aujourd\'hui'}</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
       </div>
@@ -2812,7 +2811,7 @@ function pmStartGymBattle(gym) {
   const player = pmGetPlayer();
   if (player.badges.includes(gym.id)) return;
   if (player.dailyGymWins >= PM_DAILY_GYM_WINS) {
-    if (typeof showToast === 'function') showToast('Tu as déjà gagné une arène aujourd\'hui !', '⚠️');
+    if (typeof showToast === 'function') showToast('Tu as déjà battu une arène aujourd\'hui ! Reviens demain. 🕐', '⚠️');
     return;
   }
 
