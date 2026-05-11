@@ -4630,13 +4630,13 @@
 
 // ── FIREBASE CONFIG ─────────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyC-cMUmJ_4n33H-mWp2VptAsrYUGdLi9HA",
-  authDomain: "pomel-saison2.firebaseapp.com",
-  databaseURL: "https://pomel-saison2-default-rtdb.europe-west1.firebasedatabase.app/",
-  projectId: "pomel-saison2",
-  storageBucket: "pomel-saison2.firebasestorage.app",
-  messagingSenderId: "39644037438",
-  appId: "1:39644037438:web:068a255ef4fa619362ec6f"
+  apiKey: "AIzaSyAvWKRKUOTYZLgWuXEwep3A683Bqyf-WdM",
+  authDomain: "pomel-newv2.firebaseapp.com",
+  databaseURL: "https://pomel-newv2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "pomel-newv2",
+  storageBucket: "pomel-newv2.firebasestorage.app",
+  messagingSenderId: "880085144844",
+  appId: "1:880085144844:web:adbf898322645e3790e529"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -4665,6 +4665,25 @@ async function dbSet(path, val) {
       else console.error('[pomel] dbSet échec définitif', path, e.message);
     }
   }
+}
+
+// Variante qui propage l'erreur : utilisée par le module PvP qui a besoin de
+// distinguer succès et échec d'écriture. dbSet (sans Strict) reste inchangé
+// pour la compatibilité avec tout le reste du code.
+async function dbSetStrict(path, val) {
+  const MAX = 3;
+  let lastErr = null;
+  for (let i = 0; i < MAX; i++) {
+    try {
+      await db.ref(path).set(val);
+      return;
+    } catch(e) {
+      lastErr = e;
+      if (i < MAX - 1) await new Promise(r => setTimeout(r, 200 * (i + 1)));
+    }
+  }
+  console.error('[pomel] dbSetStrict échec définitif', path, lastErr && lastErr.message);
+  throw lastErr || new Error('dbSetStrict failed: ' + path);
 }
 
 async function dbDelete(path) {
