@@ -101,6 +101,7 @@ const PM_LEVEL_BONUS = 0.05;    // +5% par niveau
 // ── Région 2 — Terres de PomStud ──
 const PM_R1_WILD_LEVEL_CAP = 12;        // sauvages R1 plafonnés à niv 12
 const PM_R2_WILD_LEVEL_MIN = 6;         // plancher minimum en R2
+const PM_R2_UNLOCK_BADGES = 7;          // 7 badges R1 nécessaires pour débloquer R2
 
 // ── Évolution ──
 const PM_EVOLUTION_LEVEL = 20;          // niveau de déclenchement
@@ -5727,6 +5728,15 @@ function pmMapTryMove(dr, dc) {
 }
 
 // ── Transitions de carte R1 ↔ R2 ──
+// Vérifie le déblocage R2 (7 badges R1) et fait basculer la carte courante.
+// Si non débloqué, affiche un modal explicatif.
+function pmTryEnterR2() {
+   const player = pmGetPlayer();
+   const badgeCount = (player.badges || []).length;
+   if (badgeCount < PM_R2_UNLOCK_BADGES) {
+      pmShowR2LockedModal(badgeCount);
+      return;
+   }
 // Déblocage : transition vers R2
   _pmCurrentMap = 'r2';
   player.currentMap = 'r2';
