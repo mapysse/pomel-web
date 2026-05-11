@@ -70,11 +70,12 @@ const PM_ENCOUNTER_RATES = {
 const PM_LEVEL_MAX = 30;
 
 // XP nécessaire pour passer au niveau suivant
-// Formule : floor(15 + level*8 + level² * 1.5)
-// Donne : 15 → 25 → 38 → 56 → 80 → 109 → 145 → 187 → 235 → 290 → ...
-//        ... → ~1660 pour passer de 29 à 30
+// Formule rééquilibrée : floor(18 + level*4 + level² * 0.03)
+// Donne : 22 → 26 → 31 → 35 → 38 → ... → 159 pour passer de 29 à 30
+// Total niv 1→30 : ~2500 XP (~125 combats sauvages, ~50 arènes, ~63 ligue)
+// Total niv 10→30 : ~2150 XP (~108 combats sauvages)
 function pmXpToNext(level) {
-  return Math.floor(15 + level * 8 + level * level * 1.5);
+  return Math.floor(18 + level * 4 + level * level * 0.03);
 }
 
 // Tableau pré-calculé pour accès rapide (index = niveau actuel, valeur = XP requis pour next)
@@ -88,7 +89,7 @@ const PM_XP_TABLE = (() => {
 const PM_XP_GAIN = {
   wild: 20,
   gym: 50,
-  league: 25
+  league: 40    // était 25, rééquilibré : la ligue est plus dure que les arènes
 };
 
 // Modificateurs
@@ -175,13 +176,13 @@ const PM_ELO_TIERS = [
   { id: 'maitre',    label: 'Maître',    minElo: 1700, color: '#f0a830', emoji: '👑' }
 ];
 
-// Récompenses Pomels par tier (modéré, validé)
+// Récompenses Pomels par tier (revalorisées : le PvP doit être attractif vs PvE)
 const PM_PVP_REWARDS = {
-  debutant:  { win: 200,  loss: 50  },
-  novice:    { win: 350,  loss: 75  },
-  confirme:  { win: 500,  loss: 100 },
-  champion:  { win: 700,  loss: 150 },
-  maitre:    { win: 1000, loss: 200 }
+  debutant:  { win: 500,  loss: 150 },
+  novice:    { win: 800,  loss: 250 },
+  confirme:  { win: 1200, loss: 350 },
+  champion:  { win: 1700, loss: 500 },
+  maitre:    { win: 2500, loss: 700 }
 };
 
 // Timing
@@ -192,10 +193,10 @@ const PM_PVP_LISTING_LIMIT = 50;                 // max 50 joueurs affichés dan
 const PM_PVP_HEAL_BEFORE = true;
 
 // Récompenses hebdomadaires basées sur le classement ELO :
-//   Top 1 : 2000, Top 2 : 1500, Top 3 : 1000, le reste : 500
+//   Top 1 : 5000, Top 2 : 4000, Top 3 : 3000, le reste : 2000
 // Distribuées chaque lundi à 9h. NE réinitialise PAS l'ELO (cumulatif).
-const PM_PVP_WEEKLY_PRIZES = [2000, 1500, 1000];
-const PM_PVP_WEEKLY_CONSOLATION = 500;
+const PM_PVP_WEEKLY_PRIZES = [5000, 4000, 3000];
+const PM_PVP_WEEKLY_CONSOLATION = 2000;
 // Le LB est dérivé du nœud pokepom_pvp directement (pas de LB séparé)
 // On utilise un nœud "distributed" pour garantir l'idempotence de la distribution
 const PM_PVP_DISTRIBUTED_PATH = 'pokepom_pvp_distributed';
@@ -3992,6 +3993,34 @@ function pmGainXP(instance, amount) {
   return { leveledUp, evolved, oldId, newId };
 }
 
+// Distribue de l'XP à TOUS les PokePoms de l'équipe (multi-XP).
+// L'XP reçu est le même pour le PokePom actif (qui a combattu) que pour les
+// autres membres de l'équipe — "EXP Share" implicite et permanent.
+//
+// `primaryInstance` est le PokePom qui a combattu : son level-up déclenche le
+// log principal et c'est lui qui peut évoluer immédiatement (les autres
+// évoluent aussi, mais c'est mentionné dans le log secondaire).
+//
+// Retour : { primary: {leveledUp, evolved, oldId, newId}, secondary: [{ name, leveledUp, evolved, oldId, newId }] }
+function pmGainXPTeam(player, primaryInstance, amount) {
+  if (!player || !primaryInstance) return { primary: {}, secondary: [] };
+  const team = pmGetTeam(player); // récupère les instances de l'équipe (3 max)
+  const primary = pmGainXP(primaryInstance, amount);
+  const secondary = [];
+  team.forEach(inst => {
+    // On évite de redonner de l'XP au principal (déjà fait)
+    if (!inst || inst.uid === primaryInstance.uid) return;
+    const name = inst.nickname || (PM_DEX[inst.pokepomId] && PM_DEX[inst.pokepomId].name) || '?';
+    const res = pmGainXP(inst, amount);
+    secondary.push({ name, instance: inst, ...res });
+    // Important : persister l'instance modifiée dans la collection. pmGainXP
+    // mute l'objet en place, mais pmUpdateInstance n'est pas garanti d'être
+    // appelé sur les non-actifs ailleurs.
+    pmUpdateInstance(player, inst);
+  });
+  return { primary, secondary };
+}
+
 // Mettre à jour une instance dans la collection
 function pmUpdateInstance(player, updatedInstance) {
   const idx = player.collection.findIndex(p => p.uid === updatedInstance.uid);
@@ -6288,12 +6317,41 @@ function pmRenderInfo(page, player) {
       </div>
 
       <div class="pm-card">
-        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">📈 Niveaux & XP</h3>
-        <div style="font-size:.85rem; line-height:1.6; color:var(--text);">
-          Chaque PokePom gagne de l'XP en combattant. En montant de niveau (max 10), ses stats augmentent de <strong>+2 HP, +1 ATK, +1 DEF, +1 VIT</strong> par niveau.
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">⚔️ Mode PvP — Combats classés</h3>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:.85rem; line-height:1.6; color:var(--text);">
+          <div>Depuis la map PokePom, le bandeau <strong style="color:#e85858;">⚔️ Affronter d'autres dresseurs</strong> ouvre le hub PvP. Tu peux défier n'importe quel autre joueur Pomel.</div>
+          <div><strong>Format :</strong> 3 vs 3 (équipe complète), tours alternés. Le joueur qui défie (P1) choisit toujours en premier, puis l'adversaire (P2) joue. La résolution se fait dans l'ordre de <strong>vitesse</strong> des PokePoms — donc tu ne sais pas qui va frapper en premier au moment de choisir : c'est volontaire pour ajouter de la stratégie.</div>
+          <div><strong>Soin automatique</strong> avant chaque combat (full HP pour les deux équipes).</div>
+          <div><strong>Légendaires interdits</strong> ✦ — pour préserver l'équilibre, les PokePoms légendaires sont exclus de ton équipe PvP même s'ils sont dans tes 3 actifs. Garde-les pour les arènes et la ligue.</div>
+          <div><strong>1 heure par tour</strong> — au-delà, défaite par timeout. C'est de l'asynchrone : tu peux fermer l'app, revenir plus tard, l'autre joueur sera notifié quand c'est son tour.</div>
+        </div>
+        <div style="margin-top:10px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          <div style="font-weight:700; color:var(--text); margin-bottom:4px;">🏅 Système ELO et tiers</div>
+          Chaque joueur démarre à <strong>1000 ELO</strong>. Une victoire fait monter ton ELO, une défaite le fait baisser (variation proportionnelle à l'écart de niveau).<br>
+          Tiers : 🥉 Débutant → 🥈 Novice → 🥇 Confirmé → 🏆 Champion → 👑 Maître
         </div>
         <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
-          XP gagnée : 🌿 sauvage = ${PM_XP_GAIN.wild} XP · 🏆 arène = ${PM_XP_GAIN.gym} XP · ⭐ ligue = ${PM_XP_GAIN.league} XP
+          <div style="font-weight:700; color:var(--text); margin-bottom:4px;">💰 Récompenses Pomels par combat</div>
+          Débutant : <strong>${PM_PVP_REWARDS.debutant.win}</strong> V / ${PM_PVP_REWARDS.debutant.loss} D · Novice : <strong>${PM_PVP_REWARDS.novice.win}</strong> V / ${PM_PVP_REWARDS.novice.loss} D · Confirmé : <strong>${PM_PVP_REWARDS.confirme.win}</strong> V / ${PM_PVP_REWARDS.confirme.loss} D · Champion : <strong>${PM_PVP_REWARDS.champion.win}</strong> V / ${PM_PVP_REWARDS.champion.loss} D · Maître : <strong>${PM_PVP_REWARDS.maitre.win}</strong> V / ${PM_PVP_REWARDS.maitre.loss} D
+        </div>
+        <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          <div style="font-weight:700; color:var(--text); margin-bottom:4px;">🏆 Classement hebdomadaire</div>
+          Chaque lundi 9h, distribution selon le classement ELO :<br>
+          🥇 Top 1 : <strong>${PM_PVP_WEEKLY_PRIZES[0]}</strong> 🪙 · 🥈 Top 2 : <strong>${PM_PVP_WEEKLY_PRIZES[1]}</strong> 🪙 · 🥉 Top 3 : <strong>${PM_PVP_WEEKLY_PRIZES[2]}</strong> 🪙 · Autres classés : <strong>${PM_PVP_WEEKLY_CONSOLATION}</strong> 🪙<br>
+          <em>L'ELO n'est pas réinitialisé — c'est un classement cumulatif.</em>
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">📈 Niveaux & XP</h3>
+        <div style="font-size:.85rem; line-height:1.6; color:var(--text);">
+          Chaque PokePom gagne de l'XP en combattant. En montant de niveau (max ${PM_LEVEL_MAX}), ses stats augmentent de <strong>+2 HP, +1 ATK, +1 DEF, +1 VIT</strong> par niveau.
+        </div>
+        <div style="margin-top:8px; padding:10px 14px; background:rgba(91,141,239,0.1); border:1px solid rgba(91,141,239,0.3); border-radius:8px; font-size:.8rem; color:var(--text); line-height:1.5;">
+          🤝 <strong>Multi-XP :</strong> tous les PokePoms de ton équipe (les 3) gagnent la même quantité d'XP à chaque combat, même ceux qui ne sont pas sortis du banc. Aucun retard pour les remplaçants !
+        </div>
+        <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
+          XP gagnée par PokePom : 🌿 sauvage = ${PM_XP_GAIN.wild} XP · 🏆 arène = ${PM_XP_GAIN.gym} XP · ⭐ ligue = ${PM_XP_GAIN.league} XP
         </div>
       </div>
 
@@ -6303,8 +6361,10 @@ function pmRenderInfo(page, player) {
           <div>• Compose une équipe de <strong>3 types différents</strong> pour couvrir un maximum de matchups</div>
           <div>• Le <strong>switch en combat</strong> coûte un tour (l'adversaire attaque), mais peut sauver un PokePom faible</div>
           <div>• Quand un PokePom tombe K.O., tu dois en choisir un autre — ce changement est <strong>gratuit</strong></div>
+          <div>• <strong>Quand un PokePom sort du combat</strong> (switch ou KO), ses buffs/nerfs et sa brûlure sont remis à zéro. Ses HP, eux, sont conservés.</div>
           <div>• Les types <strong>Ombre</strong> et <strong>Lumière</strong> sont très forts mais aussi vulnérables l'un à l'autre</div>
-          <div>• Un PokePom déjà capturé ne peut pas être recapturé — tu gagnes juste de l'XP</div>
+          <div>• Un PokePom déjà capturé ne peut pas être recapturé — tu gagnes juste de l'XP. En combat, un badge <span style="display:inline-block; padding:1px 6px; border-radius:8px; background:rgba(62,207,110,0.18); color:var(--green); font-size:.65rem; font-weight:700;">✓ Capturé</span> apparaît à côté du nom des adversaires que tu possèdes déjà.</div>
+          <div>• En PvP, garde un œil sur l'<strong>ordre des frappes</strong> dans le récap des tours précédents — c'est le seul indice sur la vitesse adverse</div>
         </div>
       </div>
     </div>
@@ -7329,7 +7389,7 @@ function pmRenderBattle(page, player) {
           <div class="pm-battle-side ${o.ko ? '' : 'active'}">
             <canvas width="64" height="64" class="pm-sprite pm-sprite-lg" id="pm-battle-opp"></canvas>
             <div class="pm-battle-info">
-              <div class="pm-battle-name">${o.name}</div>
+              <div class="pm-battle-name">${o.name}${pmCaptureBadge(player, o.pokepomId)}</div>
               <div class="pm-battle-level">Niv ${o.level} · ${PM_TYPE_EMOJI[o.type]}</div>
               <div class="pm-hp-bar"><div class="pm-hp-fill ${pmHpClass(o)}" style="width:${(o.hp/o.maxHp)*100}%"></div></div>
               <div class="pm-battle-hp-text">${o.hp} / ${o.maxHp} HP</div>
@@ -7388,6 +7448,22 @@ function pmHpClass(fighter) {
   if (pct > 0.5) return 'ok';
   if (pct > 0.2) return 'mid';
   return 'low';
+}
+
+// Vérifie si le joueur a déjà capturé une espèce (présente dans sa collection).
+// On regarde la collection plutôt que le PomeDex car le PomeDex inclut aussi les
+// PokePoms juste "vus" (evolutions etc.), alors qu'ici on veut "vraiment possédé".
+function pmIsPokepomCaptured(player, pokepomId) {
+  if (!player || !pokepomId) return false;
+  if (!Array.isArray(player.collection)) return false;
+  return player.collection.some(i => i && i.pokepomId === pokepomId);
+}
+
+// Badge "déjà capturé" à afficher à côté du nom d'un PokePom adverse dans
+// l'écran de combat. Affiche une coche verte sur fond sombre, discret.
+function pmCaptureBadge(player, pokepomId) {
+  if (!pmIsPokepomCaptured(player, pokepomId)) return '';
+  return ' <span title="Déjà capturé" style="display:inline-block; padding:1px 6px; border-radius:8px; background:rgba(62,207,110,0.18); color:var(--green); font-size:.62rem; font-weight:700; vertical-align:middle;">✓ Capturé</span>';
 }
 
 function pmRenderStatusBadges(fighter) {
@@ -7636,13 +7712,22 @@ function pmHandleBattleEnd() {
       player.totalBattlesWon = (player.totalBattlesWon || 0) + 1;
 
       // XP
-      const xpRes = pmGainXP(bs.playerInstance || p.instance, PM_XP_GAIN.league);
+      const xpResult = pmGainXPTeam(player, bs.playerInstance || p.instance, PM_XP_GAIN.league);
+      const xpRes = xpResult.primary;
       if (xpRes.leveledUp) {
         bs.log.push(`⬆️ ${p.name} monte au niveau ${(bs.playerInstance || p.instance).level} !`);
       }
       if (xpRes.evolved) {
         bs.pendingEvolution = { oldId: xpRes.oldId, newId: xpRes.newId };
       }
+      xpResult.secondary.forEach(s => {
+        if (s.leveledUp) {
+          bs.log.push(`⬆️ ${s.name} (équipe) monte au niveau ${s.instance.level} !`);
+        }
+        if (s.evolved) {
+          bs.log.push(`✨ ${s.name} a évolué en ${PM_DEX[s.newId].name} !`);
+        }
+      });
 
       // Reward Pomels (gain atomique via addBalanceTransaction)
       if (typeof addBalanceTransaction === 'function') {
@@ -7710,13 +7795,23 @@ function pmHandleBattleEnd() {
       // Victoire sauvage
       player.dailyWildCount++;
       player.totalBattlesWon = (player.totalBattlesWon || 0) + 1;
-      const xpRes = pmGainXP(bs.playerInstance, PM_XP_GAIN.wild);
+      const xpResult = pmGainXPTeam(player, bs.playerInstance, PM_XP_GAIN.wild);
+      const xpRes = xpResult.primary;
       if (xpRes.leveledUp) {
         bs.log.push(`⬆️ ${p.name} monte au niveau ${bs.playerInstance.level} !`);
       }
       if (xpRes.evolved) {
         bs.pendingEvolution = { oldId: xpRes.oldId, newId: xpRes.newId };
       }
+      // Logs des montées de niveau pour les autres membres de l'équipe (multi-XP)
+      xpResult.secondary.forEach(s => {
+        if (s.leveledUp) {
+          bs.log.push(`⬆️ ${s.name} (équipe) monte au niveau ${s.instance.level} !`);
+        }
+        if (s.evolved) {
+          bs.log.push(`✨ ${s.name} a évolué en ${PM_DEX[s.newId].name} !`);
+        }
+      });
       pmUpdateInstance(player, bs.playerInstance);
 
       // Anti-doublon : si déjà possédé, pas de capture
@@ -7778,13 +7873,22 @@ function pmHandleBattleEnd() {
       player.dailyGymWins++;
       player.totalBattlesWon = (player.totalBattlesWon || 0) + 1;
 
-      const xpRes = pmGainXP(bs.playerInstance, PM_XP_GAIN.gym);
+      const xpResult = pmGainXPTeam(player, bs.playerInstance, PM_XP_GAIN.gym);
+      const xpRes = xpResult.primary;
       if (xpRes.leveledUp) {
         bs.log.push(`⬆️ ${p.name} monte au niveau ${bs.playerInstance.level} !`);
       }
       if (xpRes.evolved) {
         bs.pendingEvolution = { oldId: xpRes.oldId, newId: xpRes.newId };
       }
+      xpResult.secondary.forEach(s => {
+        if (s.leveledUp) {
+          bs.log.push(`⬆️ ${s.name} (équipe) monte au niveau ${s.instance.level} !`);
+        }
+        if (s.evolved) {
+          bs.log.push(`✨ ${s.name} a évolué en ${PM_DEX[s.newId].name} !`);
+        }
+      });
       pmUpdateInstance(player, bs.playerInstance);
 
       // Sauvegarder toute l'équipe (XP peut toucher d'autres PokePoms plus tard)
@@ -8106,13 +8210,23 @@ async function pvpLoadOtherProfile(code) {
   } catch (e) { return null; }
 }
 
+// Vérifie si un PokePom est légendaire. Les légendaires sont interdits en PvP
+// pour préserver l'équilibre du méta : ils sont déjà rares, ont des stats
+// élevées, et leur monopole en PvP forcerait tout le monde à les chasser.
+function pvpIsLegendary(pokepomId) {
+  const base = PM_DEX[pokepomId];
+  return !!(base && base.legendary);
+}
+
 function pvpBuildTeamSnapshot(player) {
-  return pmGetTeam(player).map(inst => ({
-    pokepomId: inst.pokepomId,
-    nickname: inst.nickname || PM_DEX[inst.pokepomId].name,
-    level: inst.level,
-    customMoves: Array.isArray(inst.customMoves) ? inst.customMoves.slice() : []
-  }));
+  return pmGetTeam(player)
+    .filter(inst => !pvpIsLegendary(inst.pokepomId))  // pas de légendaires en PvP
+    .map(inst => ({
+      pokepomId: inst.pokepomId,
+      nickname: inst.nickname || PM_DEX[inst.pokepomId].name,
+      level: inst.level,
+      customMoves: Array.isArray(inst.customMoves) ? inst.customMoves.slice() : []
+    }));
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -8191,14 +8305,16 @@ function pvpDeserializeFighter(data) {
 }
 
 function pvpBuildTeamFromPlayer(player) {
-  return pmGetTeam(player).map(inst => {
-    const f = pmCreateFighter(inst, 1.0);
-    f.hp = f.maxHp;
-    f.burnTurns = 0;
-    f.stages = { atk: 0, def: 0, vit: 0 };
-    f.ko = false;
-    return pvpSerializeFighter(f);
-  });
+  return pmGetTeam(player)
+    .filter(inst => !pvpIsLegendary(inst.pokepomId))
+    .map(inst => {
+      const f = pmCreateFighter(inst, 1.0);
+      f.hp = f.maxHp;
+      f.burnTurns = 0;
+      f.stages = { atk: 0, def: 0, vit: 0 };
+      f.ko = false;
+      return pvpSerializeFighter(f);
+    });
 }
 
 function pvpBuildTeamFromSnapshot(snapshot) {
@@ -8242,11 +8358,14 @@ async function pvpLoadList() {
         const pommon = pommonSnap && pommonSnap[a.code] ? pommonSnap[a.code] : null;
         let teamSnapshot = [];
         if (pvp && Array.isArray(pvp.teamSnapshot) && pvp.teamSnapshot.length > 0) {
-          teamSnapshot = pvp.teamSnapshot;
+          // Filtrer les éventuels légendaires d'anciens snapshots stockés avant
+          // l'interdiction (défense en profondeur)
+          teamSnapshot = pvp.teamSnapshot.filter(s => s && !pvpIsLegendary(s.pokepomId));
         } else if (pommon && Array.isArray(pommon.team) && Array.isArray(pommon.collection)) {
           teamSnapshot = pommon.team
             .map(uid => pommon.collection.find(i => i && i.uid === uid))
             .filter(Boolean)
+            .filter(inst => !pvpIsLegendary(inst.pokepomId))  // pas de légendaires
             .map(inst => ({
               pokepomId: inst.pokepomId,
               nickname: inst.nickname || (PM_DEX[inst.pokepomId] && PM_DEX[inst.pokepomId].name) || '?',
@@ -8339,6 +8458,7 @@ async function pvpInitChallenge(opponentCode) {
         oppProfile.teamSnapshot = pommon.team
           .map(uid => pommon.collection.find(i => i && i.uid === uid))
           .filter(Boolean)
+          .filter(inst => !pvpIsLegendary(inst.pokepomId))
           .map(inst => ({
             pokepomId: inst.pokepomId,
             nickname: inst.nickname || (PM_DEX[inst.pokepomId] && PM_DEX[inst.pokepomId].name) || '?',
@@ -9027,6 +9147,9 @@ async function pmRenderPvpHub(page, player) {
   pvpCheckWeeklyReset().catch(() => {});
 
   const snapshot = pvpBuildTeamSnapshot(player);
+  // Compte les légendaires de l'équipe (ignorés en PvP) pour avertir le joueur
+  const fullTeam = pmGetTeam(player);
+  const legendariesIgnored = fullTeam.filter(inst => pvpIsLegendary(inst.pokepomId)).length;
   if (snapshot.length > 0) {
     profile.teamSnapshot = snapshot;
     profile.lastSeen = new Date().toISOString();
@@ -9063,10 +9186,14 @@ async function pmRenderPvpHub(page, player) {
 
   let teamHtml = '';
   if (snapshot.length === 0) {
-    teamHtml = `<div style="padding:14px; background:#3a2030; color:#ffaaaa; border-radius:8px; margin-bottom:12px;">⚠️ Aucun PokePom dans ton équipe.</div>`;
+    if (legendariesIgnored > 0) {
+      teamHtml = `<div style="padding:14px; background:#3a2030; color:#ffaaaa; border-radius:8px; margin-bottom:12px;">⚠️ Ton équipe ne contient que des légendaires, interdits en PvP.<br><span style="font-size:.78rem; opacity:.85;">Ajoute au moins un PokePom non-légendaire dans ton équipe pour pouvoir jouer.</span></div>`;
+    } else {
+      teamHtml = `<div style="padding:14px; background:#3a2030; color:#ffaaaa; border-radius:8px; margin-bottom:12px;">⚠️ Aucun PokePom dans ton équipe.</div>`;
+    }
   } else {
-    teamHtml = `<div style="margin-bottom:8px; font-size:.78rem; color:var(--muted); text-transform:uppercase;">Ton équipe</div>`;
-    teamHtml += `<div style="display:flex; gap:8px; justify-content:center; margin-bottom:16px; flex-wrap:wrap;">`;
+    teamHtml = `<div style="margin-bottom:8px; font-size:.78rem; color:var(--muted); text-transform:uppercase;">Ton équipe PvP <span style="font-size:.65rem; color:var(--muted); text-transform:none; font-weight:400;">(légendaires exclus)</span></div>`;
+    teamHtml += `<div style="display:flex; gap:8px; justify-content:center; margin-bottom:${legendariesIgnored > 0 ? '8' : '16'}px; flex-wrap:wrap;">`;
     snapshot.forEach((s, i) => {
       teamHtml += `<div style="text-align:center; padding:6px;">
         <canvas width="64" height="64" id="pvp-hub-${i}" style="image-rendering:pixelated; width:56px; height:56px;"></canvas>
@@ -9075,6 +9202,9 @@ async function pmRenderPvpHub(page, player) {
       </div>`;
     });
     teamHtml += `</div>`;
+    if (legendariesIgnored > 0) {
+      teamHtml += `<div style="padding:8px 12px; background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.3); border-radius:6px; margin-bottom:12px; font-size:.75rem; color:var(--yellow);">✦ ${legendariesIgnored} légendaire${legendariesIgnored > 1 ? 's' : ''} exclu${legendariesIgnored > 1 ? 's' : ''} (interdits en PvP)</div>`;
+    }
   }
 
   const disabled = snapshot.length === 0 || !!profile.currentBattleId;
@@ -9111,7 +9241,7 @@ async function pmRenderPvpHub(page, player) {
     <div style="margin-top:18px; padding:14px; background:var(--surface2); border:1px solid var(--border); border-radius:10px;">
       <div style="margin-bottom:10px;">
         <div style="font-weight:bold;">🏆 Classement hebdo PvP</div>
-        <div style="font-size:.7rem; color:var(--muted);">Récompenses chaque lundi 9h · Top 1 : 2000 🪙 · Top 2 : 1500 🪙 · Top 3 : 1000 🪙 · Autres : 500 🪙</div>
+        <div style="font-size:.7rem; color:var(--muted);">Récompenses chaque lundi 9h · Top 1 : 5000 🪙 · Top 2 : 4000 🪙 · Top 3 : 3000 🪙 · Autres : 2000 🪙</div>
       </div>
       <div id="pvp-lb-list" style="font-size:.85rem;">
         <div style="color:var(--muted); text-align:center; padding:10px;">Chargement…</div>
@@ -9363,6 +9493,8 @@ function pvpRenderBattleUI(battle) {
   const myActive  = myTeam[myActiveIdx];
   const oppActive = oppTeam[oppActiveIdx];
   const isMyTurn = battle.currentPlayer === myKey;
+  // Pour afficher le badge "déjà capturé" sur chaque PokePom de l'équipe adverse
+  const currentPlayer = (typeof pmGetPlayer === 'function') ? pmGetPlayer() : null;
 
   // ───── Combat terminé ─────
   if (battle.status === 'completed') {
@@ -9442,12 +9574,14 @@ function pvpRenderBattleUI(battle) {
   const renderSide = (info, fighter, team, activeIdx, side, isMe) => {
     if (!fighter) return `<div class="pm-battle-side"><div style="color:var(--muted);">Aucun PokePom actif</div></div>`;
     const hpPct = Math.max(0, Math.min(100, (fighter.hp / fighter.maxHp) * 100));
+    // Badge "déjà capturé" sur l'adversaire uniquement (les miens, je les ai forcément déjà)
+    const capBadge = !isMe ? pmCaptureBadge(currentPlayer, fighter.pokepomId) : '';
     return `
       <div class="pm-battle-side ${fighter.ko ? '' : 'active'}">
         <div style="font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:700; text-align:center;">${info.displayName}${isMe ? ' (toi)' : ''}</div>
         <canvas width="64" height="64" class="pm-sprite pm-sprite-lg" id="pvp-active-${side}"></canvas>
         <div class="pm-battle-info">
-          <div class="pm-battle-name">${fighter.name}</div>
+          <div class="pm-battle-name">${fighter.name}${capBadge}</div>
           <div class="pm-battle-level">Niv ${fighter.level} · ${PM_TYPE_EMOJI[fighter.type]||''} ${PM_TYPE_LABEL[fighter.type]||''}</div>
           <div class="pm-hp-bar"><div class="pm-hp-fill ${hpClass(fighter)}" style="width:${hpPct}%"></div></div>
           <div class="pm-battle-hp-text">${fighter.hp} / ${fighter.maxHp} HP</div>
