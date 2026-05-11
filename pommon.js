@@ -146,7 +146,7 @@ const PM_STAGE_MULT = [0.35, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75];
 
 // Limites quotidiennes
 
-const PM_DAILY_GYM_WINS = 1;  // 1 arène battue par jour max
+const PM_DAILY_GYM_WINS = 5;  // 6 arènes battue par jour max
 const PM_DAILY_LEAGUE = 20;
 
 // Brûlure
