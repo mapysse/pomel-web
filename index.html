@@ -3196,6 +3196,13 @@
             <div class="home-alert-row-text" id="homeMnRequest" style="color:#a974ff;">Demande d'achat sur un titre</div>
             <span class="home-alert-row-cta" style="color:#a974ff;">Répondre ▸</span>
           </div>
+
+          <!-- 7. Combat PvP PokePom : c'est mon tour de jouer -->
+          <div class="home-alert-row" id="homePvpCard" style="display:none; border-color:rgba(168,56,56,0.45); background:rgba(168,56,56,0.08);" onclick="goToPvpBattle()">
+            <span class="home-alert-row-icon">⚔️</span>
+            <div class="home-alert-row-text" id="homePvpText" style="color:#e85858;">C'est ton tour de jouer en PvP !</div>
+            <span class="home-alert-row-cta" style="color:#e85858;">Jouer ▸</span>
+          </div>
         </div>
 
         <!-- Bouton PokePom surprise, toujours visible -->
@@ -4630,13 +4637,13 @@
 
 // ── FIREBASE CONFIG ─────────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyC-cMUmJ_4n33H-mWp2VptAsrYUGdLi9HA",
-  authDomain: "pomel-saison2.firebaseapp.com",
-  databaseURL: "https://pomel-saison2-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "pomel-saison2",
-  storageBucket: "pomel-saison2.firebasestorage.app",
-  messagingSenderId: "39644037438",
-  appId: "1:39644037438:web:068a255ef4fa619362ec6f"
+  apiKey: "AIzaSyAvWKRKUOTYZLgWuXEwep3A683Bqyf-WdM",
+  authDomain: "pomel-newv2.firebaseapp.com",
+  databaseURL: "https://pomel-newv2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "pomel-newv2",
+  storageBucket: "pomel-newv2.firebasestorage.app",
+  messagingSenderId: "880085144844",
+  appId: "1:880085144844:web:adbf898322645e3790e529"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -6668,6 +6675,7 @@ async function renderHome() {
     renderHomeBets(),
     renderHomeMarcheNoir(),
     renderHomeMissions(),
+    renderHomePvp(),
   ]);
 
   // Déplacer les alertes urgentes dans la zone dédiée
@@ -6679,7 +6687,7 @@ function _moveUrgentCards() {
   if (!alertsZone) return;
   alertsZone.innerHTML = '';
   // Cards urgentes = celles avec display != none et qui ont une border colorée
-  const urgentIds = ['homeQuetesInCard','homeQuetesOutCard','homePFCCard','homeMissionDoingCard','homeMissionValidateCard','homeMnRequestCard'];
+  const urgentIds = ['homeQuetesInCard','homeQuetesOutCard','homePFCCard','homeMissionDoingCard','homeMissionValidateCard','homeMnRequestCard','homePvpCard'];
   urgentIds.forEach(id => {
     const card = document.getElementById(id);
     if (card && card.style.display !== 'none') {
@@ -6687,6 +6695,39 @@ function _moveUrgentCards() {
       card.style.marginBottom = '0';
     }
   });
+}
+
+// Notification PvP PokePom : affiche la carte d'alerte d'accueil si c'est mon
+// tour de jouer dans un combat actif. Le helper pvpCheckMyTurn est défini dans
+// pommon.js et a son propre cache 10s.
+async function renderHomePvp() {
+  const card = document.getElementById('homePvpCard');
+  const text = document.getElementById('homePvpText');
+  if (!card) return;
+  if (typeof pvpCheckMyTurn !== 'function') { card.style.display = 'none'; return; }
+  try {
+    const turn = await pvpCheckMyTurn();
+    if (turn) {
+      card.style.display = 'flex';
+      if (text) text.textContent = `⚔️ C'est ton tour de jouer vs ${turn.oppName} (tour ${turn.turnNumber}) !`;
+    } else {
+      card.style.display = 'none';
+    }
+  } catch (e) {
+    card.style.display = 'none';
+  }
+}
+
+// Raccourci depuis l'accueil Pomel : ouvre PokePom puis va directement à
+// l'écran de combat. Si pmGoTo n'existe pas (PokePom pas chargé), on retombe
+// sur l'accueil home.
+function goToPvpBattle() {
+  if (typeof pmGoTo === 'function') {
+    // pmGoTo gère lui-même l'init de la map PokePom
+    pmGoTo('pvpBattle');
+  } else {
+    navTo('home');
+  }
 }
 
 async function renderHomeGroup() {
@@ -11373,7 +11414,7 @@ init();
   </div>
   
 <!-- <script src="xxx.js"></script> -->
-<script src="pommon.js?v=5"></script>
+<script src="pommon.js"></script>
 <script src="boutique_profil.js"></script>
 <script src="boutique.js?v=3"></script>
 <!-- <script src="hotel.js"></script> -->

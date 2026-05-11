@@ -146,7 +146,7 @@ const PM_STAGE_MULT = [0.35, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75];
 
 // Limites quotidiennes
 
-const PM_DAILY_GYM_WINS = 5;  // 6 arènes battue par jour max
+const PM_DAILY_GYM_WINS = 1;  // 1 arène battue par jour max
 const PM_DAILY_LEAGUE = 20;
 
 // Brûlure
@@ -5731,13 +5731,13 @@ function pmMapTryMove(dr, dc) {
 // Vérifie le déblocage R2 (7 badges R1) et fait basculer la carte courante.
 // Si non débloqué, affiche un modal explicatif.
 function pmTryEnterR2() {
-   const player = pmGetPlayer();
-   const badgeCount = (player.badges || []).length;
-   if (badgeCount < PM_R2_UNLOCK_BADGES) {
-      pmShowR2LockedModal(badgeCount);
-      return;
-   }
-// Déblocage : transition vers R2
+  const player = pmGetPlayer();
+  const badgeCount = (player.badges || []).length;
+  if (badgeCount < PM_R2_UNLOCK_BADGES) {
+    pmShowR2LockedModal(badgeCount);
+    return;
+  }
+  // Déblocage : transition vers R2
   _pmCurrentMap = 'r2';
   player.currentMap = 'r2';
   if (!_pmMapR2Grid) pmBuildMapR2();
@@ -6061,11 +6061,12 @@ function pmRenderHome(page, player) {
         </div>
       </div>
 
-      <!-- Gros bouton PvP en bandeau -->
-      <div onclick="pmGoTo('pvp')" style="margin-top:8px; padding:10px 14px; background:linear-gradient(90deg, #a83838 0%, #c83838 50%, #a83838 100%); color:#fff; cursor:pointer; font-weight:800; border-radius:8px; text-align:center; font-size:.95rem; letter-spacing:.04em; box-shadow:0 2px 6px rgba(168,56,56,0.3); transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseenter="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)';" onmouseleave="this.style.filter=''; this.style.transform='';">
+      <!-- Gros bouton PvP en bandeau (avec pastille "à toi de jouer" si applicable) -->
+      <div id="pm-home-pvp-btn" onclick="pmGoTo('pvp')" style="position:relative; margin-top:8px; padding:10px 14px; background:linear-gradient(90deg, #a83838 0%, #c83838 50%, #a83838 100%); color:#fff; cursor:pointer; font-weight:800; border-radius:8px; text-align:center; font-size:.95rem; letter-spacing:.04em; box-shadow:0 2px 6px rgba(168,56,56,0.3); transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseenter="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)';" onmouseleave="this.style.filter=''; this.style.transform='';">
         <span style="font-size:1.2rem;">⚔️</span>
         <span>Affronter d'autres dresseurs</span>
         <span style="font-size:1.2rem;">⚔️</span>
+        <span id="pm-home-pvp-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:var(--yellow); color:#000; font-size:.65rem; font-weight:900; padding:2px 7px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.4); animation:pmPulse 1.5s ease-in-out infinite;">À TOI !</span>
       </div>
 
       <div style="text-align:center; font-size:.65rem; color:var(--muted); margin-top:2px;">
@@ -6088,8 +6089,19 @@ function pmRenderHome(page, player) {
       .pm-dpad-right { right:0; top:50%;  transform:translateY(-50%); }
       @media (max-width:600px) { .pm-map-dpad { display:block; } }
       @media (min-width:601px) { .pm-map-dpad { display:none; } }
+      @keyframes pmPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }
     `;
     document.head.appendChild(s);
+  }
+
+  // Vérification asynchrone : si c'est mon tour PvP, on affiche la pastille
+  // "À TOI !" sur le bouton. Le helper a son propre cache 10s pour éviter
+  // de spammer Firebase.
+  if (typeof pvpCheckMyTurn === 'function') {
+    pvpCheckMyTurn().then(turn => {
+      const badge = document.getElementById('pm-home-pvp-badge');
+      if (badge) badge.style.display = turn ? 'block' : 'none';
+    }).catch(() => {});
   }
 
   _pmMapCanvas = document.getElementById('pm-map-canvas');
@@ -8288,6 +8300,9 @@ function pvpAttachListener(battleId, onUpdate) {
   _pvpListenerCb = (snap) => {
     const data = snap.exists() ? snap.val() : null;
     _pvpCurrentBattle = data;
+    // Invalide le cache de notif d'accueil : un changement d'état Firebase
+    // signifie qu'au prochain refreshUI on doit revérifier "c'est à toi de jouer".
+    if (typeof pvpInvalidateTurnCache === 'function') pvpInvalidateTurnCache();
     onUpdate(data);
   };
   _pvpListenerRef.on('value', _pvpListenerCb);
@@ -8863,6 +8878,69 @@ async function pvpForceClearAndExit() {
   _pvpCurrentBattle = null;
   pmGoTo('pvp');
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Helper pour les notifications externes (page d'accueil Pomel, menu PokePom)
+// ─────────────────────────────────────────────────────────────────────
+//
+// Retourne null si pas de combat en cours OU si ce n'est pas mon tour.
+// Sinon retourne { battleId, oppName, turnNumber } pour afficher la notif.
+// Utilisé par renderHomePvp() (index.html) et pmRenderHome (raccourci PokePom).
+// Cache 10s pour éviter de spammer Firebase à chaque refreshUI.
+let _pvpTurnCheckCache = null;
+let _pvpTurnCheckCacheTime = 0;
+
+async function pvpCheckMyTurn() {
+  if (!state || !state.code) return null;
+  const now = Date.now();
+  if (_pvpTurnCheckCache !== undefined && (now - _pvpTurnCheckCacheTime) < 10000) {
+    return _pvpTurnCheckCache;
+  }
+  try {
+    const profile = await pvpRead(PVP_PATH + '/' + state.code);
+    if (!profile || !profile.currentBattleId) {
+      _pvpTurnCheckCache = null;
+      _pvpTurnCheckCacheTime = now;
+      return null;
+    }
+    const battle = await pvpRead(BATTLES_PATH + '/' + profile.currentBattleId);
+    if (!battle || battle.status !== 'active') {
+      _pvpTurnCheckCache = null;
+      _pvpTurnCheckCacheTime = now;
+      return null;
+    }
+    const me = battle.p1 && battle.p1.code === state.code ? 'p1'
+             : battle.p2 && battle.p2.code === state.code ? 'p2'
+             : null;
+    if (!me || battle.currentPlayer !== me) {
+      _pvpTurnCheckCache = null;
+      _pvpTurnCheckCacheTime = now;
+      return null;
+    }
+    const oppName = me === 'p1' ? (battle.p2 && battle.p2.displayName) : (battle.p1 && battle.p1.displayName);
+    const result = {
+      battleId: battle.id,
+      oppName: oppName || 'l\'adversaire',
+      turnNumber: battle.turnNumber || 1
+    };
+    _pvpTurnCheckCache = result;
+    _pvpTurnCheckCacheTime = now;
+    return result;
+  } catch (e) {
+    console.warn('[pvp] checkMyTurn', e);
+    return null;
+  }
+}
+
+// Invalide le cache (appeler après une action PvP pour éviter de garder un
+// état obsolète à l'écran).
+function pvpInvalidateTurnCache() {
+  _pvpTurnCheckCache = undefined;
+  _pvpTurnCheckCacheTime = 0;
+}
+
+window.pvpCheckMyTurn = pvpCheckMyTurn;
+window.pvpInvalidateTurnCache = pvpInvalidateTurnCache;
 
 // ─────────────────────────────────────────────────────────────────────
 // Leaderboard PvP & distribution hebdomadaire
