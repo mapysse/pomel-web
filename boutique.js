@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   BOUTIQUE.JS — Boutique Groupe pour Pomel
+   BOUTIQUE.JS — Boutique Groupe pour Pomie
    ═══════════════════════════════════════════════════════════════════════════
    Dépend de : state, dbGet, dbSet, saveAccount, saveGroup,
                escapeHTML, setAlert, getAccount, getAllGroups, getGroup,
