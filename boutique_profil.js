@@ -62,7 +62,7 @@ const SHOP_TITLES = [
   { id: 'badge_plstn', name: 'Badge Palestine 🇵🇸', price: 500, type: 'badge', emoji: '🇵🇸', hidden: true },
   { id: 'badge_expert', name: 'Badge Expert 🎖️', price: 1000, type: 'badge', emoji: '🎖️', hidden: true },
   { id: 'badge_toilettes', name: 'Badge Trône du criminel 🚽', price: 2500, type: 'badge', emoji: '🚽', hidden: true },
-  { id: 'badge_pomelien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟', hidden: true },
+  { id: 'badge_pomieien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟', hidden: true },
   { id: 'badge_censure', name: 'Badge Censure 🚫', price: 10000, type: 'badge', emoji: '🚫', hidden: true },
   // ── BANNIÈRES ──────────────────────────────────────
   // Couleurs unies
