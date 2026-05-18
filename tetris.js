@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   TETRIS.JS — Tetris pour Pomel
+   TETRIS.JS — Tetris pour Pomie
    ═══════════════════════════════════════════════════════════════════════════
    Dépend de : state, dbGet, dbSet, dbDelete, addBalanceTransaction,
                migrateAccount, refreshUI, escapeHTML,
@@ -68,7 +68,7 @@ const TET_PIECE_KEYS = Object.keys(TET_PIECES);
 // ── STATE ────────────────────────────────────────
 let _tetState = null;
 let _tetLoop = null;
-let _tetPomels = 0;
+let _tetPomies = 0;
 
 function tetCanvas()  { return document.getElementById('tetrisCanvas'); }
 function tetCtx()     { return tetCanvas().getContext('2d'); }
@@ -128,7 +128,7 @@ function startTetris() {
     running: true,
     lastDrop: Date.now(),
   };
-  _tetPomels = 0;
+  _tetPomies = 0;
   tetOverlay().classList.add('hidden');
   updateTetrisUI();
   renderTetrisNext();
@@ -159,7 +159,7 @@ function tetDropOne() {
     const cleared = tetClearLines(s);
     if (cleared > 0) {
       s.lines += cleared;
-      _tetPomels += cleared * TET_POMEL_PER_LINE;
+      _tetPomies += cleared * TET_POMEL_PER_LINE;
       // Accélérer tous les 5 lignes
       s.speed = Math.max(TET_MIN_SPEED, TET_INITIAL_SPEED - Math.floor(s.lines / 5) * TET_SPEED_DECREASE);
       updateTetrisUI();
@@ -369,7 +369,7 @@ function updateTetrisUI() {
   const el = document.getElementById('tetrisLines');
   if (el) el.textContent = _tetState ? _tetState.lines : 0;
   const earned = document.getElementById('tetrisEarned');
-  if (earned) earned.textContent = '+' + _tetPomels.toLocaleString('fr-FR') + ' 🪙';
+  if (earned) earned.textContent = '+' + _tetPomies.toLocaleString('fr-FR') + ' 🪙';
 }
 
 
@@ -380,20 +380,20 @@ async function gameOverTetris() {
   if (_tetLoop) { cancelAnimationFrame(_tetLoop); _tetLoop = null; }
 
   const finalLines = _tetState.lines;
-  const finalPomels = _tetPomels;
+  const finalPomies = _tetPomies;
 
   // Animation de remplissage
   const ctx = tetCtx();
   ctx.fillStyle = 'rgba(235,88,70,0.3)';
   ctx.fillRect(0, 0, TET_COLS * TET_CELL, TET_ROWS * TET_CELL);
 
-  // Award Pomels
-  if (finalPomels > 0 && typeof addBalanceTransaction === 'function') {
-    const upd = await addBalanceTransaction(state.code, finalPomels, {
-      type: 'tetris', desc: '🧱 Tetris — ' + finalLines + ' lignes', amount: finalPomels, date: new Date().toISOString()
+  // Award Pomies
+  if (finalPomies > 0 && typeof addBalanceTransaction === 'function') {
+    const upd = await addBalanceTransaction(state.code, finalPomies, {
+      type: 'tetris', desc: '🧱 Tetris — ' + finalLines + ' lignes', amount: finalPomies, date: new Date().toISOString()
     });
     if (upd && typeof migrateAccount === 'function') { state = migrateAccount(upd); }
-    else if (state) { state.balance = (state.balance || 0) + finalPomels; }
+    else if (state) { state.balance = (state.balance || 0) + finalPomies; }
     if (typeof refreshUI === 'function') refreshUI();
   }
 
@@ -406,7 +406,7 @@ async function gameOverTetris() {
   document.getElementById('tetrisOverlayTitle').textContent = '💀 Game Over !';
   document.getElementById('tetrisOverlaySub').innerHTML =
     '<strong>' + finalLines + '</strong> ligne' + (finalLines > 1 ? 's' : '') + ' complétée' + (finalLines > 1 ? 's' : '') + '<br>' +
-    'Tu gagnes <strong style="color:var(--green)">+' + finalPomels.toLocaleString('fr-FR') + ' 🪙</strong>';
+    'Tu gagnes <strong style="color:var(--green)">+' + finalPomies.toLocaleString('fr-FR') + ' 🪙</strong>';
   document.getElementById('tetrisStartBtn').textContent = '🔄 Rejouer';
 
   _tetState = null;
@@ -452,7 +452,7 @@ async function renderTetrisLb() {
       '<span class="snake-lb-rank ' + rankClass + '">' + (medals[i] || rank) + '</span>' +
       '<span class="snake-lb-name ' + cc + '">' + (typeof escapeHTML === 'function' ? escapeHTML(e.name) : e.name) + (isMe ? ' <span class="lb-you-badge">Moi</span>' : '') + '</span>' +
       '<span class="snake-lb-score">' + e.score + ' lignes</span>' +
-      '<span class="snake-lb-pomels">+' + (e.score * TET_POMEL_PER_LINE).toLocaleString('fr-FR') + ' 🪙</span>';
+      '<span class="snake-lb-pomies">+' + (e.score * TET_POMEL_PER_LINE).toLocaleString('fr-FR') + ' 🪙</span>';
     list.appendChild(div);
   }
 }
