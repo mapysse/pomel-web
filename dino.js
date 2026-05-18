@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   DINO.JS — Dino Run pour Pomel (inspiré du jeu Chrome hors-ligne)
+   DINO.JS — Dino Run pour Pomie (inspiré du jeu Chrome hors-ligne)
    ═══════════════════════════════════════════════════════════════════════════
    Dépend de : state, dbGet, dbSet, dbDelete, addBalanceTransaction,
                migrateAccount, refreshUI, escapeHTML,
@@ -59,7 +59,7 @@ const DINO_COLORS = {
 // ── STATE ────────────────────────────────────────
 let _dinoState = null;
 let _dinoLoop = null;
-let _dinoPomels = 0;
+let _dinoPomies = 0;
 
 function dinoCanvas() { return document.getElementById('dinoCanvas'); }
 function dinoCtx()    { return dinoCanvas().getContext('2d'); }
@@ -86,7 +86,7 @@ const DINO_FRAME_TIME = 1 / DINO_TARGET_FPS; // ~0.01667s
 
 function startDino() {
   _dinoState = initDinoState();
-  _dinoPomels = 0;
+  _dinoPomies = 0;
   dinoOverlay().classList.add('hidden');
   updateDinoUI();
   if (_dinoLoop) cancelAnimationFrame(_dinoLoop);
@@ -152,7 +152,7 @@ function dinoTick(timestamp) {
     if (!o.passed && o.x + o.w < d.x) {
       o.passed = true;
       s.score++;
-      _dinoPomels += DINO_POMEL_PER_OBSTACLE;
+      _dinoPomies += DINO_POMEL_PER_OBSTACLE;
       updateDinoUI();
     }
     // Supprimer si sorti
@@ -340,7 +340,7 @@ function updateDinoUI() {
   const el = document.getElementById('dinoScore');
   if (el) el.textContent = _dinoState ? _dinoState.score : 0;
   const earned = document.getElementById('dinoEarned');
-  if (earned) earned.textContent = '+' + _dinoPomels.toLocaleString('fr-FR') + ' 🪙';
+  if (earned) earned.textContent = '+' + _dinoPomies.toLocaleString('fr-FR') + ' 🪙';
 }
 
 
@@ -350,20 +350,20 @@ async function gameOverDino() {
   if (_dinoLoop) { cancelAnimationFrame(_dinoLoop); _dinoLoop = null; }
 
   const finalScore = _dinoState.score;
-  const finalPomels = _dinoPomels;
+  const finalPomies = _dinoPomies;
 
   // Flash rouge
   const ctx = dinoCtx();
   ctx.fillStyle = 'rgba(235,88,70,0.3)';
   ctx.fillRect(0, 0, DINO_W, DINO_H);
 
-  // Award Pomels
-  if (finalPomels > 0 && typeof addBalanceTransaction === 'function') {
-    const upd = await addBalanceTransaction(state.code, finalPomels, {
-      type: 'dino', desc: '🦕 Dino Run — score ' + finalScore, amount: finalPomels, date: new Date().toISOString()
+  // Award Pomies
+  if (finalPomies > 0 && typeof addBalanceTransaction === 'function') {
+    const upd = await addBalanceTransaction(state.code, finalPomies, {
+      type: 'dino', desc: '🦕 Dino Run — score ' + finalScore, amount: finalPomies, date: new Date().toISOString()
     });
     if (upd && typeof migrateAccount === 'function') { state = migrateAccount(upd); }
-    else if (state) { state.balance = (state.balance || 0) + finalPomels; }
+    else if (state) { state.balance = (state.balance || 0) + finalPomies; }
     if (typeof refreshUI === 'function') refreshUI();
   }
 
@@ -377,7 +377,7 @@ async function gameOverDino() {
   document.getElementById('dinoOverlayTitle').textContent = '💀 Game Over !';
   document.getElementById('dinoOverlaySub').innerHTML =
     'Score : <strong>' + finalScore + '</strong> obstacle' + (finalScore > 1 ? 's' : '') + '<br>' +
-    'Tu gagnes <strong style="color:var(--green)">+' + finalPomels.toLocaleString('fr-FR') + ' 🪙</strong>';
+    'Tu gagnes <strong style="color:var(--green)">+' + finalPomies.toLocaleString('fr-FR') + ' 🪙</strong>';
   document.getElementById('dinoStartBtn').textContent = '🔄 Rejouer';
 
   _dinoState = null;
@@ -424,7 +424,7 @@ async function renderDinoLb() {
       '<span class="snake-lb-rank ' + rankClass + '">' + (medal || rank) + '</span>' +
       '<span class="snake-lb-name ' + cc + '">' + (typeof escapeHTML === 'function' ? escapeHTML(e.name) : e.name) + (isMe ? ' <span class="lb-you-badge">Moi</span>' : '') + '</span>' +
       '<span class="snake-lb-score">' + e.score + ' 🌵</span>' +
-      '<span class="snake-lb-pomels">+' + (e.score * DINO_POMEL_PER_OBSTACLE).toLocaleString('fr-FR') + ' 🪙</span>';
+      '<span class="snake-lb-pomies">+' + (e.score * DINO_POMEL_PER_OBSTACLE).toLocaleString('fr-FR') + ' 🪙</span>';
     list.appendChild(div);
   }
 }
