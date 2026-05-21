@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   POMMON — Système de jeu complet pour Pomie
+   POMMON — Système de jeu complet pour Pomel
    ═══════════════════════════════════════════════════════════════════════════
 
    Sommaire :
@@ -154,7 +154,7 @@ const PM_DAILY_LEAGUE = 20;
 const PM_BURN_DAMAGE_PCT = 0.12;
 const PM_BURN_DURATION = 3;
 
-// Récompenses Pomies
+// Récompenses Pomels
 const PM_REWARD_GYM = 1000;
 const PM_REWARD_LEAGUE_PER_WIN = 50;
 
@@ -176,7 +176,7 @@ const PM_ELO_TIERS = [
   { id: 'maitre',    label: 'Maître',    minElo: 1700, color: '#f0a830', emoji: '👑' }
 ];
 
-// Récompenses Pomies par tier (revalorisées : le PvP doit être attractif vs PvE)
+// Récompenses Pomels par tier (revalorisées : le PvP doit être attractif vs PvE)
 const PM_PVP_REWARDS = {
   debutant:  { win: 500,  loss: 150 },
   novice:    { win: 800,  loss: 250 },
@@ -3930,9 +3930,9 @@ function pmGetInstanceMoveIds(instance) {
 //   - Le move est dans le catalogue de cette espèce
 //   - Le PokePom ne connaît pas déjà ce move (sinon inutile)
 //   - Le slot de remplacement est valide [0..3]
-//   - Le joueur a assez de Pomies (vérifié via wallet)
+//   - Le joueur a assez de Pomels (vérifié via wallet)
 //
-// NOTE : la déduction des Pomies est faite par l'UI via addBalanceTransaction
+// NOTE : la déduction des Pomels est faite par l'UI via addBalanceTransaction
 // (transaction atomique). Cette fonction ne touche pas au wallet. Elle se contente
 // de muter l'instance.
 //
@@ -4448,7 +4448,7 @@ const PM_GYMS = [
 // ═══════════════════════════════════════════════════════════════════════════
 // ARÈNES RÉGION 2 — 6 arènes plus difficiles (niveau 14 → 27)
 // 4 doublons des types R1 (champions = évolutions) + 2 nouveaux types
-// Récompense Pomies par paliers de difficulté.
+// Récompense Pomels par paliers de difficulté.
 // Stockées dans player.badgesR2 (séparé de player.badges).
 // ═══════════════════════════════════════════════════════════════════════════
 const PM_GYMS_R2 = [
@@ -4460,7 +4460,7 @@ const PM_GYMS_R2 = [
   { id:'electrique2', name:'Arène Électrique (R2)', champion:'fulgurion',  championName:'Tempête Fulgurion', order:6, level:27, reward:2500, region:2 }
 ];
 
-// Récompenses Pomies variables pour les arènes R2 (le R1 reste à PM_REWARD_GYM)
+// Récompenses Pomels variables pour les arènes R2 (le R1 reste à PM_REWARD_GYM)
 function pmGetGymReward(gym) {
   return gym.reward || PM_REWARD_GYM;
 }
@@ -4878,7 +4878,7 @@ const PM_LORE_R1 = [
     text: "Bienvenue à la Prairie Élémentaire. Ici cohabitent les quatre éléments fondateurs : Plante, Feu, Eau et Électricité." },
   { kind: 'pnj', zone: 'elementaire', pnjLabel: 'Vieil Apprenti',
     pages: [
-      "Tiens, un nouveau visage. Tu sors de Bourg-Pomie ?",
+      "Tiens, un nouveau visage. Tu sors de Bourg-Pomel ?",
       "Cette prairie est l'endroit idéal pour commencer. Garde-toi de t'aventurer trop au sud avant d'avoir gagné quelques badges.",
       "On dit qu'au-delà de la mer s'étendent d'autres terres. Mais ce sont des histoires de marins."
     ] },
@@ -5700,7 +5700,7 @@ function pmRenderMap() {
   else if (currentCell === 12) label = '🥋 Dojo';
   else if (M2.mapId === 'r2') label = 'Terres de PomStud';
   const labelEl = document.getElementById('pm-map-zone-label');
-  if (labelEl) labelEl.textContent = label || 'Pomie World';
+  if (labelEl) labelEl.textContent = label || 'Pomel World';
 
   const hudEl = document.getElementById('pm-map-hud');
   if (hudEl) hudEl.textContent = '';
@@ -6058,7 +6058,7 @@ function pmRenderHome(page, player) {
         <span id="pm-map-hud" style="font-size:.75rem; color:var(--muted); background:var(--surface2); padding:4px 10px; border-radius:6px; font-family:'Space Mono',monospace;"></span>
       </div>
 
-      <div id="pm-map-zone-label" style="text-align:center; font-size:.8rem; font-weight:700; color:var(--primary); min-height:1.2em; margin-bottom:4px;">Pomie World</div>
+      <div id="pm-map-zone-label" style="text-align:center; font-size:.8rem; font-weight:700; color:var(--primary); min-height:1.2em; margin-bottom:4px;">Pomel World</div>
 
       <div style="position:relative; width:${PM_MAP_W}px; max-width:100%; margin:0 auto; border-radius:8px; overflow:hidden; border:3px solid #505868; box-shadow:0 0 0 3px #282830, 0 4px 20px rgba(0,0,0,0.5); background:#000;">
         <canvas id="pm-map-canvas" width="${PM_MAP_W}" height="${PM_MAP_H}" style="display:block; width:100%; height:auto; image-rendering:pixelated;"></canvas>
@@ -6319,7 +6319,7 @@ function pmRenderInfo(page, player) {
       <div class="pm-card">
         <h3 style="font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px;">⚔️ Mode PvP — Combats classés</h3>
         <div style="display:flex; flex-direction:column; gap:8px; font-size:.85rem; line-height:1.6; color:var(--text);">
-          <div>Depuis la map PokePom, le bandeau <strong style="color:#e85858;">⚔️ Affronter d'autres dresseurs</strong> ouvre le hub PvP. Tu peux défier n'importe quel autre joueur Pomie.</div>
+          <div>Depuis la map PokePom, le bandeau <strong style="color:#e85858;">⚔️ Affronter d'autres dresseurs</strong> ouvre le hub PvP. Tu peux défier n'importe quel autre joueur Pomel.</div>
           <div><strong>Format :</strong> 3 vs 3 (équipe complète), tours alternés. Le joueur qui défie (P1) choisit toujours en premier, puis l'adversaire (P2) joue. La résolution se fait dans l'ordre de <strong>vitesse</strong> des PokePoms — donc tu ne sais pas qui va frapper en premier au moment de choisir : c'est volontaire pour ajouter de la stratégie.</div>
           <div><strong>Soin automatique</strong> avant chaque combat (full HP pour les deux équipes).</div>
           <div><strong>Légendaires interdits</strong> ✦ — pour préserver l'équilibre, les PokePoms légendaires sont exclus de ton équipe PvP même s'ils sont dans tes 3 actifs. Garde-les pour les arènes et la ligue.</div>
@@ -6331,7 +6331,7 @@ function pmRenderInfo(page, player) {
           Tiers : 🥉 Débutant → 🥈 Novice → 🥇 Confirmé → 🏆 Champion → 👑 Maître
         </div>
         <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
-          <div style="font-weight:700; color:var(--text); margin-bottom:4px;">💰 Récompenses Pomies par combat</div>
+          <div style="font-weight:700; color:var(--text); margin-bottom:4px;">💰 Récompenses Pomels par combat</div>
           Débutant : <strong>${PM_PVP_REWARDS.debutant.win}</strong> V / ${PM_PVP_REWARDS.debutant.loss} D · Novice : <strong>${PM_PVP_REWARDS.novice.win}</strong> V / ${PM_PVP_REWARDS.novice.loss} D · Confirmé : <strong>${PM_PVP_REWARDS.confirme.win}</strong> V / ${PM_PVP_REWARDS.confirme.loss} D · Champion : <strong>${PM_PVP_REWARDS.champion.win}</strong> V / ${PM_PVP_REWARDS.champion.loss} D · Maître : <strong>${PM_PVP_REWARDS.maitre.win}</strong> V / ${PM_PVP_REWARDS.maitre.loss} D
         </div>
         <div style="margin-top:8px; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:.78rem; color:var(--muted); line-height:1.5;">
@@ -7180,7 +7180,7 @@ function pmRenderDojoDetail(player) {
       `;
     });
     html += `</div>`;
-    html += `<div style="margin-top:12px; font-size:.82rem; color:#7a4828; text-align:right;">Solde : <strong style="color:#a06000;">${balance} 🪙 Pomies</strong></div>`;
+    html += `<div style="margin-top:12px; font-size:.82rem; color:#7a4828; text-align:right;">Solde : <strong style="color:#a06000;">${balance} 🪙 Pomels</strong></div>`;
   }
 
   detail.innerHTML = html;
@@ -7196,7 +7196,7 @@ function pmDojoStartLearning(instanceUid, newMoveId) {
   const cost = pmDojoMoveCost(newMoveId);
   const balance = (typeof state !== 'undefined' && state) ? (state.balance || 0) : 0;
   if (balance < cost) {
-    alert(`Tu as besoin de ${cost} 🪙 Pomies (tu en as ${balance}).`);
+    alert(`Tu as besoin de ${cost} 🪙 Pomels (tu en as ${balance}).`);
     return;
   }
 
@@ -7260,7 +7260,7 @@ function pmDojoStartLearning(instanceUid, newMoveId) {
   });
 }
 
-// Effectue l'apprentissage : débite Pomies + mute customMoves
+// Effectue l'apprentissage : débite Pomels + mute customMoves
 function pmDojoConfirmLearn(instanceUid, newMoveId, slotIdx, overlay) {
   const player = pmGetPlayer();
   const cost = pmDojoMoveCost(newMoveId);
@@ -7270,7 +7270,7 @@ function pmDojoConfirmLearn(instanceUid, newMoveId, slotIdx, overlay) {
   const oldMoveId = pmGetInstanceMoveIds(inst)[slotIdx];
   const oldMove = PM_MOVES[oldMoveId];
 
-  // Débit Pomies (atomique)
+  // Débit Pomels (atomique)
   if (typeof addBalanceTransaction === 'function' && typeof state !== 'undefined' && state) {
     addBalanceTransaction(state.code, -cost, {
       type: 'pokepom_dojo',
@@ -7729,7 +7729,7 @@ function pmHandleBattleEnd() {
         }
       });
 
-      // Reward Pomies (gain atomique via addBalanceTransaction)
+      // Reward Pomels (gain atomique via addBalanceTransaction)
       if (typeof addBalanceTransaction === 'function') {
         addBalanceTransaction(state.code, PM_REWARD_LEAGUE_PER_WIN, {
           type: 'pokepom_league',
@@ -7747,7 +7747,7 @@ function pmHandleBattleEnd() {
         if (typeof saveAccount === 'function') saveAccount(state);
       }
 
-      bs.log.push(`🎉 +${PM_REWARD_LEAGUE_PER_WIN} 🪙 Pomies !`);
+      bs.log.push(`🎉 +${PM_REWARD_LEAGUE_PER_WIN} 🪙 Pomels !`);
 
       // Sauvegarder instances équipe
       bs.teamFighters.forEach(f => {
@@ -7898,7 +7898,7 @@ function pmHandleBattleEnd() {
         });
       }
 
-      // Récompense Pomies (montant variable selon arène)
+      // Récompense Pomels (montant variable selon arène)
       const reward = pmGetGymReward(bs.gym);
       // Label du type via le champion (gym.id peut être 'plante2', invalide pour PM_TYPE_LABEL)
       const championType = (PM_DEX[bs.gym.champion] || {}).type || 'neutre';
@@ -7921,7 +7921,7 @@ function pmHandleBattleEnd() {
         if (typeof saveAccount === 'function') saveAccount(state);
       }
 
-      bs.log.push(`<strong>🏆 ${bs.gym.name} vaincue ! Badge obtenu + ${reward} 🪙 Pomies !</strong>`);
+      bs.log.push(`<strong>🏆 ${bs.gym.name} vaincue ! Badge obtenu + ${reward} 🪙 Pomels !</strong>`);
       pmSavePlayer(player);
       bs.ended = true;
       pmSaveNow();
@@ -8007,7 +8007,7 @@ function initPommon() {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initPommon);
 } else {
-  // Délai pour attendre que l'UI Pomie soit prête
+  // Délai pour attendre que l'UI Pomel soit prête
   setTimeout(initPommon, 500);
 }
 
@@ -8402,7 +8402,7 @@ let _pvpListenerRef = null;
 let _pvpListenerCb = null;
 let _pvpCurrentBattle = null;  // copie locale de l'état Firebase, mise à jour par le listener
 let _pvpLastCreatedBattleId = null;
-let _pvpRewardClaimed = {};    // battleId → true (anti-double versement Pomies)
+let _pvpRewardClaimed = {};    // battleId → true (anti-double versement Pomels)
 let _pvpEndApplied = {};       // battleId → true (anti-double application ELO)
 
 function pvpDetachListener() {
@@ -8883,7 +8883,7 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Fin de combat : ELO + Pomies
+// Fin de combat : ELO + Pomels
 // ─────────────────────────────────────────────────────────────────────
 
 async function pvpApplyBattleEnd(battle) {
@@ -8917,7 +8917,7 @@ async function pvpApplyBattleEnd(battle) {
     await pvpSaveProfile(p2Profile);
   }
 
-  // Pomies : le joueur courant se verse SES propres pomies
+  // Pomels : le joueur courant se verse SES propres pomels
   await pvpClaimMyReward(battle);
 }
 
@@ -9000,7 +9000,7 @@ async function pvpForceClearAndExit() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Helper pour les notifications externes (page d'accueil Pomie, menu PokePom)
+// Helper pour les notifications externes (page d'accueil Pomel, menu PokePom)
 // ─────────────────────────────────────────────────────────────────────
 //
 // Retourne null si pas de combat en cours OU si ce n'est pas mon tour.
@@ -9249,7 +9249,7 @@ async function pmRenderPvpHub(page, player) {
     </div>
     <div style="margin-top:14px; font-size:.74rem; color:var(--muted); text-align:center;">
       Combats au tour par tour · le plus rapide commence · 1h par tour<br>
-      Récompense : <strong>${PM_PVP_REWARDS[tier.id].win}</strong> Pomies en victoire, <strong>${PM_PVP_REWARDS[tier.id].loss}</strong> en défaite
+      Récompense : <strong>${PM_PVP_REWARDS[tier.id].win}</strong> Pomels en victoire, <strong>${PM_PVP_REWARDS[tier.id].loss}</strong> en défaite
     </div>
   `;
 
@@ -9289,7 +9289,7 @@ async function pmRenderPvpList(page, player) {
       <div class="pm-header">
         <div>
           <div class="pm-title">⚔️ Choisir un adversaire</div>
-          <div class="pm-sub">Tous les joueurs Pomie · ordre alphabétique</div>
+          <div class="pm-sub">Tous les joueurs Pomel · ordre alphabétique</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('pvp')">← Retour</button>
       </div>
