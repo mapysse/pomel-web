@@ -80,6 +80,7 @@ const SHOP_TITLES = [
   { id: 'banner_aurora',  name: '🌌 Effet Aurore',     price: 75000, type: 'banner', bannerClass: 'banner-aurora',  desc: 'Blobs de lumière qui dérivent doucement', hidden: true },
   { id: 'banner_plasma',  name: '⚡ Effet Plasma',     price: 75000, type: 'banner', bannerClass: 'banner-plasma',  desc: 'Pulsation électrique rouge intense', hidden: true },
   // ── SAISON 2 ──────────────────────────────────────
+  { id: 'catarina', name: '👸 CATARINA LA GOAT ✨', price: 0, type: 'title'},
   { id: 'fan_malicieux', name: 'Fan des Malicieux', price: 10000, type: 'title' },
   { id: 'fan_foufoufdefou', name: 'Fan des Foufous de Fou', price: 10000, type: 'title' },
   { id: 'fan_etincelles', name: 'Fan des Étincelles', price: 10000, type: 'title' },
