@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Pomie.</title>
+<title>Pomel.</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -909,11 +909,11 @@
     font-size: .82rem; color: var(--primary); flex-shrink: 0;
     white-space: nowrap;
   }
-  .snake-lb-pomies {
+  .snake-lb-pomels {
     font-family: 'Space Mono', monospace; font-size: .72rem;
     color: var(--yellow); flex-shrink: 0; white-space: nowrap;
   }
-  .snake-lb-pomies:empty { display: none; }
+  .snake-lb-pomels:empty { display: none; }
   .btn-group { border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
   .btn-group.join  { background: var(--primary); color: #fff; }
   .btn-group.leave { background: transparent; border: 1px solid var(--red); color: var(--red); }
@@ -2889,8 +2889,8 @@
 <!-- LOGIN -->
 <div id="loginScreen" class="hidden">
   <div class="login-box">
-    <h1>Pomie<span>.</span></h1>
-    <p>La roulette quotidienne — gagne des Pomies chaque jour !</p>
+    <h1>Pomel<span>.</span></h1>
+    <p>La roulette quotidienne — gagne des Pomels chaque jour !</p>
     <div class="tabs-login">
       <button class="active" onclick="switchLoginTab('login')">Connexion</button>
       <button onclick="switchLoginTab('create')">Créer un compte</button>
@@ -2934,7 +2934,7 @@
   <nav id="sidenav">
     <!-- Logo -->
     <div class="sidenav-logo" onclick="goToHome()">
-      <span class="sidenav-logo-text">Pomie<span>.</span></span>
+      <span class="sidenav-logo-text">Pomel<span>.</span></span>
     </div>
 
     <div class="sidenav-scroll" id="sidenavScroll">
@@ -3085,7 +3085,7 @@
       <div class="topbar-wallet">
         <span class="wallet-coin">🪙</span>
         <span class="amount" id="headerBalance">0</span>
-        <span class="wallet-label">Pomies</span>
+        <span class="wallet-label">Pomels</span>
       </div>
       <div class="streak-widget" id="streakWidget" onclick="claimStreak()" title="Série quotidienne">
         <span class="streak-fire" id="streakFire">🔥</span>
@@ -3137,7 +3137,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
         <div>
           <div class="home-greeting" id="homeGreeting">Bonjour ! 👋</div>
-          <div class="home-sub">Voici ce qui se passe sur Pomie. aujourd'hui</div>
+          <div class="home-sub">Voici ce qui se passe sur Pomel. aujourd'hui</div>
         </div>
         <div id="homeGroupWidget" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px;cursor:pointer;transition:border-color .2s;min-width:180px;" onclick="navToClassement('groupes')">
           <span style="font-size:1rem;">🏅</span>
@@ -3264,7 +3264,7 @@
         <div class="wheel-pointer"></div>
         <div class="wheel-center">
           <div class="value" id="wheelValue">?</div>
-          <div class="sub">Pomies</div>
+          <div class="sub">Pomels</div>
         </div>
       </div>
       <button class="spin-btn" id="spinBtn" onclick="spin()">Tourner !</button>
@@ -3306,7 +3306,7 @@
     <div class="hotel-wrap">
       <div>
         <div class="section-title">🏨 Hôtel des Ventes</div>
-        <div class="section-sub">Crée et vends tes propres titres — disponibles 24h. Les Pomies reviennent au créateur !</div>
+        <div class="section-sub">Crée et vends tes propres titres — disponibles 24h. Les Pomels reviennent au créateur !</div>
       </div>
 
       <!-- Créer un titre -->
@@ -3317,7 +3317,7 @@
           <input type="text" id="hotelTitleInput" placeholder="ex: Roi du Café" maxlength="50" />
         </div>
         <div class="form-group">
-          <label>Prix (Pomies)</label>
+          <label>Prix (Pomels)</label>
           <input type="number" id="hotelPriceInput" placeholder="ex: 500" min="1" max="999999" />
         </div>
         <div id="hotelCreateAlert" class="alert"></div>
@@ -3361,14 +3361,14 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Prix de vente (Pomies)</label>
+          <label>Prix de vente (Pomels)</label>
           <input type="number" id="mnPriceInput" placeholder="ex: 1000" min="1" max="999999" />
         </div>
         <div id="mnCreateAlert" class="alert"></div>
         <div id="mnListingLimitInfo" class="mission-limit-info" style="display:none;"></div>
         <button class="btn-primary" id="mnCreateBtn" onclick="handleCreateMarcheNoirListing()">Mettre en vente 🕶️</button>
         <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">
-          ℹ️ Maximum 3 titres en vente simultanément. Quand un joueur clique sur "Je veux !", ses Pomies sont réservés et tu reçois une demande à valider. Tu peux accepter ou refuser — s'il est refusé, il est remboursé.
+          ℹ️ Maximum 3 titres en vente simultanément. Quand un joueur clique sur "Je veux !", ses Pomels sont réservés et tu reçois une demande à valider. Tu peux accepter ou refuser — s'il est refusé, il est remboursé.
         </div>
       </div>
 
@@ -3574,9 +3574,9 @@
         <div class="clicker-upgrade-card">
           <div class="clicker-upgrade-info">
             <div class="clicker-upgrade-name">💱 Échanger des graines</div>
-            <div class="clicker-upgrade-desc">100 graines = 1 Pomie</div>
+            <div class="clicker-upgrade-desc">100 graines = 1 Pomel</div>
             <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
-              <input type="number" id="exchangeAmount" min="1" max="1000" placeholder="Pomies voulus" oninput="updateExchangePrice()" style="width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:.85rem;outline:none;" />
+              <input type="number" id="exchangeAmount" min="1" max="1000" placeholder="Pomels voulus" oninput="updateExchangePrice()" style="width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:.85rem;outline:none;" />
               <span style="font-size:.85rem;color:var(--muted);">= <strong id="exchangeCost" style="color:var(--primary);">0</strong> 🌱</span>
             </div>
           </div>
@@ -3586,8 +3586,8 @@
         <!-- Raccourci Jardin -->
         <div style="background:rgba(62,207,110,0.07);border:1px solid rgba(62,207,110,0.25);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
           <div>
-            <div style="font-weight:700;font-size:.95rem;">🌸 Jardin de Pomie'Land</div>
-            <div style="font-size:.8rem;color:var(--muted);margin-top:3px;">Dépense tes graines pour planter des fleurs et gagner des Pomies !</div>
+            <div style="font-weight:700;font-size:.95rem;">🌸 Jardin de Pomel'Land</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:3px;">Dépense tes graines pour planter des fleurs et gagner des Pomels !</div>
           </div>
           <button class="btn-buy" style="background:var(--green);white-space:nowrap;" onclick="navTo('jardin')">Aller au Jardin 🌸</button>
         </div>
@@ -3602,7 +3602,7 @@
       <div class="snake-header">
         <div>
           <div class="section-title">🐍 Serpent</div>
-          <div class="section-sub">Mange des fruits pour gagner des Pomies — 5 🪙 par fruit !</div>
+          <div class="section-sub">Mange des fruits pour gagner des Pomels — 5 🪙 par fruit !</div>
         </div>
         <div class="snake-score-box">
           <div class="snake-score-label">Score</div>
@@ -3705,7 +3705,7 @@
       <div class="tetris-header">
         <div>
           <div class="section-title">🧱 Tetris</div>
-          <div class="section-sub">Complète des lignes pour gagner des Pomies — 3 🪙 par ligne !</div>
+          <div class="section-sub">Complète des lignes pour gagner des Pomels — 3 🪙 par ligne !</div>
         </div>
         <div class="tetris-info-row">
           <div class="tetris-score-box">
@@ -3772,7 +3772,7 @@
       <div class="g2048-header">
         <div>
           <div class="section-title">🔢 2048</div>
-          <div class="section-sub">Fusionne les tuiles pour atteindre 2048 — 1 Pomie tous les 20 points !</div>
+          <div class="section-sub">Fusionne les tuiles pour atteindre 2048 — 1 Pomel tous les 20 points !</div>
         </div>
         <div class="g2048-score-box">
           <div class="g2048-score-label">Score</div>
@@ -3840,7 +3840,7 @@
       <!-- VUE GROUPES -->
       <div id="classementViewGroupes" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-          <div class="lb-note" style="flex:1;">🏅 Classement hebdomadaire des groupes — le score est calculé sur les Pomies + graines récoltées cette semaine par les membres.</div>
+          <div class="lb-note" style="flex:1;">🏅 Classement hebdomadaire des groupes — le score est calculé sur les Pomels + graines récoltées cette semaine par les membres.</div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
             <button id="groupShopTopBtn" onclick="openGroupShopFromTop()" style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;color:var(--yellow);cursor:pointer;transition:all .2s;white-space:nowrap;" onmouseover="this.style.background='rgba(245,200,66,0.25)'" onmouseout="this.style.background='rgba(245,200,66,0.15)'">🛍️ Boutique</button>
             <button onclick="openGroupInfoModal()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">ℹ️ Règles</button>
@@ -3893,12 +3893,12 @@
     <div class="compteur-wrap">
       <div>
         <div class="section-title">🏦 Banque</div>
-        <div class="section-sub">Envoie des Pomies à un autre joueur en déduisant de ton solde.</div>
+        <div class="section-sub">Envoie des Pomels à un autre joueur en déduisant de ton solde.</div>
       </div>
       <div class="transfer-card">
         <div class="balance-display">
           <span class="label">Mon solde</span>
-          <span class="val" id="transferBalance">0 Pomies</span>
+          <span class="val" id="transferBalance">0 Pomels</span>
         </div>
         <div class="input-group">
           <label>Bénéficiaire (pseudo)</label>
@@ -4010,7 +4010,7 @@
     <div class="quetes-wrap">
       <div>
         <div class="section-title">⚔️ Quêtes</div>
-        <div class="section-sub">Assigne une mission à quelqu'un et offre-lui des Pomies en récompense !</div>
+        <div class="section-sub">Assigne une mission à quelqu'un et offre-lui des Pomels en récompense !</div>
       </div>
 
       <!-- Créer une quête -->
@@ -4027,7 +4027,7 @@
           <textarea id="queteDescInput" placeholder="ex: Apporter un café à tout le monde demain matin ☕" maxlength="200" rows="3"></textarea>
         </div>
         <div class="form-group">
-          <label>Récompense (Pomies offerts)</label>
+          <label>Récompense (Pomels offerts)</label>
           <input type="number" id="queteRewardInput" placeholder="ex: 300" min="1" max="5000" />
         </div>
         <div id="queteCreateAlert" class="alert"></div>
@@ -4087,7 +4087,7 @@
               <textarea id="missionDescInput" placeholder="ex: Faire une photo marrante et la poster sur InstaPom 📸" maxlength="200" rows="3"></textarea>
             </div>
             <div class="form-group">
-              <label>Récompense (Pomies offerts par le système)</label>
+              <label>Récompense (Pomels offerts par le système)</label>
               <input type="number" id="missionRewardInput" placeholder="ex: 200" min="1" />
             </div>
             <div id="missionCreateAlert" class="alert"></div>
@@ -4130,7 +4130,7 @@
     <div class="jardin-wrap">
       <div class="jardin-header">
         <div>
-          <div class="section-title">🌸 Jardin de Pomie'Land</div>
+          <div class="section-title">🌸 Jardin de Pomel'Land</div>
           <div class="section-sub">Plante des fleurs avec tes graines — le jardin <strong>ferme le dimanche à 12h</strong>, résultats annoncés le lundi à 12h, réouverture à 12h30 !</div>
         </div>
         <div class="jardin-timer-box">
@@ -4290,12 +4290,12 @@
     <div class="info-wrap">
 
       <div class="info-hero">
-        <h2>🍎 Pomie.</h2>
-        <p>Gagne des <strong>Pomies</strong> chaque jour, dépense-les en boutique, joue avec tes amis et grimpe dans le classement. Tout est ici.</p>
+        <h2>🍎 Pomel.</h2>
+        <p>Gagne des <strong>Pomels</strong> chaque jour, dépense-les en boutique, joue avec tes amis et grimpe dans le classement. Tout est ici.</p>
       </div>
 
       <!-- GAGNER DES POMELS -->
-      <div class="info-category-title">💰 Gagner des Pomies</div>
+      <div class="info-category-title">💰 Gagner des Pomels</div>
       <div class="info-accordion">
 
         <div class="info-item" id="info-roulette">
@@ -4305,9 +4305,9 @@
             <span class="info-trigger-arrow">▼</span>
           </button>
           <div class="info-body">
-            <p>Chaque jour à partir de <strong>9h15</strong>, fais tourner la roulette pour gagner des Pomies. Un seul tirage par jour.</p>
+            <p>Chaque jour à partir de <strong>9h15</strong>, fais tourner la roulette pour gagner des Pomels. Un seul tirage par jour.</p>
             <ul>
-              <li>Gains : <strong>10 à 1 000 Pomies</strong> selon la chance</li>
+              <li>Gains : <strong>10 à 1 000 Pomels</strong> selon la chance</li>
               <li>Se réinitialise chaque jour à minuit</li>
             </ul>
           </div>
@@ -4339,9 +4339,9 @@
             <span class="info-trigger-arrow">▼</span>
           </button>
           <div class="info-body">
-            <p>Assigne une mission à un joueur — les Pomies de récompense viennent du système, pas de ta poche.</p>
+            <p>Assigne une mission à un joueur — les Pomels de récompense viennent du système, pas de ta poche.</p>
             <ul>
-              <li>Récompense max : <strong>5 000 Pomies</strong></li>
+              <li>Récompense max : <strong>5 000 Pomels</strong></li>
               <li>Le joueur peut accepter ou refuser</li>
               <li>Quand tu valides : le joueur reçoit la récompense complète, toi tu reçois <strong>la moitié en bonus</strong></li>
               <li>Expire après <strong>3 jours</strong> sans validation</li>
@@ -4398,7 +4398,7 @@
           <div class="info-body">
             <p>Le classique : empile les pièces, complète des lignes pour marquer.</p>
             <ul>
-              <li>Gains : <strong>3 Pomies par ligne</strong> complétée</li>
+              <li>Gains : <strong>3 Pomels par ligne</strong> complétée</li>
               <li>Leaderboard général et classement hebdo</li>
               <li>Récompenses hebdo (lundi 9h) : 🥇 2 000 · 🥈 1 500 · 🥉 1 000 · autres 500 🪙</li>
             </ul>
@@ -4509,7 +4509,7 @@
           <div class="info-body">
             <p>Le score d'un groupe est calculé chaque semaine :</p>
             <ul>
-              <li><strong>Pomies gagnés</strong> cette semaine par tous les membres</li>
+              <li><strong>Pomels gagnés</strong> cette semaine par tous les membres</li>
               <li>+ <strong>Points PFC</strong> gagnés en Pierre Feuille Ciseaux</li>
             </ul>
             <p style="margin-top:10px;">Chaque lundi à 9h :</p>
@@ -4577,7 +4577,7 @@
             <span class="info-trigger-arrow">▼</span>
           </button>
           <div class="info-body">
-            <p>Dépense tes Pomies pour personnaliser ton apparence dans le classement et les profils. Active via <strong>Mon profil → ⋯</strong>.</p>
+            <p>Dépense tes Pomels pour personnaliser ton apparence dans le classement et les profils. Active via <strong>Mon profil → ⋯</strong>.</p>
             <ul>
               <li><strong>Titres</strong> — s'affichent à côté de ton nom</li>
               <li><strong>Couleur du pseudo</strong> — couleur fixe ou effet animé</li>
@@ -4598,8 +4598,8 @@
             <ul>
               <li>Mets en vente n'importe quel titre que tu possèdes, au prix de ton choix (max <strong>999 999 🪙</strong>)</li>
               <li>Tu peux personnaliser la <strong>couleur du titre</strong> avant de le vendre — c'est un nouveau titre unique</li>
-              <li>Quand un acheteur clique sur "Je veux !", ses Pomies sont <strong>réservés en escrow</strong> et tu reçois une demande</li>
-              <li>Tu peux <strong>accepter</strong> (la vente est conclue, tu reçois les Pomies) ou <strong>refuser</strong> (l'acheteur est remboursé intégralement)</li>
+              <li>Quand un acheteur clique sur "Je veux !", ses Pomels sont <strong>réservés en escrow</strong> et tu reçois une demande</li>
+              <li>Tu peux <strong>accepter</strong> (la vente est conclue, tu reçois les Pomels) ou <strong>refuser</strong> (l'acheteur est remboursé intégralement)</li>
               <li>Tant qu'aucune demande n'est active, tu peux retirer ton annonce librement</li>
               <li>Les annonces vendues ou annulées restent visibles <strong>24h</strong> avant d'être archivées</li>
             </ul>
@@ -4613,7 +4613,7 @@
             <span class="info-trigger-arrow">▼</span>
           </button>
           <div class="info-body">
-            <p>Envoie des Pomies à n'importe quel joueur directement. L'historique complet de tes transactions est conservé ici.</p>
+            <p>Envoie des Pomels à n'importe quel joueur directement. L'historique complet de tes transactions est conservé ici.</p>
           </div>
         </div>
 
@@ -4670,7 +4670,7 @@ async function dbSet(path, val) {
       return; // succès
     } catch(e) {
       if (i < MAX - 1) await new Promise(r => setTimeout(r, 200 * (i + 1)));
-      else console.error('[pomie] dbSet échec définitif', path, e.message);
+      else console.error('[pomel] dbSet échec définitif', path, e.message);
     }
   }
 }
@@ -4690,7 +4690,7 @@ async function dbSetStrict(path, val) {
       if (i < MAX - 1) await new Promise(r => setTimeout(r, 200 * (i + 1)));
     }
   }
-  console.error('[pomie] dbSetStrict échec définitif', path, lastErr && lastErr.message);
+  console.error('[pomel] dbSetStrict échec définitif', path, lastErr && lastErr.message);
   throw lastErr || new Error('dbSetStrict failed: ' + path);
 }
 
@@ -4756,8 +4756,8 @@ async function addBalanceTransaction(code, amount, historyEntry) {
         if (amount > 0) {
           current.totalEarned = (current.totalEarned || 0) + amount;
           const weekKey = getGroupWeekKey();
-          if (current.weekPomiesKey !== weekKey) { current.weekPomiesKey = weekKey; current.weekPomiesEarned = 0; }
-          current.weekPomiesEarned = (current.weekPomiesEarned || 0) + amount;
+          if (current.weekPomelsKey !== weekKey) { current.weekPomelsKey = weekKey; current.weekPomelsEarned = 0; }
+          current.weekPomelsEarned = (current.weekPomelsEarned || 0) + amount;
         } else if (amount < 0) {
           current.totalSpent = (current.totalSpent || 0) + Math.abs(amount);
         }
@@ -4783,7 +4783,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
       if (!result.committed) {
         const snapCheck = result && result.snapshot;
         if (snapCheck && !snapCheck.exists()) {
-          console.warn('[pomie] addBalanceTransaction: compte introuvable', code);
+          console.warn('[pomel] addBalanceTransaction: compte introuvable', code);
           return null;
         }
       }
@@ -4808,7 +4808,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
             if (acc.history.length > 30) acc.history = acc.history.slice(0, 30);
           }
           await dbSet('accounts/' + code, acc);
-          console.warn('[pomie] addBalanceTransaction: fallback dbSet utilisé pour', code);
+          console.warn('[pomel] addBalanceTransaction: fallback dbSet utilisé pour', code);
           return acc;
         }
       } catch(fallbackErr) {}
@@ -4819,7 +4819,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
       if (attempt < MAX_RETRIES - 1) {
         await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
       } else {
-        console.error('[pomie] addBalanceTransaction échec définitif', code, e);
+        console.error('[pomel] addBalanceTransaction échec définitif', code, e);
         return null;
       }
     }
@@ -4828,7 +4828,7 @@ async function addBalanceTransaction(code, amount, historyEntry) {
 }
 
 // ── HELPER DISTRIBUTION FIABLE ──────────────────
-// Distribue des pomies à une liste de codes, réessaie les échecs
+// Distribue des pomels à une liste de codes, réessaie les échecs
 async function distributeReliably(recipients) {
   // recipients = [{code, amount, historyEntry}]
   const failed = [];
@@ -4847,7 +4847,7 @@ async function distributeReliably(recipients) {
       const retry = await addBalanceTransaction(r.code, r.amount, r.historyEntry);
       if (retry && r.code === state.code) { state = migrateAccount(retry); refreshUI(); }
       if (!retry) {
-        console.error('[pomie] distributeReliably: échec définitif pour', r.code, r.amount);
+        console.error('[pomel] distributeReliably: échec définitif pour', r.code, r.amount);
       }
     }
   }
@@ -4877,20 +4877,20 @@ async function getAllMissions() { return dbGetAll('missions'); }
 
 // ── SESSION (local only) ────────────────────────
 function getSession() {
-  try { const r = localStorage.getItem('pomie_session'); return r ? JSON.parse(r) : null; } catch { return null; }
+  try { const r = localStorage.getItem('pomel_session'); return r ? JSON.parse(r) : null; } catch { return null; }
 }
 function setSession(code) {
-  localStorage.setItem('pomie_session', JSON.stringify({ code, name: state ? state.name : '' }));
+  localStorage.setItem('pomel_session', JSON.stringify({ code, name: state ? state.name : '' }));
 }
 function clearSession() {
-  localStorage.removeItem('pomie_session');
+  localStorage.removeItem('pomel_session');
 }
 
 // ── STATE ────────────────────────────────────────
 let state = null;
 
 // ── COMPTE ADMIN ─────────────────────────────────
-const ADMIN_NAME = 'RoiPomie';
+const ADMIN_NAME = 'RoiPomel';
 const ADMIN_PASSWORD = 'lemopiorel';
 let isAdmin = false;
 
@@ -4928,9 +4928,9 @@ function migrateAccount(acc) {
   // Compteur de graines récoltées cette semaine (persistant, reset hebdo)
   if (typeof acc.weekSeedsEarned !== 'number') acc.weekSeedsEarned = 0;
   if (!acc.weekSeedsKey) acc.weekSeedsKey = null;
-  // Compteur de pomies gagnés cette semaine (persistant, reset hebdo)
-  if (typeof acc.weekPomiesEarned !== 'number') acc.weekPomiesEarned = 0;
-  if (!acc.weekPomiesKey) acc.weekPomiesKey = null;
+  // Compteur de pomels gagnés cette semaine (persistant, reset hebdo)
+  if (typeof acc.weekPomelsEarned !== 'number') acc.weekPomelsEarned = 0;
+  if (!acc.weekPomelsKey) acc.weekPomelsKey = null;
   // Tronquer l'historique au login (nettoyage rétroactif des vieux comptes saturés)
   if (Array.isArray(acc.history) && acc.history.length > 30) {
     acc.history = acc.history.slice(0, 30);
@@ -4939,17 +4939,17 @@ function migrateAccount(acc) {
 }
 
 // ── TRACKING HELPERS ─────────────────────────────
-// Incrémente les compteurs persistants quand un joueur gagne des Pomies
+// Incrémente les compteurs persistants quand un joueur gagne des Pomels
 function trackEarning(acc, amount) {
   if (amount > 0) {
     acc.totalEarned = (acc.totalEarned || 0) + amount;
     // Tracking hebdo pour le score de groupe
     const weekKey = getGroupWeekKey();
-    if (acc.weekPomiesKey !== weekKey) {
-      acc.weekPomiesKey = weekKey;
-      acc.weekPomiesEarned = 0;
+    if (acc.weekPomelsKey !== weekKey) {
+      acc.weekPomelsKey = weekKey;
+      acc.weekPomelsEarned = 0;
     }
-    acc.weekPomiesEarned = (acc.weekPomiesEarned || 0) + amount;
+    acc.weekPomelsEarned = (acc.weekPomelsEarned || 0) + amount;
   } else if (amount < 0) {
     acc.totalSpent = (acc.totalSpent || 0) + Math.abs(amount);
   }
@@ -5117,7 +5117,7 @@ function launchApp() {
 function refreshUI() {
   document.getElementById('headerBalance').textContent = state.balance.toLocaleString('fr-FR');
   document.getElementById('headerName').textContent = state.name;
-  const tb = document.getElementById('transferBalance'); if (tb) tb.textContent = state.balance.toLocaleString('fr-FR') + ' Pomies';
+  const tb = document.getElementById('transferBalance'); if (tb) tb.textContent = state.balance.toLocaleString('fr-FR') + ' Pomels';
   renderStreakWidget();
   refreshTopbarAvatar();
   takeStateSnapshot();
@@ -5166,7 +5166,7 @@ async function handleAdminGrant() {
   alertEl.className = 'alert';
   if (!recipientName) { alertEl.textContent = 'Entre le pseudo du bénéficiaire.'; alertEl.className = 'alert error visible'; return; }
   if (!amount || amount <= 0) { alertEl.textContent = 'Entre un montant valide.'; alertEl.className = 'alert error visible'; return; }
-  if (amount > 500000) { alertEl.textContent = 'Montant maximum : 500 000 Pomies par don.'; alertEl.className = 'alert error visible'; return; }
+  if (amount > 500000) { alertEl.textContent = 'Montant maximum : 500 000 Pomels par don.'; alertEl.className = 'alert error visible'; return; }
 
   const all = await getAllAccounts();
   const recipient = all.find(a => a.name.toLowerCase() === recipientName.toLowerCase());
@@ -5178,7 +5178,7 @@ async function handleAdminGrant() {
   });
 
   if (updated) {
-    alertEl.textContent = `✅ ${amount.toLocaleString('fr-FR')} Pomies accordés à ${recipient.name} !`;
+    alertEl.textContent = `✅ ${amount.toLocaleString('fr-FR')} Pomels accordés à ${recipient.name} !`;
     alertEl.className = 'alert success visible';
     document.getElementById('adminRecipientInput').value = '';
     document.getElementById('adminAmountInput').value = '';
@@ -5194,7 +5194,7 @@ async function handleAdminGrant() {
 // ── DELETE ACCOUNT ───────────────────────────────
 function confirmDeleteAccount() {
   showConfirm(
-    '⚠️ Es-tu sûr de vouloir supprimer ton compte ? Cette action est irréversible. Tous tes Pomies, titres et historique seront perdus.',
+    '⚠️ Es-tu sûr de vouloir supprimer ton compte ? Cette action est irréversible. Tous tes Pomels, titres et historique seront perdus.',
     async () => {
       const code = state.code;
       await deleteAccountFromDB(code);
@@ -5494,7 +5494,7 @@ function spin() {
     state.totalSpins = (state.totalSpins || 0) + 1;
     // Sauvegarder le lastSpin et totalSpins (profil non-balance)
     saveAccount(state);
-    // Créditer les pomies de façon atomique
+    // Créditer les pomels de façon atomique
     addBalanceTransaction(state.code, prize, {
       type: 'roulette', desc: 'Roulette quotidienne', amount: prize, date: new Date().toISOString()
     }).then(updated => {
@@ -5515,10 +5515,10 @@ function spin() {
 function showWinToast(amount) {
   const el = document.getElementById('winToast');
   let msg;
-  if (amount >= 1000) msg = `💎 JACKPOT ! +${amount.toLocaleString('fr-FR')} Pomies !`;
-  else if (amount >= 700) msg = `🔥 Incroyable ! +${amount.toLocaleString('fr-FR')} Pomies !`;
-  else if (amount >= 400) msg = `🎉 Belle prise ! +${amount.toLocaleString('fr-FR')} Pomies !`;
-  else msg = `+${amount.toLocaleString('fr-FR')} Pomies remportés ! 🪙`;
+  if (amount >= 1000) msg = `💎 JACKPOT ! +${amount.toLocaleString('fr-FR')} Pomels !`;
+  else if (amount >= 700) msg = `🔥 Incroyable ! +${amount.toLocaleString('fr-FR')} Pomels !`;
+  else if (amount >= 400) msg = `🎉 Belle prise ! +${amount.toLocaleString('fr-FR')} Pomels !`;
+  else msg = `+${amount.toLocaleString('fr-FR')} Pomels remportés ! 🪙`;
   el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 3200);
 }
@@ -5716,7 +5716,7 @@ async function openProfileModal(code) {
       <div class="profil-me-stats">
         <div class="profil-stat">
           <span class="profil-stat-val">${migrated.balance.toLocaleString('fr-FR')}</span>
-          <span class="profil-stat-label">🪙 Pomies</span>
+          <span class="profil-stat-label">🪙 Pomels</span>
         </div>
         <div class="profil-stat">
           <span class="profil-stat-val">${earned.toLocaleString('fr-FR')}</span>
@@ -5776,7 +5776,7 @@ async function resolveGroupBadges() {
 }
 
 // ── GROUPS (DYNAMIQUES) ──────────────────────────
-// Firebase : /groups/{groupId} = { id, name, creatorCode, creatorName, members: [code,...], createdAt, weekScore: { [weekKey]: { pomies, seeds } } }
+// Firebase : /groups/{groupId} = { id, name, creatorCode, creatorName, members: [code,...], createdAt, weekScore: { [weekKey]: { pomels, seeds } } }
 
 async function getAllGroups() { return dbGetAll('groups'); }
 async function getGroup(id)   { return dbGet('groups/' + id); }
@@ -5814,17 +5814,17 @@ function getGroupMonthKey() {
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 }
 
-// Calcule le score hebdo d'un groupe = Pomies gagnés cette semaine + graines récoltées cette semaine (via compteurs persistants) + bonus PFC
+// Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine + graines récoltées cette semaine (via compteurs persistants) + bonus PFC
 // weekKeyOverride permet de forcer la lecture d'une semaine spécifique (utile pour la distribution du lundi)
 async function computeGroupWeekScore(group, allAccounts, allClicker, weekKeyOverride) {
   const weekKey = weekKeyOverride || getGroupWeekKey();
-  let pomies = 0, seeds = 0;
+  let pomels = 0, seeds = 0;
   for (const code of (group.members || [])) {
     const acc = allAccounts.find(a => a.code === code);
     if (acc) {
       // Utiliser les compteurs persistants hebdomadaires
-      if (acc.weekPomiesKey === weekKey) {
-        pomies += (acc.weekPomiesEarned || 0);
+      if (acc.weekPomelsKey === weekKey) {
+        pomels += (acc.weekPomelsEarned || 0);
       }
       if (acc.weekSeedsKey === weekKey) {
         seeds += (acc.weekSeedsEarned || 0);
@@ -5832,7 +5832,7 @@ async function computeGroupWeekScore(group, allAccounts, allClicker, weekKeyOver
     }
   }
   const pfcBonus = group.pfcWeekBonus || 0;
-  return Math.round(pomies + seeds / 10 + pfcBonus);
+  return Math.round(pomels + seeds / 10 + pfcBonus);
 }
 
 async function renderGroupsOnPage() {
@@ -6018,7 +6018,7 @@ async function kickGroupMember(groupId, memberCode, memberName) {
 async function handleCreateGroup() {
   const name = document.getElementById('newGroupNameInput').value.trim();
   if (!name) { setAlert('createGroupAlert', 'Donne un nom à ton groupe !', 'error'); return; }
-  if (state.balance < 5000) { setAlert('createGroupAlert', 'Il te faut 5 000 Pomies pour créer un groupe !', 'error'); return; }
+  if (state.balance < 5000) { setAlert('createGroupAlert', 'Il te faut 5 000 Pomels pour créer un groupe !', 'error'); return; }
 
   // Règle : pas 2 mois de suite
   const currentMonthKey = getGroupMonthKey();
@@ -6062,7 +6062,7 @@ async function handleCreateGroup() {
 }
 
 async function joinGroup(groupId) {
-  if (state.balance < 3000) { alert('Il te faut 3 000 Pomies pour rejoindre un groupe !'); return; }
+  if (state.balance < 3000) { alert('Il te faut 3 000 Pomels pour rejoindre un groupe !'); return; }
   const groups = await getAllGroups();
   if (groups.find(g => (g.members || []).includes(state.code))) { alert('Quitte ton groupe actuel avant d\'en rejoindre un autre !'); return; }
   const group = await getGroup(groupId);
@@ -6094,7 +6094,7 @@ async function joinGroup(groupId) {
 async function leaveGroup(groupId) {
   const group = await getGroup(groupId);
   if (!group) return;
-  showConfirm('Quitter ce groupe ? Tu devras repayer 3 000 Pomies pour le rejoindre à nouveau.', async () => {
+  showConfirm('Quitter ce groupe ? Tu devras repayer 3 000 Pomels pour le rejoindre à nouveau.', async () => {
     group.members = (group.members || []).filter(c => c !== state.code);
     // Si plus de membres et pas le créateur → supprimer le groupe
     if (group.members.length === 0) {
@@ -6130,7 +6130,7 @@ async function handleDeleteGroup(groupId) {
   });
 }
 
-// Vérification hebdo : distribuer les 2 000 Pomies aux membres des 3 premiers groupes,
+// Vérification hebdo : distribuer les 2 000 Pomels aux membres des 3 premiers groupes,
 // dissoudre les groupes 4e et 5e, et dissoudre tous les groupes en fin de mois.
 async function checkGroupWeeklyReward() {
   const now = new Date();
@@ -6198,7 +6198,7 @@ async function checkGroupWeeklyReward() {
   })));
   scored.sort((a, b) => b.score - a.score);
 
-  // Top 3 → chaque membre gagne 2 000 Pomies + PomCoins au groupe
+  // Top 3 → chaque membre gagne 2 000 Pomels + PomCoins au groupe
   const pomcoinRewards = [1000, 750, 500];
   for (let i = 0; i < Math.min(3, scored.length); i++) {
     const g = scored[i];
@@ -6364,7 +6364,7 @@ async function placeBet(betId, choice) {
   const inputEl = document.getElementById(`bet-amount-${betId}-${choice}`);
   const amount = parseInt(inputEl ? inputEl.value : 0);
   if (!amount || amount <= 0) { alert('Entre un montant valide !'); return; }
-  if (amount > state.balance) { alert(`Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomies.`); return; }
+  if (amount > state.balance) { alert(`Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`); return; }
 
   // Débiter le parieur atomiquement
   const betPlaceUpd = await addBalanceTransaction(state.code, -amount, {
@@ -6719,7 +6719,7 @@ async function renderHomePvp() {
   }
 }
 
-// Raccourci depuis l'accueil Pomie : ouvre PokePom puis va directement à
+// Raccourci depuis l'accueil Pomel : ouvre PokePom puis va directement à
 // l'écran de combat. Si pmGoTo n'existe pas (PokePom pas chargé), on retombe
 // sur l'accueil home.
 function goToPvpBattle() {
@@ -7264,7 +7264,7 @@ async function g2048RenderLb() {
       <span class="snake-lb-rank ${rankClass}">${medals[i] || rank}</span>
       <span class="snake-lb-name ${cc}">${escapeHTML(e.name)}${isMe ? ' <span class="lb-you-badge">Moi</span>' : ''}</span>
       <span class="snake-lb-score">${e.score.toLocaleString('fr-FR')} pts</span>
-      <span class="snake-lb-pomies"></span>
+      <span class="snake-lb-pomels"></span>
     `;
     // Avatar snake lb
     const snakeAvWrap = document.createElement('div');
@@ -7443,7 +7443,7 @@ async function handleCreateQuete() {
   if (!targetCode)        { setAlert('queteCreateAlert', 'Choisis un joueur !', 'error'); return; }
   if (!desc)              { setAlert('queteCreateAlert', 'Décris la mission !', 'error'); return; }
   if (!reward || reward < 1) { setAlert('queteCreateAlert', 'Entre une récompense valide !', 'error'); return; }
-  if (reward > 5000) { setAlert('queteCreateAlert', 'La récompense maximum est de 5 000 Pomies !', 'error'); return; }
+  if (reward > 5000) { setAlert('queteCreateAlert', 'La récompense maximum est de 5 000 Pomels !', 'error'); return; }
 
   // Find target name
   const all = await getAllAccounts();
@@ -7500,7 +7500,7 @@ async function validateQuete(queteId) {
   const isSamePerson = q.targetCode === q.creatorCode;
   const now = new Date().toISOString();
 
-  // Award Pomies to target (transaction atomique)
+  // Award Pomels to target (transaction atomique)
   const updatedTarget = await addBalanceTransaction(q.targetCode, q.reward, {
     type: 'quete', desc: `⚔️ Quête accomplie : "${q.desc}"`, amount: q.reward, date: now,
   });
@@ -9089,12 +9089,12 @@ async function handleTransfer() {
   alertEl.className = 'alert';
   if (!recipientName) { alertEl.textContent = 'Entre le pseudo du destinataire.'; alertEl.className = 'alert error visible'; return; }
   if (!amount || amount <= 0) { alertEl.textContent = 'Entre un montant valide.'; alertEl.className = 'alert error visible'; return; }
-  if (amount > state.balance) { alertEl.textContent = `Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomies.`; alertEl.className = 'alert error visible'; return; }
+  if (amount > state.balance) { alertEl.textContent = `Solde insuffisant ! Tu as ${state.balance.toLocaleString('fr-FR')} Pomels.`; alertEl.className = 'alert error visible'; return; }
 
   const all = await getAllAccounts();
   const recipient = all.find(a => a.name.toLowerCase() === recipientName.toLowerCase());
   if (!recipient) { alertEl.textContent = `Joueur "${recipientName}" introuvable.`; alertEl.className = 'alert error visible'; return; }
-  if (recipient.code === state.code) { alertEl.textContent = 'Tu ne peux pas t\'envoyer des Pomies à toi-même !'; alertEl.className = 'alert error visible'; return; }
+  if (recipient.code === state.code) { alertEl.textContent = 'Tu ne peux pas t\'envoyer des Pomels à toi-même !'; alertEl.className = 'alert error visible'; return; }
 
   // Débiter l'envoyeur de façon atomique
   const senderUpdated = await addBalanceTransaction(state.code, -amount, {
@@ -9114,7 +9114,7 @@ async function handleTransfer() {
   });
 
   refreshUI(); renderHistory();
-  alertEl.textContent = `✅ ${amount.toLocaleString('fr-FR')} Pomies envoyés à ${recipient.name} !`;
+  alertEl.textContent = `✅ ${amount.toLocaleString('fr-FR')} Pomels envoyés à ${recipient.name} !`;
   alertEl.className = 'alert success visible';
   document.getElementById('recipientInput').value = '';
   document.getElementById('amountInput').value = '';
@@ -9219,7 +9219,7 @@ async function renderMonProfil() {
     <div class="profil-me-stats">
       <div class="profil-stat">
         <span class="profil-stat-val">${me.balance.toLocaleString('fr-FR')}</span>
-        <span class="profil-stat-label">🪙 Pomies</span>
+        <span class="profil-stat-label">🪙 Pomels</span>
       </div>
       <div class="profil-stat">
         <span class="profil-stat-val">${earned.toLocaleString('fr-FR')}</span>
@@ -9533,7 +9533,7 @@ async function saveAccount(acc) {
     });
   } catch(e) {
     // Fallback si transaction impossible (ex: compte très gros)
-    console.warn('[pomie] saveAccount fallback dbSet', acc.code, e.message);
+    console.warn('[pomel] saveAccount fallback dbSet', acc.code, e.message);
     await dbSet('accounts/' + acc.code, acc);
   }
 }
@@ -9555,7 +9555,7 @@ function verifyStateIntegrity() {
   if (!state || !_stateSnapshot) return;
   const current = JSON.stringify({ balance: state.balance, ownedTitles: state.ownedTitles });
   if (current !== _stateSnapshot) {
-    console.warn('[Pomie] Modification non autorisée de state détectée. Rechargement depuis Firebase.');
+    console.warn('[Pomel] Modification non autorisée de state détectée. Rechargement depuis Firebase.');
     getAccount(state.code).then(acc => {
       if (acc) { state = migrateAccount(acc); refreshUI(); }
     });
@@ -9689,7 +9689,7 @@ function renderStreakWidget() {
     label.className = 'streak-label ready';
     if (fire) { fire.textContent = '🔥'; fire.className = 'streak-fire ready'; }
     widget.classList.add('ready');
-    widget.title = `Clique pour réclamer +${reward.toLocaleString('fr-FR')} Pomies !`;
+    widget.title = `Clique pour réclamer +${reward.toLocaleString('fr-FR')} Pomels !`;
   } else {
     // Pas encore de streak
     label.textContent = '0/5';
@@ -9724,7 +9724,7 @@ async function claimStreak() {
 
   // Sauvegarder l'état streak (non-balance) d'abord
   await saveAccount(state);
-  // Créditer les pomies atomiquement
+  // Créditer les pomels atomiquement
   const streakUpdated = await addBalanceTransaction(state.code, reward, {
     type: 'streak',
     desc: `🔥 Série quotidienne — Jour ${displayDays}/5`,
@@ -9735,7 +9735,7 @@ async function claimStreak() {
   else { state.balance += reward; } // fallback local
   refreshUI();
   renderStreakWidget();
-  showWinToast(`+${reward.toLocaleString('fr-FR')} Pomies — Série jour ${displayDays}/5 ! 🔥`);
+  showWinToast(`+${reward.toLocaleString('fr-FR')} Pomels — Série jour ${displayDays}/5 ! 🔥`);
   launchSparkles();
 }
 
@@ -10898,11 +10898,11 @@ const _notifSeen = new Set();
 // AudioContext partagé — créé uniquement après un geste utilisateur
 let _audioCtx = null;
 let _audioUnlocked = false;
-let _notifSoundEnabled = localStorage.getItem('pomie_notif_sound') !== '0'; // activé par défaut
+let _notifSoundEnabled = localStorage.getItem('pomel_notif_sound') !== '0'; // activé par défaut
 
 function toggleNotifSoundPref(enabled) {
   _notifSoundEnabled = enabled;
-  localStorage.setItem('pomie_notif_sound', enabled ? '1' : '0');
+  localStorage.setItem('pomel_notif_sound', enabled ? '1' : '0');
 }
 
 function _initNotifSoundToggle() {
@@ -11392,8 +11392,8 @@ init();
     </div>
     <div style="width:100%;max-width:600px;padding:40px 24px 80px;">
       <div style="margin-bottom:8px;">
-        <div class="section-title">🏦 Dépôt de Pomies</div>
-        <div class="section-sub" style="margin-top:4px;">Donne des Pomies à un joueur en cas de souci. Aucune déduction.</div>
+        <div class="section-title">🏦 Dépôt de Pomels</div>
+        <div class="section-sub" style="margin-top:4px;">Donne des Pomels à un joueur en cas de souci. Aucune déduction.</div>
       </div>
       <div class="transfer-card" style="margin-top:16px;">
         <div class="input-group">
