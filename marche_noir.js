@@ -18,7 +18,7 @@
 //   status,             // 'active' | 'reserved' | 'sold' | 'cancelled'
 //   createdAt,
 //   updatedAt,
-//   // Si status === 'reserved' : acheteur candidat, Pomies débités en escrow
+//   // Si status === 'reserved' : acheteur candidat, Pomels débités en escrow
 //   requesterCode, requesterName, requestedAt,
 //   // Si status === 'sold' :
 //   buyerCode, buyerName, soldAt,
@@ -332,7 +332,7 @@ function _buildMarcheNoirCard(l, role) {
     if (role === 'mine') {
       reservedInfoHTML = `<div class="mn-reserved-info">🔥 <strong>${escapeHTML(l.requesterName || '?')}</strong> veut acheter ton titre — accepte ou refuse !</div>`;
     } else if (iAmRequester) {
-      reservedInfoHTML = `<div class="mn-reserved-info">⏳ Demande en attente de validation par <strong>${escapeHTML(l.sellerName)}</strong>. Tes Pomies sont réservés.</div>`;
+      reservedInfoHTML = `<div class="mn-reserved-info">⏳ Demande en attente de validation par <strong>${escapeHTML(l.sellerName)}</strong>. Tes Pomels sont réservés.</div>`;
     } else {
       reservedInfoHTML = `<div class="mn-reserved-info" style="background:var(--surface-glass);border-color:var(--border-soft);color:var(--muted);">🔒 Demande en cours par <strong style="color:var(--text);">${escapeHTML(l.requesterName || '?')}</strong></div>`;
     }
@@ -366,7 +366,7 @@ async function handleCreateMarcheNoirListing() {
 
   if (!titleId) { setAlert('mnCreateAlert', 'Sélectionne un titre à vendre !', 'error'); return; }
   if (!price || price < 1) { setAlert('mnCreateAlert', 'Entre un prix valide !', 'error'); return; }
-  if (price > 999999) { setAlert('mnCreateAlert', 'Prix maximum : 999 999 Pomies.', 'error'); return; }
+  if (price > 999999) { setAlert('mnCreateAlert', 'Prix maximum : 999 999 Pomels.', 'error'); return; }
 
   // Vérifier qu'on possède toujours le titre
   if (!(state.ownedTitles || []).includes(titleId)) {
@@ -458,7 +458,7 @@ async function withdrawMarcheNoirListing(listingId) {
 
 // ══════════════════════════════════════════════════
 // RÉSERVATION (acheteur clique "Je veux !")
-// → status 'active' → 'reserved', Pomies débités en escrow
+// → status 'active' → 'reserved', Pomels débités en escrow
 // ══════════════════════════════════════════════════
 async function requestMarcheNoirListing(listingId) {
   // Relire pour anti-race
@@ -476,7 +476,7 @@ async function requestMarcheNoirListing(listingId) {
     return;
   }
   if (state.balance < l.price) {
-    alert(`Solde insuffisant ! Il te faut ${l.price.toLocaleString('fr-FR')} Pomies.`);
+    alert(`Solde insuffisant ! Il te faut ${l.price.toLocaleString('fr-FR')} Pomels.`);
     return;
   }
 
@@ -503,7 +503,7 @@ async function requestMarcheNoirListing(listingId) {
   // ── Étape 2 : débiter l'acheteur en escrow ──
   const buyerUpd = await addBalanceTransaction(state.code, -l.price, {
     type: 'marche_noir',
-    desc: `Demande au Marché Noir : "${l.titleName}" — Pomies réservés`,
+    desc: `Demande au Marché Noir : "${l.titleName}" — Pomels réservés`,
     amount: -l.price,
     date: reservedAt,
   });
@@ -609,7 +609,7 @@ async function acceptMarcheNoirOffer(listingId) {
     });
     if (sellerUpd) state = migrateAccount(sellerUpd);
 
-    // ── Étape 5 : log historique acheteur (Pomies déjà débités à la demande) ──
+    // ── Étape 5 : log historique acheteur (Pomels déjà débités à la demande) ──
     try {
       const buyer = await getAccount(l.requesterCode);
       if (buyer) {
@@ -617,7 +617,7 @@ async function acceptMarcheNoirOffer(listingId) {
         buyer.history.unshift({
           type: 'marche_noir',
           desc: `Titre acheté au Marché Noir : "${l.titleName}" (à ${l.sellerName})`,
-          amount: 0, // Pomies déjà débités à la demande
+          amount: 0, // Pomels déjà débités à la demande
           date: soldAt,
         });
         await saveAccount(buyer);
@@ -671,7 +671,7 @@ async function cancelMarcheNoirRequest(listingId) {
   showConfirm(`Annuler ta demande pour "${l.titleName}" ? Tes ${l.price.toLocaleString('fr-FR')} 🪙 te seront rendus.`, async () => {
     await _releaseReservation(l, 'cancelled_by_requester');
     closeConfirm();
-    setAlert('mnCreateAlert', `↩️ Demande annulée — tes Pomies t'ont été rendus.`, 'success');
+    setAlert('mnCreateAlert', `↩️ Demande annulée — tes Pomels t'ont été rendus.`, 'success');
     setTimeout(() => { document.getElementById('mnCreateAlert').className = 'alert'; }, 4000);
     renderMarcheNoir();
   });
@@ -703,7 +703,7 @@ async function _releaseReservation(l, reason) {
 
   // 2) Rembourser l'acheteur
   const reasonLabel = reason === 'refused' ? 'refusée par le vendeur' : 'annulée';
-  const refundDesc = `Demande Marché Noir ${reasonLabel} : "${titleName}" — Pomies remboursés`;
+  const refundDesc = `Demande Marché Noir ${reasonLabel} : "${titleName}" — Pomels remboursés`;
   const refundUpd = await addBalanceTransaction(requesterCode, price, {
     type: 'marche_noir',
     desc: refundDesc,
