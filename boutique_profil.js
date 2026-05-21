@@ -62,7 +62,7 @@ const SHOP_TITLES = [
   { id: 'badge_plstn', name: 'Badge Palestine 🇵🇸', price: 500, type: 'badge', emoji: '🇵🇸', hidden: true },
   { id: 'badge_expert', name: 'Badge Expert 🎖️', price: 1000, type: 'badge', emoji: '🎖️', hidden: true },
   { id: 'badge_toilettes', name: 'Badge Trône du criminel 🚽', price: 2500, type: 'badge', emoji: '🚽', hidden: true },
-  { id: 'badge_pomieien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟', hidden: true },
+  { id: 'badge_pomelien', name: 'Badge Pomélien 🌟', price: 5000, type: 'badge', emoji: '🌟', hidden: true },
   { id: 'badge_censure', name: 'Badge Censure 🚫', price: 10000, type: 'badge', emoji: '🚫', hidden: true },
   // ── BANNIÈRES ──────────────────────────────────────
   // Couleurs unies
@@ -87,7 +87,7 @@ const SHOP_TITLES = [
   { id: 'survivant_saison1', name: '🪖 Survivant/te de la Saison 1', price: 100000, type: 'title' },
   { id: 'badge_casquette', name: 'Badge Corpo 🧢', price: 1000, type: 'badge', emoji: '🧢' },
   { id: 'badge_pomfest', name: 'Badge PomFest 🎉', price: 5000, type: 'badge', emoji: '🎉' },
-  { id: 'badge_pomies', name: 'Badge Pomies 💰', price: 10000, type: 'badge', emoji: '💰' },
+  { id: 'badge_pomels', name: 'Badge Pomels 💰', price: 10000, type: 'badge', emoji: '💰' },
   { id: 'pulse', name: '💓 Effet Pulsant', price: 35000, type: 'color', desc: 'Ton pseudo pulse doucement entre brillant et sombre' },
   { id: 'glitch', name: '👾 Effet Glitch', price: 50000, type: 'color', desc: 'Ton pseudo glitche comme un écran cassé !' },
   { id: 'neon', name: '💡 Effet Néon', price: 50000, type: 'color', desc: 'Ton pseudo brille comme une enseigne néon !' },
