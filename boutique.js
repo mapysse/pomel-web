@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   BOUTIQUE.JS — Boutique Groupe pour Pomie
+   BOUTIQUE.JS — Boutique Groupe pour Pomel
    ═══════════════════════════════════════════════════════════════════════════
    Dépend de : state, dbGet, dbSet, saveAccount, saveGroup,
                escapeHTML, setAlert, getAccount, getAllGroups, getGroup,
@@ -140,7 +140,7 @@ function openGroupInfoModal() {
         <div>
           <div style="font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">📊 Score hebdomadaire</div>
           <ul style="display:flex;flex-direction:column;gap:4px;padding-left:18px;color:var(--text);">
-            <li><strong>Pomies gagnés</strong> cette semaine par tous les membres</li>
+            <li><strong>Pomels gagnés</strong> cette semaine par tous les membres</li>
             <li>+ <strong>Graines récoltées</strong> cette semaine (clicker & auto) <strong>÷ 5</strong></li>
             <li>Dépenser ses graines ne pénalise <strong>pas</strong> le groupe</li>
           </ul>
