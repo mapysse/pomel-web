@@ -389,58 +389,58 @@ const PM_DEX_IDS = Object.keys(PM_DEX);
 
 const PM_MOVES = {
   // Plante
-  fouet_roncier:   { id:'fouet_roncier',   name:'Fouet Roncier',    type:'plante',     power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Plante puissante.' },
-  photosynthese:   { id:'photosynthese',   name:'Photosynthèse',    type:'plante',     power:0,  accuracy:100, pp:3, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
-  lancer_seve:     { id:'lancer_seve',     name:'Jet d\'Écume',      type:'eau',        power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Eau (couvre les Feu).' },
-  pollen_lourd:    { id:'pollen_lourd',    name:'Pollen Lourd',     type:'plante',     power:0,  accuracy:90,  pp:3, category:'debuff', stat:'vit', stages:-1, desc:'Baisse la Vitesse adverse d\'un cran.' },
+  fouet_roncier:   { id:'fouet_roncier',   name:'Fouet Roncier',    type:'plante',     power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Plante puissante.' },
+  photosynthese:   { id:'photosynthese',   name:'Photosynthèse',    type:'plante',     power:0,  accuracy:100, pp:6, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
+  lancer_seve:     { id:'lancer_seve',     name:'Jet d\'Écume',      type:'eau',        power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Eau (couvre les Feu).' },
+  pollen_lourd:    { id:'pollen_lourd',    name:'Pollen Lourd',     type:'plante',     power:0,  accuracy:90,  pp:6, category:'debuff', stat:'vit', stages:-1, desc:'Baisse la Vitesse adverse d\'un cran.' },
 
   // Feu
-  brasier:         { id:'brasier',         name:'Brasier',          type:'feu',        power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Feu puissante.' },
-  flamme_vive:     { id:'flamme_vive',     name:'Flamme Vive',      type:'feu',        power:50, accuracy:95,  pp:5, category:'attack', burnChance:0.30, desc:'Attaque Feu, 30% de brûler l\'adversaire.' },
-  tranchant:       { id:'tranchant',       name:'Coup d\'Aile',      type:'air',        power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Air (couvre les Eau).' },
-  surchauffe:      { id:'surchauffe',      name:'Surchauffe',       type:'feu',        power:0,  accuracy:100, pp:3, category:'buff', stat:'atk', stages:1, desc:'Augmente ta propre Attaque d\'un cran.' },
+  brasier:         { id:'brasier',         name:'Brasier',          type:'feu',        power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Feu puissante.' },
+  flamme_vive:     { id:'flamme_vive',     name:'Flamme Vive',      type:'feu',        power:50, accuracy:95,  pp:10, category:'attack', burnChance:0.30, desc:'Attaque Feu, 30% de brûler l\'adversaire.' },
+  tranchant:       { id:'tranchant',       name:'Coup d\'Aile',      type:'air',        power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Air (couvre les Eau).' },
+  surchauffe:      { id:'surchauffe',      name:'Surchauffe',       type:'feu',        power:0,  accuracy:100, pp:6, category:'buff', stat:'atk', stages:1, desc:'Augmente ta propre Attaque d\'un cran.' },
 
   // Eau
-  torrent:         { id:'torrent',         name:'Torrent',          type:'eau',        power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Eau puissante.' },
-  aqua_jet:        { id:'aqua_jet',        name:'Aqua Jet',         type:'eau',        power:40, accuracy:100, pp:5, category:'attack', priority:true, desc:'Attaque Eau rapide : frappe toujours en premier.' },
-  eclair_marin:    { id:'eclair_marin',    name:'Éclair Marin',     type:'electrique', power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Électrique (couvre les Plante).' },
-  corrosion:       { id:'corrosion',       name:'Corrosion',        type:'eau',        power:0,  accuracy:90,  pp:3, category:'debuff', stat:'def', stages:-1, desc:'Baisse la Défense adverse d\'un cran.' },
+  torrent:         { id:'torrent',         name:'Torrent',          type:'eau',        power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Eau puissante.' },
+  aqua_jet:        { id:'aqua_jet',        name:'Aqua Jet',         type:'eau',        power:40, accuracy:100, pp:10, category:'attack', priority:true, desc:'Attaque Eau rapide : frappe toujours en premier.' },
+  eclair_marin:    { id:'eclair_marin',    name:'Éclair Marin',     type:'electrique', power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Électrique (couvre les Plante).' },
+  corrosion:       { id:'corrosion',       name:'Corrosion',        type:'eau',        power:0,  accuracy:90,  pp:6, category:'debuff', stat:'def', stages:-1, desc:'Baisse la Défense adverse d\'un cran.' },
 
   // Électrique
-  arc_voltaique:   { id:'arc_voltaique',   name:'Arc Voltaïque',    type:'electrique', power:55, accuracy:90,  pp:5, category:'attack', sideEffect:'debuff_def', chance:0.25, desc:'Attaque Électrique, 25% de baisser la Défense adverse.' },
-  surcharge:       { id:'surcharge',       name:'Surcharge',        type:'electrique', power:55, accuracy:90,  pp:5, category:'attack', sideEffect:'buff_atk', chance:0.25, desc:'Attaque Électrique, 25% d\'augmenter ta propre Attaque.' },
-  galvanisation:   { id:'galvanisation',   name:'Galvanisation',    type:'electrique', power:0,  accuracy:100, pp:3, category:'buff', stat:'atk', stages:1, desc:'Augmente ta propre Attaque d\'un cran.' },
-  racine_choc:     { id:'racine_choc',     name:'Fouet Végétal',    type:'plante',     power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Plante (couvre les Eau).' },
+  arc_voltaique:   { id:'arc_voltaique',   name:'Arc Voltaïque',    type:'electrique', power:55, accuracy:90,  pp:10, category:'attack', sideEffect:'debuff_def', chance:0.25, desc:'Attaque Électrique, 25% de baisser la Défense adverse.' },
+  surcharge:       { id:'surcharge',       name:'Surcharge',        type:'electrique', power:55, accuracy:90,  pp:10, category:'attack', sideEffect:'buff_atk', chance:0.25, desc:'Attaque Électrique, 25% d\'augmenter ta propre Attaque.' },
+  galvanisation:   { id:'galvanisation',   name:'Galvanisation',    type:'electrique', power:0,  accuracy:100, pp:6, category:'buff', stat:'atk', stages:1, desc:'Augmente ta propre Attaque d\'un cran.' },
+  racine_choc:     { id:'racine_choc',     name:'Fouet Végétal',    type:'plante',     power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Plante (couvre les Eau).' },
 
   // Air
-  cyclone:         { id:'cyclone',         name:'Cyclone',          type:'air',        power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Air puissante.' },
-  brise_vitale:    { id:'brise_vitale',    name:'Brise Vitale',     type:'air',        power:45, accuracy:95,  pp:5, category:'attack', selfHealPct:0.15, desc:'Attaque Air qui soigne 15% des PV infligés.' },
-  eclat_celeste:   { id:'eclat_celeste',   name:'Éclat Céleste',    type:'lumiere',    power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Lumière (couvre les Ombre).' },
-  vent_curatif:    { id:'vent_curatif',    name:'Vent Curatif',     type:'air',        power:0,  accuracy:100, pp:3, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
+  cyclone:         { id:'cyclone',         name:'Cyclone',          type:'air',        power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Air puissante.' },
+  brise_vitale:    { id:'brise_vitale',    name:'Brise Vitale',     type:'air',        power:45, accuracy:95,  pp:10, category:'attack', selfHealPct:0.15, desc:'Attaque Air qui soigne 15% des PV infligés.' },
+  eclat_celeste:   { id:'eclat_celeste',   name:'Éclat Céleste',    type:'lumiere',    power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Lumière (couvre les Ombre).' },
+  vent_curatif:    { id:'vent_curatif',    name:'Vent Curatif',     type:'air',        power:0,  accuracy:100, pp:6, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
 
   // Ombre
-  nuit_noire:      { id:'nuit_noire',      name:'Nuit Noire',       type:'ombre',      power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Ombre puissante.' },
-  griffure_spec:   { id:'griffure_spec',   name:'Griffure Spectrale', type:'ombre',    power:55, accuracy:95,  pp:5, category:'attack', desc:'Attaque Ombre standard.' },
-  voile_obscur:    { id:'voile_obscur',    name:'Voile Obscur',     type:'ombre',      power:0,  accuracy:100, pp:3, category:'buff', stat:'def', stages:1, desc:'Augmente ta propre Défense d\'un cran.' },
-  flamme_maudite:  { id:'flamme_maudite',  name:'Flamme Maudite',   type:'feu',        power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Feu (couvre les Plante).' },
+  nuit_noire:      { id:'nuit_noire',      name:'Nuit Noire',       type:'ombre',      power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Ombre puissante.' },
+  griffure_spec:   { id:'griffure_spec',   name:'Griffure Spectrale', type:'ombre',    power:55, accuracy:95,  pp:10, category:'attack', desc:'Attaque Ombre standard.' },
+  voile_obscur:    { id:'voile_obscur',    name:'Voile Obscur',     type:'ombre',      power:0,  accuracy:100, pp:6, category:'buff', stat:'def', stages:1, desc:'Augmente ta propre Défense d\'un cran.' },
+  flamme_maudite:  { id:'flamme_maudite',  name:'Flamme Maudite',   type:'feu',        power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Feu (couvre les Plante).' },
 
   // Lumière
-  rayon_sacre:     { id:'rayon_sacre',     name:'Rayon Sacré',      type:'lumiere',    power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Lumière puissante.' },
-  eclat_dore:      { id:'eclat_dore',      name:'Éclat Doré',       type:'lumiere',    power:55, accuracy:95,  pp:5, category:'attack', desc:'Attaque Lumière standard.' },
-  aura_radieuse:   { id:'aura_radieuse',   name:'Aura Radieuse',    type:'lumiere',    power:0,  accuracy:100, pp:3, category:'buff', stat:'atk', stages:1, desc:'Augmente ta propre Attaque d\'un cran.' },
-  ombre_inversee:  { id:'ombre_inversee',  name:'Ombre Inversée',   type:'ombre',      power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Ombre (couvre les Lumière).' },
+  rayon_sacre:     { id:'rayon_sacre',     name:'Rayon Sacré',      type:'lumiere',    power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Lumière puissante.' },
+  eclat_dore:      { id:'eclat_dore',      name:'Éclat Doré',       type:'lumiere',    power:55, accuracy:95,  pp:10, category:'attack', desc:'Attaque Lumière standard.' },
+  aura_radieuse:   { id:'aura_radieuse',   name:'Aura Radieuse',    type:'lumiere',    power:0,  accuracy:100, pp:6, category:'buff', stat:'atk', stages:1, desc:'Augmente ta propre Attaque d\'un cran.' },
+  ombre_inversee:  { id:'ombre_inversee',  name:'Ombre Inversée',   type:'ombre',      power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Ombre (couvre les Lumière).' },
 
   // Glace
-  blizzard:        { id:'blizzard',        name:'Blizzard',         type:'glace',      power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Glace puissante.' },
-  cristal_eclat:   { id:'cristal_eclat',   name:'Éclat de Cristal', type:'glace',      power:50, accuracy:95,  pp:5, category:'attack', sideEffect:'debuff_def', chance:0.25, desc:'Attaque Glace, 25% de baisser la Défense adverse.' },
-  vent_polaire:    { id:'vent_polaire',    name:'Vent Polaire',     type:'air',        power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Air (couvre les Plante).' },
-  givre_acere:     { id:'givre_acere',     name:'Givre Acéré',      type:'glace',      power:0,  accuracy:90,  pp:3, category:'debuff', stat:'vit', stages:-1, desc:'Baisse la Vitesse adverse d\'un cran.' },
+  blizzard:        { id:'blizzard',        name:'Blizzard',         type:'glace',      power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Glace puissante.' },
+  cristal_eclat:   { id:'cristal_eclat',   name:'Éclat de Cristal', type:'glace',      power:50, accuracy:95,  pp:10, category:'attack', sideEffect:'debuff_def', chance:0.25, desc:'Attaque Glace, 25% de baisser la Défense adverse.' },
+  vent_polaire:    { id:'vent_polaire',    name:'Vent Polaire',     type:'air',        power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Air (couvre les Plante).' },
+  givre_acere:     { id:'givre_acere',     name:'Givre Acéré',      type:'glace',      power:0,  accuracy:90,  pp:6, category:'debuff', stat:'vit', stages:-1, desc:'Baisse la Vitesse adverse d\'un cran.' },
 
   // Métal
-  charge_lourde:   { id:'charge_lourde',   name:'Charge Lourde',    type:'metal',      power:80, accuracy:85,  pp:3, category:'attack', desc:'Attaque Métal puissante.' },
-  lame_acier:      { id:'lame_acier',      name:'Lame d\'Acier',    type:'metal',      power:50, accuracy:95,  pp:5, category:'attack', sideEffect:'buff_atk', chance:0.25, desc:'Attaque Métal, 25% d\'augmenter ta propre Attaque.' },
-  poing_brulant:   { id:'poing_brulant',   name:'Poing Brûlant',    type:'feu',        power:50, accuracy:95,  pp:5, category:'attack', desc:'Attaque Feu (couvre les Glace).' },
-  forteresse:      { id:'forteresse',      name:'Forteresse',       type:'metal',      power:0,  accuracy:100, pp:3, category:'buff', stat:'def', stages:1, desc:'Augmente ta propre Défense d\'un cran.' },
+  charge_lourde:   { id:'charge_lourde',   name:'Charge Lourde',    type:'metal',      power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Métal puissante.' },
+  lame_acier:      { id:'lame_acier',      name:'Lame d\'Acier',    type:'metal',      power:50, accuracy:95,  pp:10, category:'attack', sideEffect:'buff_atk', chance:0.25, desc:'Attaque Métal, 25% d\'augmenter ta propre Attaque.' },
+  poing_brulant:   { id:'poing_brulant',   name:'Poing Brûlant',    type:'feu',        power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Feu (couvre les Glace).' },
+  forteresse:      { id:'forteresse',      name:'Forteresse',       type:'metal',      power:0,  accuracy:100, pp:6, category:'buff', stat:'def', stages:1, desc:'Augmente ta propre Défense d\'un cran.' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // MOVES SIGNATURE DOJO — exclusivement appris au Dojo (R2)
@@ -449,18 +449,18 @@ const PM_MOVES = {
   // ═══════════════════════════════════════════════════════════════════════════
 
   // Signatures de type (1 par type, power 85-90)
-  lame_seve:       { id:'lame_seve',       name:'Lame Sève',        type:'plante',     power:85, accuracy:90,  pp:3, category:'attack', dojoOnly:true, desc:'Attaque Plante puissante.' },
-  volcan_sacre:    { id:'volcan_sacre',    name:'Volcan Sacré',     type:'feu',        power:90, accuracy:85,  pp:3, category:'attack', burnChance:0.35, dojoOnly:true, desc:'Attaque Feu, 35% de brûler.' },
-  raz_de_maree:    { id:'raz_de_maree',    name:'Raz-de-Marée',     type:'eau',        power:85, accuracy:90,  pp:3, category:'attack', sideEffect:'debuff_vit', chance:0.25, dojoOnly:true, desc:'Attaque Eau, 25% de baisser la Vitesse.' },
-  foudre_pure:     { id:'foudre_pure',     name:'Foudre Pure',      type:'electrique', power:90, accuracy:85,  pp:3, category:'attack', sideEffect:'debuff_def', chance:0.30, dojoOnly:true, desc:'Attaque Électrique, 30% de baisser la Défense.' },
-  souffle_aurore:  { id:'souffle_aurore',  name:'Souffle Aurore',   type:'air',        power:80, accuracy:95,  pp:3, category:'attack', healFraction:0.25, dojoOnly:true, desc:'Attaque Air, soigne 25% des dégâts infligés.' },
-  cristal_brise:   { id:'cristal_brise',   name:'Cristal Brisé',    type:'glace',      power:90, accuracy:85,  pp:3, category:'attack', sideEffect:'debuff_def', chance:0.30, dojoOnly:true, desc:'Attaque Glace, 30% de baisser la Défense.' },
-  lame_orichal:    { id:'lame_orichal',    name:'Lame d\'Orichal',  type:'metal',      power:85, accuracy:90,  pp:3, category:'attack', ignoreDefBuffs:true, dojoOnly:true, desc:'Attaque Métal, ignore les buffs de Défense adverses.' },
+  lame_seve:       { id:'lame_seve',       name:'Lame Sève',        type:'plante',     power:85, accuracy:90,  pp:6, category:'attack', dojoOnly:true, desc:'Attaque Plante puissante.' },
+  volcan_sacre:    { id:'volcan_sacre',    name:'Volcan Sacré',     type:'feu',        power:90, accuracy:85,  pp:6, category:'attack', burnChance:0.35, dojoOnly:true, desc:'Attaque Feu, 35% de brûler.' },
+  raz_de_maree:    { id:'raz_de_maree',    name:'Raz-de-Marée',     type:'eau',        power:85, accuracy:90,  pp:6, category:'attack', sideEffect:'debuff_vit', chance:0.25, dojoOnly:true, desc:'Attaque Eau, 25% de baisser la Vitesse.' },
+  foudre_pure:     { id:'foudre_pure',     name:'Foudre Pure',      type:'electrique', power:90, accuracy:85,  pp:6, category:'attack', sideEffect:'debuff_def', chance:0.30, dojoOnly:true, desc:'Attaque Électrique, 30% de baisser la Défense.' },
+  souffle_aurore:  { id:'souffle_aurore',  name:'Souffle Aurore',   type:'air',        power:80, accuracy:95,  pp:6, category:'attack', healFraction:0.25, dojoOnly:true, desc:'Attaque Air, soigne 25% des dégâts infligés.' },
+  cristal_brise:   { id:'cristal_brise',   name:'Cristal Brisé',    type:'glace',      power:90, accuracy:85,  pp:6, category:'attack', sideEffect:'debuff_def', chance:0.30, dojoOnly:true, desc:'Attaque Glace, 30% de baisser la Défense.' },
+  lame_orichal:    { id:'lame_orichal',    name:'Lame d\'Orichal',  type:'metal',      power:85, accuracy:90,  pp:6, category:'attack', ignoreDefBuffs:true, dojoOnly:true, desc:'Attaque Métal, ignore les buffs de Défense adverses.' },
 
   // Universels utilitaires (n'importe quel type peut les apprendre)
-  aura_de_fer:     { id:'aura_de_fer',     name:'Aura de Fer',      type:'neutre',     power:0, accuracy:100, pp:3, category:'buff',   stat:'def', stages:2, dojoOnly:true, desc:'Augmente sa propre Défense de 2 crans.' },
-  hate_ancienne:   { id:'hate_ancienne',   name:'Hâte Ancienne',    type:'neutre',     power:0, accuracy:100, pp:3, category:'buff',   stat:'vit', stages:2, dojoOnly:true, desc:'Augmente sa propre Vitesse de 2 crans.' },
-  malediction:     { id:'malediction',     name:'Malédiction',      type:'ombre',      power:0, accuracy:90,  pp:3, category:'debuff', multiStat:['atk','def'], stages:-1, dojoOnly:true, desc:'Baisse l\'Attaque ET la Défense adverses d\'un cran.' },
+  aura_de_fer:     { id:'aura_de_fer',     name:'Aura de Fer',      type:'neutre',     power:0, accuracy:100, pp:6, category:'buff',   stat:'def', stages:2, dojoOnly:true, desc:'Augmente sa propre Défense de 2 crans.' },
+  hate_ancienne:   { id:'hate_ancienne',   name:'Hâte Ancienne',    type:'neutre',     power:0, accuracy:100, pp:6, category:'buff',   stat:'vit', stages:2, dojoOnly:true, desc:'Augmente sa propre Vitesse de 2 crans.' },
+  malediction:     { id:'malediction',     name:'Malédiction',      type:'ombre',      power:0, accuracy:90,  pp:6, category:'debuff', multiStat:['atk','def'], stages:-1, dojoOnly:true, desc:'Baisse l\'Attaque ET la Défense adverses d\'un cran.' },
 
   // Universel (backup quand plus de PP)
   lutte:           { id:'lutte',           name:'Lutte',            type:'neutre',     power:30, accuracy:100, pp:99, category:'attack', recoilPct:0.15, desc:'Attaque désespérée, inflige 15% de recul à l\'utilisateur.' }
@@ -6175,7 +6175,7 @@ function pmRenderHome(page, player) {
 // ── Écran « Infos & Guide » ──
 function pmRenderInfo(page, player) {
   // Générer la table des types dynamiquement
-  const types = ['plante','feu','eau','electrique','air','ombre','lumiere'];
+  const types = PM_TYPES;
   let typeTableRows = '';
   for (const t of types) {
     const weakTo = [], resistTo = [];
