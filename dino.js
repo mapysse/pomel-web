@@ -546,30 +546,62 @@ document.addEventListener('keyup', e => {
   }
 });
 
-// Touch / click pour sauter
+// Touch / click pour sauter + swipe vers le bas pour fast-fall
+let _dinoTouchStartY = null;
+let _dinoTouchActive = false;
+const DINO_SWIPE_DOWN_THRESHOLD = 18; // pixels avant de déclencher le fast-fall
+
 document.addEventListener('touchstart', e => {
   if (!_dinoState || !_dinoState.running) return;
   const wrap = document.querySelector('.dino-canvas-wrap');
   if (wrap && wrap.contains(e.target)) {
     e.preventDefault();
+    _dinoTouchStartY = e.touches[0].clientY;
+    _dinoTouchActive = true;
     dinoJump();
   }
 }, { passive: false });
 
 document.addEventListener('click', e => {
   if (!_dinoState || !_dinoState.running) return;
+  // Si un touch vient d'être traité, ignorer le click synthétisé pour éviter le double-jump
+  if (_dinoTouchActive) return;
   const wrap = document.querySelector('.dino-canvas-wrap');
   if (wrap && wrap.contains(e.target)) {
     dinoJump();
   }
 });
 
-// Empêcher le scroll sur mobile pendant le jeu
+// Empêcher le scroll sur mobile + détecter swipe vers le bas pour fast-fall
 document.addEventListener('touchmove', e => {
   if (!_dinoState || !_dinoState.running) return;
-  if (e.target.closest('.dino-canvas-wrap')) {
-    e.preventDefault();
+  if (!e.target.closest('.dino-canvas-wrap')) return;
+  e.preventDefault();
+  // Détecter le swipe vers le bas
+  if (_dinoTouchStartY !== null) {
+    const dy = e.touches[0].clientY - _dinoTouchStartY;
+    if (dy > DINO_SWIPE_DOWN_THRESHOLD) {
+      dinoDuck(true);
+    }
   }
 }, { passive: false });
+
+document.addEventListener('touchend', e => {
+  if (!_dinoState) return;
+  if (_dinoTouchActive) {
+    // Relâcher le crouch quand on lève le doigt (comme un keyup ArrowDown)
+    dinoDuck(false);
+  }
+  _dinoTouchStartY = null;
+  // Petit délai avant de re-permettre le click (anti double-jump iOS)
+  setTimeout(() => { _dinoTouchActive = false; }, 350);
+}, { passive: true });
+
+document.addEventListener('touchcancel', e => {
+  if (!_dinoState) return;
+  dinoDuck(false);
+  _dinoTouchStartY = null;
+  _dinoTouchActive = false;
+}, { passive: true });
 
 console.log('[Dino] Module loaded ✓');
