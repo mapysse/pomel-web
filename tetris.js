@@ -48,7 +48,52 @@
 const TET_COLS = 10;
 const TET_ROWS = 18;
 const TET_CELL = 25;
-const TET_POMEL_PER_LINE = 3;
+
+// ─── BARÈME POMELS ─────────────────────────────────────────
+// Paliers (Pomels par ligne, selon le total de lignes déjà faites) :
+//   1-10   → 3/ligne   (échauffement)
+//   11-25  → 5/ligne   (régulier)
+//   26-50  → 8/ligne   (sérieux)
+//   51+    → 12/ligne  (mode survie)
+//
+// Bonus combo (multiplicateur sur le batch de lignes simultanées) :
+//   2 lignes (double) → ×1.10
+//   3 lignes (triple) → ×1.25
+//   4 lignes (Tetris) → ×1.50
+const TET_PALIERS = [
+  { upTo: 10,       perLine: 3  },
+  { upTo: 25,       perLine: 5  },
+  { upTo: 50,       perLine: 8  },
+  { upTo: Infinity, perLine: 12 }
+];
+const TET_COMBO_MULT = { 1: 1.0, 2: 1.10, 3: 1.25, 4: 1.50 };
+// Pomels par ligne pour le palier qui contient `linesDone` lignes au compteur
+function tetPomelPerLineAt(linesDone) {
+  for (const p of TET_PALIERS) {
+    if (linesDone <= p.upTo) return p.perLine;
+  }
+  return TET_PALIERS[TET_PALIERS.length - 1].perLine;
+}
+// Pomels gagnés sur un batch de `cleared` lignes (1 à 4) sachant que
+// le joueur en a déjà `linesBefore` au compteur. Applique le palier
+// progressif ligne par ligne, puis multiplie par le bonus combo.
+function tetCalcBatchPomels(cleared, linesBefore) {
+  if (cleared <= 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < cleared; i++) {
+    sum += tetPomelPerLineAt(linesBefore + i + 1);
+  }
+  const mult = TET_COMBO_MULT[cleared] || 1.0;
+  return Math.round(sum * mult);
+}
+// Total des Pomels qui auraient été gagnés pour `totalLines` lignes au mieux,
+// en supposant que toutes ont été clear par single (pour rétro-compatibilité LB).
+function tetCalcTotalPomelsFromLines(totalLines) {
+  let sum = 0;
+  for (let i = 1; i <= totalLines; i++) sum += tetPomelPerLineAt(i);
+  return sum;
+}
+
 const TET_INITIAL_SPEED = 500; // ms entre chaque descente (était 800)
 const TET_MIN_SPEED = 60;
 const TET_SPEED_DECREASE = 35; // ms plus rapide par 5 lignes
@@ -158,8 +203,10 @@ function tetDropOne() {
     // Vérifier lignes
     const cleared = tetClearLines(s);
     if (cleared > 0) {
+      // Calculer les Pomels gagnés AVANT d'incrémenter s.lines (le palier
+      // dépend du nombre de lignes déjà faites).
+      _tetPomels += tetCalcBatchPomels(cleared, s.lines);
       s.lines += cleared;
-      _tetPomels += cleared * TET_POMEL_PER_LINE;
       // Accélérer tous les 5 lignes
       s.speed = Math.max(TET_MIN_SPEED, TET_INITIAL_SPEED - Math.floor(s.lines / 5) * TET_SPEED_DECREASE);
       updateTetrisUI();
@@ -452,7 +499,7 @@ async function renderTetrisLb() {
       '<span class="snake-lb-rank ' + rankClass + '">' + (medals[i] || rank) + '</span>' +
       '<span class="snake-lb-name ' + cc + '">' + (typeof escapeHTML === 'function' ? escapeHTML(e.name) : e.name) + (isMe ? ' <span class="lb-you-badge">Moi</span>' : '') + '</span>' +
       '<span class="snake-lb-score">' + e.score + ' lignes</span>' +
-      '<span class="snake-lb-pomels">+' + (e.score * TET_POMEL_PER_LINE).toLocaleString('fr-FR') + ' 🪙</span>';
+      '<span class="snake-lb-pomels">+' + tetCalcTotalPomelsFromLines(e.score).toLocaleString('fr-FR') + ' 🪙</span>';
     list.appendChild(div);
   }
 }
