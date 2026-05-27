@@ -8128,6 +8128,239 @@ function pvpBotCanFight(profile) {
 const _pvpBotTurnPending = {};
 
 // ─────────────────────────────────────────────────────────────────────
+// 🤖 INTELLIGENCE DE RED — niveau adaptatif selon l'ELO du joueur
+// ─────────────────────────────────────────────────────────────────────
+//
+// L'idée : Red doit rester abordable pour les débutants (qui doivent pouvoir
+// gagner et monter en ELO) mais devenir un vrai défi pour les joueurs hauts.
+// On définit 4 niveaux de difficulté qui débloquent progressivement des
+// capacités tactiques :
+//
+//   - easy   : random pondéré (60% strong / 30% medium / 10% utility) — IA d'origine
+//   - normal : préfère les moves super-efficaces (×1.4 typeMod ou plus)
+//   - hard   : calcule les dégâts réels, vise le KO, switch si matchup mauvais
+//   - expert : tout ci-dessus + heal stratégique + bruit minimal (joue presque optimal)
+//
+// Seuils ELO (calibrés pour que les paliers correspondent grosso modo aux
+// tiers existants : Bronze < Silver < Gold < Platinum) :
+
+const PVP_BOT_DIFF_EASY   = 'easy';
+const PVP_BOT_DIFF_NORMAL = 'normal';
+const PVP_BOT_DIFF_HARD   = 'hard';
+const PVP_BOT_DIFF_EXPERT = 'expert';
+
+// Seuils ELO alignés sur les tiers du jeu :
+//   Débutant / Novice (< 1100)  → 🟢 Facile
+//   Confirmé          (1100-1399) → 🟡 Normal
+//   Champion          (1400-1699) → 🟠 Difficile
+//   Maître            (1700+)     → 🔴 Expert
+function pvpBotGetDifficulty(playerElo) {
+  const elo = (typeof playerElo === 'number') ? playerElo : ELO_START;
+  if (elo < 1100) return PVP_BOT_DIFF_EASY;
+  if (elo < 1400) return PVP_BOT_DIFF_NORMAL;
+  if (elo < 1700) return PVP_BOT_DIFF_HARD;
+  return PVP_BOT_DIFF_EXPERT;
+}
+
+function pvpBotDifficultyLabel(diff) {
+  switch (diff) {
+    case PVP_BOT_DIFF_EASY:   return '🟢 Facile';
+    case PVP_BOT_DIFF_NORMAL: return '🟡 Normal';
+    case PVP_BOT_DIFF_HARD:   return '🟠 Difficile';
+    case PVP_BOT_DIFF_EXPERT: return '🔴 Expert';
+    default:                  return '';
+  }
+}
+
+// Multiplicateur de type d'un move contre un défenseur (lit PM_WEAK).
+function pvpBotTypeMult(moveType, defenderType) {
+  return (PM_WEAK[defenderType] && PM_WEAK[defenderType][moveType]) || 1.0;
+}
+
+// Score interne d'un move pour le bot, plus le score est haut, plus le move
+// est attractif. Combine dégâts attendus + bonus de précision + bonus KO.
+function pvpBotScoreMove(self, opponent, moveIdx) {
+  const move = self.moves[moveIdx];
+  if (!move || move.currentPp <= 0) return -Infinity;
+
+  const acc = (typeof move.accuracy === 'number') ? move.accuracy : 100;
+  const accFactor = acc / 100;
+
+  if (move.category === 'attack' && move.power > 0) {
+    const dmg = pmCalcDamage(self, opponent, move);
+    let score = dmg * accFactor;
+    // Bonus si ce coup KO l'adversaire (déjà sûr de la victoire pour ce tour)
+    if (dmg >= opponent.hp) {
+      score += 1000;  // priorité quasi-absolue sauf si très faible précision
+      score *= accFactor; // mais le KO doit être probable
+    }
+    return score;
+  }
+  // Moves de heal : valeur dépendante du HP manquant
+  if (move.category === 'heal') {
+    const missingPct = 1 - (self.hp / Math.max(1, self.maxHp));
+    // 0 si full HP, jusqu'à ~80 si très bas HP
+    return missingPct * 80;
+  }
+  // Stat / status moves : score modeste, dépend du contexte
+  if (move.category === 'stat' || move.category === 'status') {
+    return 12;  // valeur basse, utilisé en utility quand rien de mieux
+  }
+  return 5;
+}
+
+// Choisit le meilleur move selon les dégâts calculés + un peu de bruit
+// (le bruit dépend de la difficulté : plus le bot est fort, moins il dévie).
+function pvpBotChooseBestMove(self, opponent, noiseRatio) {
+  const scores = [];
+  for (let i = 0; i < self.moves.length; i++) {
+    if (!self.moves[i] || self.moves[i].currentPp <= 0) continue;
+    let s = pvpBotScoreMove(self, opponent, i);
+    // Ajouter un bruit gaussien (en pratique uniforme ±noiseRatio*moyenne)
+    if (noiseRatio > 0 && s > 0 && s < 500) {  // pas de bruit sur les KO sûrs
+      s *= 1 + (Math.random() * 2 - 1) * noiseRatio;
+    }
+    scores.push({ idx: i, score: s });
+  }
+  if (scores.length === 0) return 0;
+  scores.sort((a, b) => b.score - a.score);
+  return scores[0].idx;
+}
+
+// Évalue le matchup actuel pour le bot. Retourne un score :
+//   > 0 : le bot a l'avantage (pas la peine de switch)
+//   < 0 : le bot est en désavantage (envisager de switch)
+function pvpBotEvalMatchup(self, opponent) {
+  // Score basé sur le meilleur move dispo du bot vs HP de l'adversaire,
+  // ET le meilleur move (estimé) de l'adversaire vs HP du bot.
+  let myBestDmg = 0;
+  for (const m of self.moves) {
+    if (!m || m.currentPp <= 0 || m.category !== 'attack' || m.power === 0) continue;
+    const d = pmCalcDamage(self, opponent, m);
+    if (d > myBestDmg) myBestDmg = d;
+  }
+  let oppBestDmg = 0;
+  for (const m of opponent.moves) {
+    if (!m || m.category !== 'attack' || m.power === 0) continue;
+    const d = pmCalcDamage(opponent, self, m);
+    if (d > oppBestDmg) oppBestDmg = d;
+  }
+  // Tours pour KO chaque côté (plus faible = plus rapide à KO)
+  const myTurnsToKO  = myBestDmg > 0  ? Math.ceil(opponent.hp / myBestDmg) : 99;
+  const oppTurnsToKO = oppBestDmg > 0 ? Math.ceil(self.hp / oppBestDmg)    : 99;
+  // Score : positif si je tue avant d'être tué
+  return oppTurnsToKO - myTurnsToKO;
+}
+
+// Choisit le meilleur PokePom suivant à envoyer (parmi ceux vivants et non-actifs).
+// Retourne null si aucun switch n'est avantageux (ou si seul actif vivant).
+function pvpBotPickBestSwitch(battle, currentScore) {
+  let bestIdx = -1;
+  let bestScore = currentScore;  // ne switch que si on trouve mieux
+  const activeIdx = battle.p2ActiveIdx || 0;
+  const p1Active = pvpDeserializeFighter(battle.p1Team[battle.p1ActiveIdx || 0]);
+
+  for (let i = 0; i < battle.p2Team.length; i++) {
+    if (i === activeIdx) continue;
+    const candidate = battle.p2Team[i];
+    if (!candidate || candidate.ko || candidate.hp <= 0) continue;
+    const fighter = pvpDeserializeFighter(candidate);
+    const matchupScore = pvpBotEvalMatchup(fighter, p1Active);
+    if (matchupScore > bestScore + 1) {  // marge minimale pour éviter switches inutiles
+      bestScore = matchupScore;
+      bestIdx = i;
+    }
+  }
+  return bestIdx >= 0 ? bestIdx : null;
+}
+
+// Décide de l'action complète du bot (move OU switch).
+// `difficulty` détermine les capacités utilisées.
+function pvpBotChooseAction(battle, difficulty) {
+  const myActiveIdx = battle.p2ActiveIdx || 0;
+  const myActive  = pvpDeserializeFighter(battle.p2Team[myActiveIdx]);
+  const oppActiveIdx = battle.p1ActiveIdx || 0;
+  const oppActive = pvpDeserializeFighter(battle.p1Team[oppActiveIdx]);
+
+  // ── EASY : IA d'origine, random pondéré ──
+  if (difficulty === PVP_BOT_DIFF_EASY) {
+    const idx = pmAIChooseMove(myActive, oppActive);
+    return { type: 'move', moveIdx: idx, by: 'p2' };
+  }
+
+  // ── NORMAL : favorise les types efficaces avec bruit modéré ──
+  if (difficulty === PVP_BOT_DIFF_NORMAL) {
+    // 30% chance de heal stratégique si HP très bas
+    if (myActive.hp < myActive.maxHp * 0.30) {
+      const healIdx = myActive.moves.findIndex(m => m && m.category === 'heal' && m.currentPp > 0);
+      if (healIdx >= 0 && Math.random() < 0.30) return { type: 'move', moveIdx: healIdx, by: 'p2' };
+    }
+    const idx = pvpBotChooseBestMove(myActive, oppActive, 0.35);  // 35% de bruit
+    return { type: 'move', moveIdx: idx, by: 'p2' };
+  }
+
+  // ── HARD : calcul de dégâts, KO prioritaire, switch si matchup mauvais ──
+  if (difficulty === PVP_BOT_DIFF_HARD) {
+    // Heal smart : si HP <= 30%, on heal si on n'est pas sur le point de mourir ce tour
+    if (myActive.hp < myActive.maxHp * 0.30) {
+      const healIdx = myActive.moves.findIndex(m => m && m.category === 'heal' && m.currentPp > 0);
+      if (healIdx >= 0) {
+        // Estimer si l'adversaire peut nous KO ce tour : si oui, on tape, sinon on heal
+        let oppBestDmg = 0;
+        for (const m of oppActive.moves) {
+          if (!m || m.category !== 'attack' || m.power === 0) continue;
+          const d = pmCalcDamage(oppActive, myActive, m);
+          if (d > oppBestDmg) oppBestDmg = d;
+        }
+        if (oppBestDmg < myActive.hp) {
+          // L'adversaire ne nous tue pas ce tour, on heal
+          if (Math.random() < 0.70) return { type: 'move', moveIdx: healIdx, by: 'p2' };
+        }
+      }
+    }
+    // Évaluer le matchup actuel
+    const matchupScore = pvpBotEvalMatchup(myActive, oppActive);
+    // Si très défavorable (l'adversaire nous tue en 1-2 tours et on en met 3+),
+    // chercher un meilleur switch
+    if (matchupScore <= -2) {
+      const switchIdx = pvpBotPickBestSwitch(battle, matchupScore);
+      if (switchIdx !== null && Math.random() < 0.65) {
+        return { type: 'switch', toIdx: switchIdx, by: 'p2' };
+      }
+    }
+    const idx = pvpBotChooseBestMove(myActive, oppActive, 0.15);  // 15% de bruit
+    return { type: 'move', moveIdx: idx, by: 'p2' };
+  }
+
+  // ── EXPERT : presque optimal ──
+  // Heal très smart, switch agressif sur mauvais matchup, dégâts précis
+  if (myActive.hp < myActive.maxHp * 0.35) {
+    const healIdx = myActive.moves.findIndex(m => m && m.category === 'heal' && m.currentPp > 0);
+    if (healIdx >= 0) {
+      let oppBestDmg = 0;
+      for (const m of oppActive.moves) {
+        if (!m || m.category !== 'attack' || m.power === 0) continue;
+        const d = pmCalcDamage(oppActive, myActive, m);
+        if (d > oppBestDmg) oppBestDmg = d;
+      }
+      // Si l'adversaire ne nous tue pas ce tour, on heal (90% chance)
+      if (oppBestDmg < myActive.hp && Math.random() < 0.90) {
+        return { type: 'move', moveIdx: healIdx, by: 'p2' };
+      }
+    }
+  }
+  const matchupScore = pvpBotEvalMatchup(myActive, oppActive);
+  if (matchupScore <= -1) {
+    const switchIdx = pvpBotPickBestSwitch(battle, matchupScore);
+    if (switchIdx !== null && Math.random() < 0.80) {
+      return { type: 'switch', toIdx: switchIdx, by: 'p2' };
+    }
+  }
+  const idx = pvpBotChooseBestMove(myActive, oppActive, 0.05);  // 5% de bruit (quasi optimal)
+  return { type: 'move', moveIdx: idx, by: 'p2' };
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Helpers ELO (réutilisent les constantes globales du jeu)
 // ─────────────────────────────────────────────────────────────────────
 
@@ -8234,7 +8467,11 @@ function pvpNormalizeProfile(data, code) {
     currentBattleId: data.currentBattleId || '',
     teamSnapshot: Array.isArray(data.teamSnapshot) ? data.teamSnapshot : [],
     lastSeen: data.lastSeen || new Date().toISOString(),
-    createdAt: data.createdAt || new Date().toISOString()
+    createdAt: data.createdAt || new Date().toISOString(),
+    // Compteur quotidien des combats contre Red — DOIT être préservé sinon
+    // chaque fin de combat (qui passe par pvpSaveProfile en set()) réinitialise
+    // le compteur et le joueur peut combattre Red à l'infini.
+    botRedFights: data.botRedFights || null
   };
 }
 
@@ -8643,29 +8880,27 @@ async function pvpInitChallenge(opponentCode) {
     console.log('[pvp] battle saved');
 
     // Mise à jour des profils (Red n'a pas de profil Firebase à écrire)
-    const updates = [
-      pvpUpdate(PVP_PATH + '/' + state.code, {
-        currentBattleId: battleId,
-        lastSeen: new Date().toISOString()
-      })
-    ];
-    if (!vsBot) {
-      updates.push(pvpUpdate(PVP_PATH + '/' + opponentCode, { currentBattleId: battleId }));
-    } else {
-      // Incrémenter le compteur quotidien contre Red dans MON profil
+    // IMPORTANT : on construit UN seul objet d'update sur mon profil pour
+    // éviter une race condition entre 2 pvpUpdate parallèles sur le même chemin.
+    const myUpdates = {
+      currentBattleId: battleId,
+      lastSeen: new Date().toISOString()
+    };
+    if (vsBot) {
       const today = (typeof getTodayKey === 'function') ? getTodayKey() : new Date().toISOString().slice(0, 10);
       const prevCount = pvpBotGetTodayCount(myProfile);
-      updates.push(pvpUpdate(PVP_PATH + '/' + state.code, {
-        botRedFights: { date: today, count: prevCount + 1 }
-      }));
+      myUpdates.botRedFights = { date: today, count: prevCount + 1 };
+    }
+    const updates = [ pvpUpdate(PVP_PATH + '/' + state.code, myUpdates) ];
+    if (!vsBot) {
+      updates.push(pvpUpdate(PVP_PATH + '/' + opponentCode, { currentBattleId: battleId }));
     }
     await Promise.all(updates);
 
     if (_pvpProfileCache) {
       _pvpProfileCache.currentBattleId = battleId;
       if (vsBot) {
-        const today = (typeof getTodayKey === 'function') ? getTodayKey() : new Date().toISOString().slice(0, 10);
-        _pvpProfileCache.botRedFights = { date: today, count: pvpBotGetTodayCount(myProfile) + 1 };
+        _pvpProfileCache.botRedFights = myUpdates.botRedFights;
       }
     }
     _pvpLastCreatedBattleId = battleId;
@@ -8823,30 +9058,39 @@ async function pvpBotPlayTurn(battleId) {
   const myActiveIdx = battle.p2ActiveIdx || 0;
   const myActiveData = battle.p2Team[myActiveIdx];
   if (!myActiveData || myActiveData.ko || myActiveData.hp <= 0) {
-    // PokePom KO : le bot devrait switch. On cherche un suivant vivant.
-    const aliveIdx = battle.p2Team.findIndex(f => f && !f.ko && f.hp > 0);
-    if (aliveIdx === -1) return;  // tous KO : la résolution gérera la défaite
-    const switchAction = { type: 'switch', toIdx: aliveIdx, by: 'p2' };
+    // PokePom KO : le bot doit switch. Choisir le meilleur replacement.
+    const oppActive = pvpDeserializeFighter(battle.p1Team[battle.p1ActiveIdx || 0]);
+    let bestIdx = -1;
+    let bestScore = -Infinity;
+    for (let i = 0; i < battle.p2Team.length; i++) {
+      const candidate = battle.p2Team[i];
+      if (!candidate || candidate.ko || candidate.hp <= 0) continue;
+      const fighter = pvpDeserializeFighter(candidate);
+      const s = pvpBotEvalMatchup(fighter, oppActive);
+      if (s > bestScore) { bestScore = s; bestIdx = i; }
+    }
+    if (bestIdx === -1) return;  // tous KO : la résolution gérera la défaite
+    const switchAction = { type: 'switch', toIdx: bestIdx, by: 'p2' };
     await pvpResolveTurn(battle, battle.pendingAction, battle.pendingActionBy, switchAction, 'p2');
     return;
   }
 
-  // Désérialiser le fighter actif du bot pour pouvoir appeler l'IA PvE
-  const myActive = pvpDeserializeFighter(myActiveData);
-  // Adversaire (P1) pour les calculs de l'IA (type, etc.)
-  const oppActiveIdx = battle.p1ActiveIdx || 0;
-  const oppActive = pvpDeserializeFighter(battle.p1Team[oppActiveIdx]);
+  // Récupérer l'ELO du joueur humain (p1) pour adapter la difficulté
+  const playerElo = (battle.p1 && typeof battle.p1.eloAtStart === 'number') ? battle.p1.eloAtStart : ELO_START;
+  const difficulty = pvpBotGetDifficulty(playerElo);
 
-  // Choisir un move via l'IA PvE
-  let moveIdx = pmAIChooseMove(myActive, oppActive);
-  // Sécurité : si l'IA renvoie un index avec 0 PP, fallback sur le 1er move avec PP
-  if (!myActive.moves[moveIdx] || myActive.moves[moveIdx].currentPp <= 0) {
-    moveIdx = myActive.moves.findIndex(m => m && m.currentPp > 0);
-    if (moveIdx === -1) moveIdx = 0;  // utilisera "Lutte" via la logique de résolution
+  // Choisir l'action via la nouvelle IA adaptative
+  let botAction = pvpBotChooseAction(battle, difficulty);
+
+  // Sécurité : si l'IA renvoie un move avec 0 PP (cas pathologique), fallback
+  if (botAction.type === 'move') {
+    const myActive = pvpDeserializeFighter(battle.p2Team[myActiveIdx]);
+    if (!myActive.moves[botAction.moveIdx] || myActive.moves[botAction.moveIdx].currentPp <= 0) {
+      const fallbackIdx = myActive.moves.findIndex(m => m && m.currentPp > 0);
+      botAction.moveIdx = fallbackIdx === -1 ? 0 : fallbackIdx;
+    }
   }
 
-  const botAction = { type: 'move', moveIdx: moveIdx, by: 'p2' };
-  // Soumettre directement la résolution (les deux actions sont prêtes)
   await pvpResolveTurn(battle, battle.pendingAction, battle.pendingActionBy, botAction, 'p2');
 }
 
@@ -9558,7 +9802,11 @@ async function pmRenderPvpList(page, player) {
     const dimmed = !isBot && (noPokepom || noTeam);
     let tierLine;
     if (isBot) {
-      tierLine = `<div style="font-size:.72rem; color:#FF9528; font-weight:bold;">🤖 Bot · ELO ${p.elo} · niv. ${PVP_BOT_LEVEL}</div>`;
+      // Récupérer mon ELO pour afficher le niveau de difficulté actuel de Red
+      const myElo = (typeof _pvpProfileCache?.elo === 'number') ? _pvpProfileCache.elo : ELO_START;
+      const diff = pvpBotGetDifficulty(myElo);
+      const diffLabel = pvpBotDifficultyLabel(diff);
+      tierLine = `<div style="font-size:.72rem; color:#FF9528; font-weight:bold;">🤖 Bot · niv. ${PVP_BOT_LEVEL} · ${diffLabel}</div>`;
     } else if (total > 0 || !noPokepom) {
       tierLine = `<div style="font-size:.72rem; color:${tier.color}; font-weight:bold;">${tier.label} · ${p.elo} ELO</div>`;
     } else {
