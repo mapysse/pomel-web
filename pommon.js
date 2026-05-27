@@ -8066,6 +8066,68 @@ const TURN_TIMEOUT_MS    = PM_PVP_TURN_TIMEOUT_MS;     // 1h par tour
 const ELO_START      = PM_ELO_START;
 
 // ─────────────────────────────────────────────────────────────────────
+// 🤖 BOT "RED" — adversaire IA pour quand il n'y a pas assez de joueurs
+// ─────────────────────────────────────────────────────────────────────
+//
+// Red est un adversaire virtuel toujours disponible. Il ne correspond à
+// aucun compte réel et n'apparaît jamais dans le classement ELO. Le joueur
+// peut le combattre jusqu'à PVP_BOT_DAILY_LIMIT fois par jour.
+//
+// Équipe : 3 PokePoms aléatoires non-légendaires de niveau PVP_BOT_LEVEL.
+// L'équipe est régénérée à chaque combat (pas fixe entre combats).
+
+const PVP_BOT_CODE          = 'BOT_RED';
+const PVP_BOT_NAME          = 'Red';
+const PVP_BOT_ELO           = 1000;          // ELO fixe (Bronze, niveau "moyen")
+const PVP_BOT_LEVEL         = 30;            // niveau de chaque PokePom de l'équipe
+const PVP_BOT_TEAM_SIZE     = 3;
+const PVP_BOT_DAILY_LIMIT   = 20;            // max combats contre Red par jour
+const PVP_BOT_AVATAR        = 'avatar_classic';
+// Délai avant que Red joue son coup (effet "réfléchit" pour l'UX)
+const PVP_BOT_THINK_MS      = 1100;
+
+function pvpIsBot(code) {
+  return code === PVP_BOT_CODE;
+}
+
+// Génère une équipe random pour Red : 3 PokePoms non-légendaires niveau 30,
+// chacun avec ses moves par défaut (customMoves=null → utilisation de PM_DEX).
+function pvpBotBuildRandomTeam() {
+  const pool = Object.keys(PM_DEX).filter(id => {
+    const dex = PM_DEX[id];
+    return dex && !dex.legendary && !dex.isEvolution;  // pas de légendaires, pas d'évolutions directes
+  });
+  // Mélanger + prendre les N premiers (sans doublons)
+  const shuffled = pool.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const picks = shuffled.slice(0, PVP_BOT_TEAM_SIZE);
+  return picks.map(id => ({
+    pokepomId: id,
+    nickname: PM_DEX[id].name,
+    level: PVP_BOT_LEVEL,
+    customMoves: null  // utilisera les moves naturels du PokePom à ce niveau
+  }));
+}
+
+// Compteur quotidien : combien de fois j'ai combattu Red aujourd'hui
+function pvpBotGetTodayCount(profile) {
+  if (!profile || !profile.botRedFights) return 0;
+  const today = (typeof getTodayKey === 'function') ? getTodayKey() : new Date().toISOString().slice(0, 10);
+  if (profile.botRedFights.date !== today) return 0;
+  return profile.botRedFights.count || 0;
+}
+
+function pvpBotCanFight(profile) {
+  return pvpBotGetTodayCount(profile) < PVP_BOT_DAILY_LIMIT;
+}
+
+// Cache anti double-déclenchement du tour du bot (sur listener Firebase répété)
+const _pvpBotTurnPending = {};
+
+// ─────────────────────────────────────────────────────────────────────
 // Helpers ELO (réutilisent les constantes globales du jeu)
 // ─────────────────────────────────────────────────────────────────────
 
@@ -8351,6 +8413,31 @@ async function pvpLoadList() {
       pvpRead(PVP_PATH)
     ]);
     if (!accountsSnap) return [];
+
+    // Récupérer mon profil PvP pour le compteur quotidien Red
+    const myPvp = pvpSnap && pvpSnap[state.code] ? pvpSnap[state.code] : null;
+    const botCount  = pvpBotGetTodayCount(myPvp);
+    const botRemaining = Math.max(0, PVP_BOT_DAILY_LIMIT - botCount);
+
+    // Construire l'entrée virtuelle pour Red
+    // Son teamSnapshot affiché est régénéré à chaque chargement (preview),
+    // mais sera re-régénéré au moment de lancer le combat.
+    const redEntry = {
+      code: PVP_BOT_CODE,
+      displayName: PVP_BOT_NAME + ' 🤖',
+      avatarId: PVP_BOT_AVATAR,
+      elo: PVP_BOT_ELO,
+      wins: 0,         // on n'affiche pas de stats pour Red (toujours dispo)
+      losses: 0,
+      currentBattleId: '',
+      hasPokepom: true,
+      hasTeam: true,
+      isBot: true,
+      botRemaining: botRemaining,
+      botLimit: PVP_BOT_DAILY_LIMIT,
+      teamSnapshot: pvpBotBuildRandomTeam()
+    };
+
     const list = Object.values(accountsSnap)
       .filter(a => a && a.code && a.code !== state.code)
       .map(a => {
@@ -8387,7 +8474,9 @@ async function pvpLoadList() {
         };
       })
       .sort((a, b) => a.displayName.toLowerCase().localeCompare(b.displayName.toLowerCase()));
-    return list;
+
+    // Red toujours en tête de liste
+    return [redEntry, ...list];
   } catch (e) {
     console.error('[pvp] loadList', e);
     return [];
@@ -8448,35 +8537,59 @@ async function pvpInitChallenge(opponentCode) {
     if (!myProfile) { alert('Impossible de charger ton profil PvP.'); return; }
     if (myProfile.currentBattleId) { alert('Tu as déjà un combat en cours.'); return; }
 
-    let oppProfile = await pvpLoadOtherProfile(opponentCode);
-    if (!oppProfile) {
-      const acc = await pvpRead('accounts/' + opponentCode);
-      const pommon = await pvpRead('pommon/' + opponentCode);
-      if (!acc) { alert('Adversaire introuvable.'); return; }
-      oppProfile = pvpDefaultProfile(opponentCode, acc.name || opponentCode, acc.avatarId);
-      if (pommon && Array.isArray(pommon.team) && Array.isArray(pommon.collection)) {
-        oppProfile.teamSnapshot = pommon.team
-          .map(uid => pommon.collection.find(i => i && i.uid === uid))
-          .filter(Boolean)
-          .filter(inst => !pvpIsLegendary(inst.pokepomId))
-          .map(inst => ({
-            pokepomId: inst.pokepomId,
-            nickname: inst.nickname || (PM_DEX[inst.pokepomId] && PM_DEX[inst.pokepomId].name) || '?',
-            level: inst.level || 1,
-            customMoves: Array.isArray(inst.customMoves) ? inst.customMoves : []
-          }));
+    // ─── Cas spécial : combat contre le bot Red ───
+    const vsBot = pvpIsBot(opponentCode);
+    let oppProfile;
+
+    if (vsBot) {
+      // Check daily limit
+      if (!pvpBotCanFight(myProfile)) {
+        alert('Tu as déjà combattu Red ' + PVP_BOT_DAILY_LIMIT + ' fois aujourd\'hui ! Reviens demain.');
+        return;
       }
-      try { await pvpWrite(PVP_PATH + '/' + opponentCode, oppProfile); } catch (e) {}
-    }
-    if (oppProfile.currentBattleId) {
-      alert(oppProfile.displayName + ' est déjà en combat.');
-      _pvpListCache = null;
-      pmGoTo('pvpList');
-      return;
-    }
-    if (!oppProfile.teamSnapshot || oppProfile.teamSnapshot.length === 0) {
-      alert(oppProfile.displayName + ' n\'a pas configuré son équipe PvP.');
-      return;
+      // Profil virtuel pour Red (pas d'écriture Firebase pour lui)
+      oppProfile = {
+        code: PVP_BOT_CODE,
+        displayName: PVP_BOT_NAME,
+        avatarId: PVP_BOT_AVATAR,
+        elo: PVP_BOT_ELO,
+        wins: 0,
+        losses: 0,
+        currentBattleId: '',
+        teamSnapshot: pvpBotBuildRandomTeam(),  // équipe fraîche à chaque combat
+        isBot: true
+      };
+    } else {
+      oppProfile = await pvpLoadOtherProfile(opponentCode);
+      if (!oppProfile) {
+        const acc = await pvpRead('accounts/' + opponentCode);
+        const pommon = await pvpRead('pommon/' + opponentCode);
+        if (!acc) { alert('Adversaire introuvable.'); return; }
+        oppProfile = pvpDefaultProfile(opponentCode, acc.name || opponentCode, acc.avatarId);
+        if (pommon && Array.isArray(pommon.team) && Array.isArray(pommon.collection)) {
+          oppProfile.teamSnapshot = pommon.team
+            .map(uid => pommon.collection.find(i => i && i.uid === uid))
+            .filter(Boolean)
+            .filter(inst => !pvpIsLegendary(inst.pokepomId))
+            .map(inst => ({
+              pokepomId: inst.pokepomId,
+              nickname: inst.nickname || (PM_DEX[inst.pokepomId] && PM_DEX[inst.pokepomId].name) || '?',
+              level: inst.level || 1,
+              customMoves: Array.isArray(inst.customMoves) ? inst.customMoves : []
+            }));
+        }
+        try { await pvpWrite(PVP_PATH + '/' + opponentCode, oppProfile); } catch (e) {}
+      }
+      if (oppProfile.currentBattleId) {
+        alert(oppProfile.displayName + ' est déjà en combat.');
+        _pvpListCache = null;
+        pmGoTo('pvpList');
+        return;
+      }
+      if (!oppProfile.teamSnapshot || oppProfile.teamSnapshot.length === 0) {
+        alert(oppProfile.displayName + ' n\'a pas configuré son équipe PvP.');
+        return;
+      }
     }
 
     // Build des équipes (full HP)
@@ -8490,6 +8603,7 @@ async function pvpInitChallenge(opponentCode) {
       status: 'active',
       createdAt: new Date(now).toISOString(),
       lastUpdate: new Date(now).toISOString(),
+      vsBot: vsBot,                              // marqueur : combat contre le bot
       p1: {
         code: state.code,
         displayName: myProfile.displayName,
@@ -8502,7 +8616,8 @@ async function pvpInitChallenge(opponentCode) {
         displayName: oppProfile.displayName,
         avatarId: oppProfile.avatarId || 'avatar_classic',
         eloAtStart: oppProfile.elo,
-        tierAtStart: pmEloTier(oppProfile.elo).id
+        tierAtStart: pmEloTier(oppProfile.elo).id,
+        isBot: vsBot
       },
       p1Team: myTeam,
       p2Team: oppTeam,
@@ -8510,10 +8625,9 @@ async function pvpInitChallenge(opponentCode) {
       p2ActiveIdx: 0,
       turnNumber: 1,
       turnDeadline: new Date(now + TURN_TIMEOUT_MS).toISOString(),
-      // Le plus rapide commence
-      currentPlayer: '',          // sera fixé ci-dessous
-      pendingAction: null,        // action du 1er joueur, en attente de la 2e
-      pendingActionBy: '',        // 'p1' ou 'p2'
+      currentPlayer: '',
+      pendingAction: null,
+      pendingActionBy: '',
       log: [
         myProfile.displayName + ' défie ' + oppProfile.displayName + ' !',
         'Tour 1 — démarrage'
@@ -8521,27 +8635,39 @@ async function pvpInitChallenge(opponentCode) {
       winner: '',
       endReason: ''
     };
-    // P1 (l'initiateur du défi) choisit toujours son action en premier.
-    // La vitesse n'est PAS révélée à ce stade : elle ne joue qu'à la résolution,
-    // ce qui ajoute de la stratégie (le joueur doit deviner la vitesse adverse
-    // en observant qui frappe en premier dans le récap du tour précédent).
     battle.currentPlayer = 'p1';
     battle.log.push(battle.p1.displayName + ' joue en premier (rappel : la vitesse de chacun n\'est révélée qu\'en cours de combat).');
 
-    console.log('[pvp] creating battle', battleId, 'size:', JSON.stringify(battle).length);
-    console.log('[pvp] codes :', { myCode: state.code, p1Code: battle.p1.code, p2Code: battle.p2.code, opponentCode });
+    console.log('[pvp] creating battle', battleId, 'size:', JSON.stringify(battle).length, vsBot ? '(vs BOT)' : '');
     await pvpWrite(BATTLES_PATH + '/' + battleId, battle);
     console.log('[pvp] battle saved');
 
-    await Promise.all([
+    // Mise à jour des profils (Red n'a pas de profil Firebase à écrire)
+    const updates = [
       pvpUpdate(PVP_PATH + '/' + state.code, {
         currentBattleId: battleId,
         lastSeen: new Date().toISOString()
-      }),
-      pvpUpdate(PVP_PATH + '/' + opponentCode, { currentBattleId: battleId })
-    ]);
+      })
+    ];
+    if (!vsBot) {
+      updates.push(pvpUpdate(PVP_PATH + '/' + opponentCode, { currentBattleId: battleId }));
+    } else {
+      // Incrémenter le compteur quotidien contre Red dans MON profil
+      const today = (typeof getTodayKey === 'function') ? getTodayKey() : new Date().toISOString().slice(0, 10);
+      const prevCount = pvpBotGetTodayCount(myProfile);
+      updates.push(pvpUpdate(PVP_PATH + '/' + state.code, {
+        botRedFights: { date: today, count: prevCount + 1 }
+      }));
+    }
+    await Promise.all(updates);
 
-    if (_pvpProfileCache) _pvpProfileCache.currentBattleId = battleId;
+    if (_pvpProfileCache) {
+      _pvpProfileCache.currentBattleId = battleId;
+      if (vsBot) {
+        const today = (typeof getTodayKey === 'function') ? getTodayKey() : new Date().toISOString().slice(0, 10);
+        _pvpProfileCache.botRedFights = { date: today, count: pvpBotGetTodayCount(myProfile) + 1 };
+      }
+    }
     _pvpLastCreatedBattleId = battleId;
     _pvpListCache = null;
     pmGoTo('pvpBattle');
@@ -8656,6 +8782,12 @@ async function pvpHandleAction(battle, me, action) {
     log.push("À " + otherName + " de jouer.");
     updates.log = log;
     await pvpUpdate(BATTLES_PATH + '/' + battle.id, updates);
+
+    // ─── Cas spécial bot : si l'autre joueur est Red, jouer pour lui ───
+    if (battle.vsBot && other === 'p2') {
+      // Délai d'UX pour donner l'impression que le bot "réfléchit"
+      setTimeout(() => { pvpBotPlayTurn(battle.id).catch(e => console.error('[pvp] bot turn error', e)); }, PVP_BOT_THINK_MS);
+    }
     return;
   }
 
@@ -8663,14 +8795,59 @@ async function pvpHandleAction(battle, me, action) {
   // On résout TOUT le tour ici, sur notre poste.
   const firstAction  = battle.pendingAction;
   const secondAction = action;
-  // L'ordre PvE-style : firstAction d'abord (P1 ou P2 selon qui a joué en 1er),
-  // puis secondAction. Mais en PvP avec vitesse, on a déjà ordonné par vitesse en
-  // début de tour via currentPlayer, donc firstAction est BIEN celui du joueur le
-  // plus rapide.
   const firstBy  = battle.pendingActionBy;
   const secondBy = me;
 
   await pvpResolveTurn(battle, firstAction, firstBy, secondAction, secondBy);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 🤖 Tour du bot Red : choisit son action et la soumet
+// ─────────────────────────────────────────────────────────────────────
+//
+// Appelée depuis le client humain après que celui-ci ait soumis son coup
+// (et passé la main à p2). On lit l'état actuel depuis Firebase pour être
+// sûr d'avoir la dernière version, on désérialise le fighter actif de Red,
+// on appelle l'IA PvE existante pour choisir un move, et on soumet via
+// pvpHandleAction (côté "p2") qui va déclencher la résolution.
+
+async function pvpBotPlayTurn(battleId) {
+  // Lire l'état Firebase frais (pas le cache local) pour s'assurer qu'on a
+  // bien la pendingAction du joueur humain
+  const battle = await pvpRead(BATTLES_PATH + '/' + battleId);
+  if (!battle || battle.status !== 'active') return;
+  if (!battle.vsBot) return;
+  if (battle.currentPlayer !== 'p2') return;  // pas son tour
+  if (!battle.pendingAction) return;  // sécurité : on attend que le joueur ait bien soumis
+
+  const myActiveIdx = battle.p2ActiveIdx || 0;
+  const myActiveData = battle.p2Team[myActiveIdx];
+  if (!myActiveData || myActiveData.ko || myActiveData.hp <= 0) {
+    // PokePom KO : le bot devrait switch. On cherche un suivant vivant.
+    const aliveIdx = battle.p2Team.findIndex(f => f && !f.ko && f.hp > 0);
+    if (aliveIdx === -1) return;  // tous KO : la résolution gérera la défaite
+    const switchAction = { type: 'switch', toIdx: aliveIdx, by: 'p2' };
+    await pvpResolveTurn(battle, battle.pendingAction, battle.pendingActionBy, switchAction, 'p2');
+    return;
+  }
+
+  // Désérialiser le fighter actif du bot pour pouvoir appeler l'IA PvE
+  const myActive = pvpDeserializeFighter(myActiveData);
+  // Adversaire (P1) pour les calculs de l'IA (type, etc.)
+  const oppActiveIdx = battle.p1ActiveIdx || 0;
+  const oppActive = pvpDeserializeFighter(battle.p1Team[oppActiveIdx]);
+
+  // Choisir un move via l'IA PvE
+  let moveIdx = pmAIChooseMove(myActive, oppActive);
+  // Sécurité : si l'IA renvoie un index avec 0 PP, fallback sur le 1er move avec PP
+  if (!myActive.moves[moveIdx] || myActive.moves[moveIdx].currentPp <= 0) {
+    moveIdx = myActive.moves.findIndex(m => m && m.currentPp > 0);
+    if (moveIdx === -1) moveIdx = 0;  // utilisera "Lutte" via la logique de résolution
+  }
+
+  const botAction = { type: 'move', moveIdx: moveIdx, by: 'p2' };
+  // Soumettre directement la résolution (les deux actions sont prêtes)
+  await pvpResolveTurn(battle, battle.pendingAction, battle.pendingActionBy, botAction, 'p2');
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -8896,8 +9073,11 @@ async function pvpApplyBattleEnd(battle) {
 
   // Met à jour les profils Firebase (relectures car les profils peuvent avoir
   // changé entre temps, par ex. autres combats)
-  const p1Profile = await pvpLoadOtherProfile(battle.p1.code);
-  const p2Profile = await pvpLoadOtherProfile(battle.p2.code);
+  const isP1Bot = pvpIsBot(battle.p1.code);
+  const isP2Bot = pvpIsBot(battle.p2.code);
+
+  const p1Profile = isP1Bot ? null : await pvpLoadOtherProfile(battle.p1.code);
+  const p2Profile = isP2Bot ? null : await pvpLoadOtherProfile(battle.p2.code);
 
   if (p1Profile) {
     p1Profile.elo = newP1Elo;
@@ -9336,6 +9516,7 @@ async function pmRenderPvpList(page, player) {
     const inBattle = !!p.currentBattleId;
     const noPokepom = !p.hasPokepom;
     const noTeam = !p.hasTeam;
+    const isBot = !!p.isBot;
     const safeName = (typeof escapeHTML === 'function') ? escapeHTML(p.displayName) : p.displayName.replace(/</g, '&lt;');
 
     let teamPreview = '';
@@ -9350,23 +9531,46 @@ async function pmRenderPvpList(page, player) {
         (noPokepom ? "N'a jamais joué au PokePom" : "Pas d'équipe configurée") + '</div>';
     }
 
-    const stats = total > 0
-      ? `<div style="font-size:.68rem; color:var(--muted);">${p.wins}V / ${p.losses}D · ${Math.round(p.wins*100/total)}% wr</div>`
-      : `<div style="font-size:.68rem; color:var(--muted);">Aucun combat PvP joué</div>`;
+    let stats;
+    if (isBot) {
+      const remaining = p.botRemaining;
+      if (remaining > 0) {
+        stats = `<div style="font-size:.68rem; color:#5fe89a;">⚡ ${remaining}/${p.botLimit} combat${remaining > 1 ? 's' : ''} restant${remaining > 1 ? 's' : ''} aujourd'hui</div>`;
+      } else {
+        stats = `<div style="font-size:.68rem; color:#a86040;">⏳ Limite quotidienne atteinte — reviens demain !</div>`;
+      }
+    } else if (total > 0) {
+      stats = `<div style="font-size:.68rem; color:var(--muted);">${p.wins}V / ${p.losses}D · ${Math.round(p.wins*100/total)}% wr</div>`;
+    } else {
+      stats = `<div style="font-size:.68rem; color:var(--muted);">Aucun combat PvP joué</div>`;
+    }
 
     let btn;
-    if (inBattle) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">En combat</button>';
+    if (isBot) {
+      if (p.botRemaining <= 0) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">Demain</button>';
+      else btn = `<button onclick="pvpInitChallenge('${p.code}')" style="padding:8px 14px; background:linear-gradient(135deg,#FF9528,#FF4E8A); color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold; font-size:.82rem;">Défier ⚔</button>`;
+    }
+    else if (inBattle) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">En combat</button>';
     else if (noPokepom) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">N/A</button>';
     else if (noTeam) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">Indisponible</button>';
     else btn = `<button onclick="pvpInitChallenge('${p.code}')" style="padding:8px 14px; background:#a83838; color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold; font-size:.82rem;">Défier ⚔</button>`;
 
-    const dimmed = noPokepom || noTeam;
-    const tierLine = (total > 0 || !noPokepom)
-      ? `<div style="font-size:.72rem; color:${tier.color}; font-weight:bold;">${tier.label} · ${p.elo} ELO</div>`
-      : `<div style="font-size:.72rem; color:var(--muted);">Pas encore classé</div>`;
+    const dimmed = !isBot && (noPokepom || noTeam);
+    let tierLine;
+    if (isBot) {
+      tierLine = `<div style="font-size:.72rem; color:#FF9528; font-weight:bold;">🤖 Bot · ELO ${p.elo} · niv. ${PVP_BOT_LEVEL}</div>`;
+    } else if (total > 0 || !noPokepom) {
+      tierLine = `<div style="font-size:.72rem; color:${tier.color}; font-weight:bold;">${tier.label} · ${p.elo} ELO</div>`;
+    } else {
+      tierLine = `<div style="font-size:.72rem; color:var(--muted);">Pas encore classé</div>`;
+    }
 
-    html += `<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-left:4px solid ${dimmed ? '#666' : tier.color}; border-radius:8px; ${dimmed ? 'opacity:.65;' : ''}">
-      <div style="font-size:1.6rem;">${dimmed ? '👤' : tier.emoji}</div>
+    const borderLeft = isBot ? '#FF9528' : (dimmed ? '#666' : tier.color);
+    const botBg = isBot ? 'background:linear-gradient(135deg, rgba(255,149,40,0.08), rgba(255,78,138,0.06));' : '';
+    const itemIcon = isBot ? '🤖' : (dimmed ? '👤' : tier.emoji);
+
+    html += `<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-left:4px solid ${borderLeft}; border-radius:8px; ${botBg} ${dimmed ? 'opacity:.65;' : ''}">
+      <div style="font-size:1.6rem;">${itemIcon}</div>
       <div style="flex:1; min-width:0;">
         <div style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${safeName}</div>
         ${tierLine}${stats}${teamPreview}
@@ -9463,6 +9667,19 @@ async function pmRenderPvpBattle(page, player) {
         _pvpProfileCache.currentBattleId = '';
         try { await pvpUpdate(PVP_PATH + '/' + state.code, { currentBattleId: '' }); } catch(e) {}
       }
+    }
+    // 🤖 Si combat vs bot et c'est au tour de Red, le faire jouer
+    // (cas : refresh page, joueur revient sur le combat alors qu'il avait
+    // soumis son action mais le bot n'avait pas encore joué)
+    if (battle.vsBot && battle.status === 'active'
+        && battle.currentPlayer === 'p2'
+        && battle.pendingAction && !_pvpBotTurnPending[battle.id]) {
+      _pvpBotTurnPending[battle.id] = true;
+      setTimeout(() => {
+        pvpBotPlayTurn(battle.id)
+          .catch(e => console.error('[pvp] bot turn error', e))
+          .finally(() => { delete _pvpBotTurnPending[battle.id]; });
+      }, PVP_BOT_THINK_MS);
     }
   });
 }
