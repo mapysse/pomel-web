@@ -169,14 +169,19 @@ function startSnake() {
   startSnakeRenderLoop();
 }
 
+// ── ENGINE : tout piloté par requestAnimationFrame ──
+// Plus de setTimeout (imprécis, cause d'à-coups). Une seule boucle rAF gère
+// la logique (via un accumulateur de temps précis) ET le rendu interpolé.
+// L'input est à réponse immédiate : voir snakeQueueDir.
+
 function scheduleSnakeTick() {
-  if (snakeLoop) clearTimeout(snakeLoop);
-  snakeLoop = setTimeout(snakeTick, snakeState.speed);
+  // Conservé pour compat (reprise de pause) : relance juste la boucle rAF
+  startSnakeRenderLoop();
 }
 
-function snakeTick() {
-  if (!snakeState || snakePaused) return;
-  // Consommer la file d'inputs : prendre la 1ère direction valide
+// Avance le serpent d'UNE case (logique pure). Retourne false si game over.
+function snakeAdvance() {
+  // Consommer la file d'inputs
   if (snakeState.dirQueue.length > 0) {
     snakeState.dir = snakeState.dirQueue.shift();
   }
@@ -187,9 +192,9 @@ function snakeTick() {
   };
   if (snakeState.snake.some(s => s.x === newHead.x && s.y === newHead.y)) {
     gameOverSnake();
-    return;
+    return false;
   }
-  // Sauvegarder l'état précédent AVANT de bouger (pour interpolation)
+  // Sauvegarder l'état précédent AVANT de bouger (interpolation)
   snakeState.prevSnake = snakeState.snake.map(s => ({ x: s.x, y: s.y }));
 
   snakeState.snake.unshift(newHead);
@@ -199,7 +204,7 @@ function snakeTick() {
     snakeState.score++;
     snakePomelsEarned += SNAKE_POMEL_PER_FRUIT;
     snakeState.fruit = randomFruit(snakeState.snake);
-    snakeState.fruitPop = performance.now(); // pour l'anim de pop du nouveau fruit
+    snakeState.fruitPop = performance.now();
     if (snakeState.score % 5 === 0 && snakeState.speed > 55) {
       snakeState.speed = Math.max(55, snakeState.speed - 10);
     }
@@ -207,9 +212,6 @@ function snakeTick() {
   } else {
     snakeState.snake.pop();
   }
-  // Si on a mangé, le serpent a grandi : le nouveau segment de queue n'a pas
-  // de position "précédente" → on lui en donne une identique pour éviter un
-  // glissement bizarre.
   if (ate) {
     while (snakeState.prevSnake.length < snakeState.snake.length) {
       const tail = snakeState.snake[snakeState.snake.length - 1];
@@ -217,14 +219,15 @@ function snakeTick() {
     }
   }
   snakeState.tickStart = performance.now();
-  scheduleSnakeTick();
+  snakeState.visT = 0;
+  return true;
 }
 
-// Enregistre une nouvelle direction demandée par le joueur.
-// - File de 2 max pour ne perdre aucune touche rapide.
-// - Chaque direction est validée contre la dernière en file (pas de demi-tour).
-// Pas de tick anticipé : le mouvement reste régulier (pas de saut visuel),
-// l'interpolation du rendu garde le déplacement parfaitement lisse.
+// File d'inputs avec VIRAGE ANTICIPÉ (zéro saut + réponse quasi instantanée).
+// Quand on appuie, on ne téléporte PAS le serpent (ça ferait un saut). À la
+// place, on "comprime" le temps restant du pas en cours : le serpent finit de
+// glisser jusqu'à sa case (fluide), puis enchaîne tout de suite le pas suivant
+// dans la nouvelle direction. La réponse paraît instantanée sans aucun saut.
 function snakeQueueDir(nx, ny) {
   if (!snakeState || snakePaused) return;
   const q = snakeState.dirQueue;
@@ -233,12 +236,37 @@ function snakeQueueDir(nx, ny) {
   if (nx === -ref.x && ny === -ref.y) return;     // demi-tour interdit
   if (q.length >= 2) return;                       // file limitée à 2
   q.push({ x: nx, y: ny });
+
+  // Virage anticipé : si c'est le 1er input en attente, on raccourcit le pas
+  // en cours pour qu'il s'achève quasi immédiatement (le serpent termine son
+  // glissement jusqu'à la case, sans saut). On déplace tickStart dans le passé
+  // pour que l'accumulateur déclenche le pas dès qu'il reste ~60ms de glisse.
+  if (q.length === 1) {
+    const SNAP = 60; // ms de glissement restant avant d'enchaîner
+    const elapsed = performance.now() - (snakeState.tickStart || 0);
+    const remaining = snakeState.speed - elapsed;
+    if (remaining > SNAP) {
+      // Avancer tickStart pour qu'il ne reste que SNAP ms
+      snakeState.tickStart = performance.now() - (snakeState.speed - SNAP);
+    }
+  }
 }
 
 function startSnakeRenderLoop() {
   if (snakeRenderLoop) cancelAnimationFrame(snakeRenderLoop);
   const frame = () => {
     if (!snakeState) return;
+    if (!snakePaused) {
+      // Accumulateur : avance autant de pas que le temps écoulé le permet.
+      // Précis car basé sur performance.now(), pas sur setTimeout.
+      let elapsed = performance.now() - (snakeState.tickStart || 0);
+      let guard = 0;
+      while (elapsed >= snakeState.speed && guard < 4) {
+        if (!snakeAdvance()) return; // game over
+        elapsed = performance.now() - snakeState.tickStart;
+        guard++;
+      }
+    }
     renderSnake();
     snakeRenderLoop = requestAnimationFrame(frame);
   };
@@ -331,13 +359,26 @@ function renderSnake() {
 
   if (!snakeState) return;
 
-  // Facteur d'interpolation
-  let t = 1;
+  // Facteur d'interpolation cible (basé sur le temps écoulé dans le pas)
+  let tTarget = 1;
   if (!snakePaused && snakeState.tickStart) {
-    t = (performance.now() - snakeState.tickStart) / snakeState.speed;
-    if (t > 1) t = 1;
-    if (t < 0) t = 0;
+    tTarget = (performance.now() - snakeState.tickStart) / snakeState.speed;
+    if (tTarget > 1) tTarget = 1;
+    if (tTarget < 0) tTarget = 0;
   }
+  // Progression visuelle lissée : t suit tTarget mais ne bondit jamais d'un
+  // coup (utile quand le virage anticipé décale tickStart). Avance monotone,
+  // rattrapage rapide mais doux → aucun saut perceptible.
+  if (snakeState.visT === undefined) snakeState.visT = tTarget;
+  const diff = tTarget - snakeState.visT;
+  if (diff < 0) {
+    // nouveau pas : on repart de 0 proprement
+    snakeState.visT = tTarget;
+  } else {
+    // rattrapage limité (au plus 0.34 de case par frame ≈ très rapide mais lisse)
+    snakeState.visT += Math.min(diff, 0.34);
+  }
+  const t = snakeState.visT;
 
   // ── Fruit (sprite pré-rendu : beau glow + dégradé, mais perf préservée) ──
   if (!_snakeFruitSprite) _snakeBuildFruitSprite();
@@ -373,8 +414,8 @@ function renderSnake() {
     const iy = _snakeLerpCoord(pv.y, cur.y, t, SNAKE_ROWS);
     const px = ix * C, py = iy * C;
     const isHead = i === 0;
-    const inset = isHead ? 0.5 : 0.5;
-    const r = isHead ? 7 : 6;
+    const inset = isHead ? 1 : 1.8;
+    const r = isHead ? 7 : 5;
 
     // Contour sombre pour délimiter chaque segment (lisibilité)
     ctx.fillStyle = colors[i];
@@ -456,6 +497,8 @@ async function gameOverSnake() {
   }
   await saveSnakeScore(finalScore);
   await saveSnakeWeeklyScore(finalScore);
+  // Battle Pass : valider le défi du jour si applicable
+  if (typeof bpReportScore === 'function') { try { await bpReportScore('snake', finalScore); } catch(e) { console.error('bp report', e); } }
   const overlay = snakeOverlay();
   overlay.classList.remove('hidden');
   document.getElementById('snakeOverlayTitle').textContent = '💀 Game Over !';

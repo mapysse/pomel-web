@@ -230,6 +230,18 @@ async function g2048GameOver() {
 
   await g2048SaveScore(finalScore);
   await g2048SaveWeeklyScore(finalScore);
+  // Battle Pass : pour 2048 on rapporte la TUILE MAX atteinte (pas le score)
+  if (typeof bpReportScore === 'function') {
+    try {
+      let maxTile = 0;
+      for (let r = 0; r < g2048Grid.length; r++) {
+        for (let c = 0; c < g2048Grid[r].length; c++) {
+          if (g2048Grid[r][c] > maxTile) maxTile = g2048Grid[r][c];
+        }
+      }
+      await bpReportScore('g2048', maxTile);
+    } catch(e) { console.error('bp report', e); }
+  }
 
   const overlay = document.getElementById('g2048Overlay');
   document.getElementById('g2048OverlayTitle').textContent = g2048Won ? '🎉 Bravo !' : '💀 Game Over !';
