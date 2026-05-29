@@ -306,7 +306,7 @@ async function g2048RenderLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('g2048_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score enregistré.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   const medals = ['🥇','🥈','🥉'];
   for (let i = 0; i < entries.length; i++) {
@@ -354,7 +354,7 @@ async function g2048RenderWeeklyLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('g2048_weekly_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
@@ -394,7 +394,7 @@ async function checkG2048WeeklyReset() {
   if (recheck2048 !== true) return;
   const snap = await dbGet('g2048_weekly_lb');
   if (!snap) return;
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   await distributeReliably(entries.map((e, i) => ({
     code: e.code, amount: i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION,
     historyEntry: { type: '2048', desc: `🔢 Classement hebdo 2048 — #${i+1}`, amount: i < 3 ? G2048_WEEKLY_PRIZES[i] : G2048_WEEKLY_CONSOLATION, date: new Date().toISOString() }

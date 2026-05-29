@@ -446,6 +446,7 @@ async function gameOverTetris() {
 
   await saveTetrisScore(finalLines);
   await saveTetrisWeeklyScore(finalLines);
+  if (typeof bpReportScore === 'function') { try { await bpReportScore('tetris', finalLines); } catch(e) { console.error('bp report', e); } }
 
   // Overlay
   const overlay = tetOverlay();
@@ -480,7 +481,7 @@ async function renderTetrisLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('tetris_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score enregistré.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   const medals = ['🥇','🥈','🥉'];
   for (let i = 0; i < entries.length; i++) {
@@ -534,7 +535,7 @@ async function renderTetrisWeeklyLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('tetris_weekly_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
@@ -574,7 +575,7 @@ async function checkTetrisWeeklyReset() {
   if (recheck !== true) return;
   const snap = await dbGet('tetris_weekly_lb');
   if (!snap) return;
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   if (typeof distributeReliably === 'function') {
     await distributeReliably(entries.map((e, i) => ({
       code: e.code, amount: i < 3 ? TET_WEEKLY_PRIZES[i] : TET_WEEKLY_CONSOLATION,
