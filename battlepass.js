@@ -235,17 +235,18 @@ const BP_TITLES = [
   { palier: 100, key: 'bp_grand_maitre', name: 'Grand Maître All Star' },
 ];
 // Effets profil (10 effets exclusifs, tous les 10 paliers)
+// Mélange bannières (atmosphères stellaires) et effets pseudo (éléments)
 const BP_EFFECTS = [
-  { palier: 10,  key: 'bp_effect_spark',     name: 'Étincelle ✨' },
-  { palier: 20,  key: 'bp_effect_flame',     name: 'Flamme 🔥' },
-  { palier: 30,  key: 'bp_effect_wave',      name: 'Vague 🌊' },
-  { palier: 40,  key: 'bp_effect_thunder',   name: 'Tonnerre ⚡' },
-  { palier: 50,  key: 'bp_effect_aurora',    name: 'Aurore 🌌' },
-  { palier: 60,  key: 'bp_effect_prism',     name: 'Prisme 💎' },
-  { palier: 70,  key: 'bp_effect_galaxy',    name: 'Galaxie 🌠' },
-  { palier: 80,  key: 'bp_effect_inferno',   name: 'Inferno 🌋' },
-  { palier: 90,  key: 'bp_effect_cosmos',    name: 'Cosmos 🪐' },
-  { palier: 100, key: 'bp_effect_allstar',   name: 'All Star 👑' },
+  { palier: 10,  key: 'bp_effect_spark',    name: 'Étincelle ✨',  type: 'banner', cls: 'banner-bp-spark' },
+  { palier: 20,  key: 'bp_effect_flame',    name: 'Flamme 🔥',     type: 'color',  cls: 'name-bp-flame' },
+  { palier: 30,  key: 'bp_effect_wave',     name: 'Vague 🌊',      type: 'color',  cls: 'name-bp-wave' },
+  { palier: 40,  key: 'bp_effect_thunder',  name: 'Tonnerre ⚡',   type: 'color',  cls: 'name-bp-thunder' },
+  { palier: 50,  key: 'bp_effect_aurora',   name: 'Aurore 🌌',     type: 'banner', cls: 'banner-bp-aurora' },
+  { palier: 60,  key: 'bp_effect_prism',    name: 'Prisme 💎',     type: 'color',  cls: 'name-bp-prism' },
+  { palier: 70,  key: 'bp_effect_galaxy',   name: 'Galaxie 🌠',    type: 'banner', cls: 'banner-bp-galaxy' },
+  { palier: 80,  key: 'bp_effect_inferno',  name: 'Inferno 🌋',    type: 'color',  cls: 'name-bp-inferno' },
+  { palier: 90,  key: 'bp_effect_cosmos',   name: 'Cosmos 🪐',     type: 'banner', cls: 'banner-bp-cosmos' },
+  { palier: 100, key: 'bp_effect_allstar',  name: 'All Star 👑',   type: 'banner', cls: 'banner-bp-allstar' },
 ];
 
 // Catalogue des défis : pour chaque jeu, on définit la courbe (palier → seuil)
@@ -298,8 +299,15 @@ function bpEnsureTodayChallenge() {
   // Si on a déjà fait le palier aujourd'hui, on n'a plus de défi pour aujourd'hui
   if (bp.lastDayDone === today) return null;
   // Si le défi du jour n'existe pas ou date d'un autre jour, en tirer un nouveau
+  // ET LE PERSISTER immédiatement — sinon il serait re-tiré au prochain appel
+  // (rechargement de page, etc.) et le défi affiché ne correspondrait plus à
+  // celui que les jeux valideront.
   if (!bp.today || bp.today.date !== today) {
     bp.today = bpRollChallenge(bp.palier + 1, today, null);
+    // Sauvegarde asynchrone (fire and forget : on n'attend pas pour ne pas bloquer le rendu)
+    if (typeof saveAccount === 'function') {
+      saveAccount(state).catch(e => console.error('[bp] save defi today', e));
+    }
   }
   return bp.today;
 }
@@ -343,9 +351,13 @@ async function bpUnlockNextPalier() {
   if (bp.lastDayDone === today) return;  // sécurité : déjà fait aujourd'hui
 
   const newPalier = bp.palier + 1;
-  bp.palier = newPalier;
-  bp.lastDayDone = today;
-  if (bp.today) bp.today.done = true;
+  // Mémoriser localement les nouvelles valeurs (référence stable, indépendante des
+  // remplacements de state par migrateAccount)
+  const updatedBp = {
+    palier: newPalier,
+    lastDayDone: today,
+    today: bp.today ? { ...bp.today, done: true } : null
+  };
 
   // Construire la liste des récompenses
   const rewards = [{ type: 'pomels', amount: BP_POMELS_PER_PALIER }];
@@ -354,7 +366,9 @@ async function bpUnlockNextPalier() {
   const effect = BP_EFFECTS.find(e => e.palier === newPalier);
   if (effect) rewards.push({ type: 'effect', key: effect.key, name: effect.name });
 
-  // Crédit Pomels via addBalanceTransaction (atomique, source de vérité)
+  // 1. Créditer les Pomels (transaction atomique côté Firebase)
+  //    Note : cette transaction n'inclut PAS notre nouveau palier (elle ne voit
+  //    que le compte serveur). On le réécrira juste après avec saveAccount.
   if (typeof addBalanceTransaction === 'function') {
     const updated = await addBalanceTransaction(state.code, BP_POMELS_PER_PALIER, {
       type: 'battlepass',
@@ -364,24 +378,36 @@ async function bpUnlockNextPalier() {
     });
     if (updated && typeof migrateAccount === 'function') {
       state = migrateAccount(updated);
-      // Re-créer le battlepass dans le nouveau state (migrateAccount peut le perdre si pas migré)
-      if (!state.battlepass) state.battlepass = bp;
-      else { state.battlepass.palier = newPalier; state.battlepass.lastDayDone = today; if (state.battlepass.today) state.battlepass.today.done = true; }
     }
   }
 
-  // Débloquer titre/effet dans la collection persistée
-  if (title || effect) {
-    if (!state.unlockedTitles) state.unlockedTitles = [];
-    if (!state.unlockedEffects) state.unlockedEffects = [];
-    if (title && !state.unlockedTitles.includes(title.key)) state.unlockedTitles.push(title.key);
-    if (effect && !state.unlockedEffects.includes(effect.key)) state.unlockedEffects.push(effect.key);
-    if (typeof saveAccount === 'function') await saveAccount(state);
-  } else if (typeof saveAccount === 'function') {
-    // Persister le nouveau palier même sans titre/effet
-    await saveAccount(state);
+  // 2. APRÈS le crédit Pomels (qui a pu remplacer state), forcer les nouvelles
+  //    valeurs du Battle Pass dans state. C'est la source de vérité côté client.
+  if (!state.battlepass) state.battlepass = { palier: 0, lastDayDone: null, today: null };
+  state.battlepass.palier = updatedBp.palier;
+  state.battlepass.lastDayDone = updatedBp.lastDayDone;
+  state.battlepass.today = updatedBp.today;
+
+  // 3. Débloquer titre/effet — à la fois dans la collection legacy (unlocked*)
+  //    et dans ownedTitles (utilisé par la boutique de profil pour l'équipement).
+  //    Les ids BP sont déclarés dans SHOP_TITLES (boutique_profil.js) avec
+  //    hidden:true → invisibles en boutique mais reconnus par le système.
+  if (!state.unlockedTitles) state.unlockedTitles = [];
+  if (!state.unlockedEffects) state.unlockedEffects = [];
+  if (!state.ownedTitles) state.ownedTitles = [];
+  if (title) {
+    if (!state.unlockedTitles.includes(title.key)) state.unlockedTitles.push(title.key);
+    if (!state.ownedTitles.includes(title.key))    state.ownedTitles.push(title.key);
+  }
+  if (effect) {
+    if (!state.unlockedEffects.includes(effect.key)) state.unlockedEffects.push(effect.key);
+    if (!state.ownedTitles.includes(effect.key))     state.ownedTitles.push(effect.key);
   }
 
+  // 4. Persister TOUT (palier + titres/effets) en une seule écriture Firebase
+  if (typeof saveAccount === 'function') await saveAccount(state);
+
+  // 5. Maintenant que le state est cohérent et persisté, rafraîchir l'UI
   if (typeof refreshUI === 'function') refreshUI();
   bpShowRewardModal(newPalier, rewards);
 }
@@ -471,6 +497,23 @@ function bpShowRewardModal(palier, rewards) {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 }
 
+
+// ── WIDGET TOPBAR ────────────────────────────────
+// Met à jour le mini-widget toujours visible dans la topbar : "X/100" + badge
+// notif si un défi est disponible aujourd'hui (pas encore validé).
+function bpRefreshWidget() {
+  const widget = document.getElementById('bpWidget');
+  const progress = document.getElementById('bpWidgetProgress');
+  const badge = document.getElementById('bpWidgetBadge');
+  if (!widget || !progress || !badge) return;
+  const bp = bpGetState();
+  if (!bp) return;
+  progress.textContent = `${bp.palier}/${BP_TOTAL_PALIERS}`;
+  // Badge "!" si défi dispo aujourd'hui et pas encore fait
+  const today = (typeof getTodayKey === 'function') ? getTodayKey() : new Date().toISOString().slice(0,10);
+  const hasPendingDefi = bp.palier < BP_TOTAL_PALIERS && bp.lastDayDone !== today;
+  badge.style.display = hasPendingDefi ? 'flex' : 'none';
+}
 
 // ── PAGE RENDER ──
 function renderBattlepassPage() {

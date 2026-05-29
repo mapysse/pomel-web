@@ -373,6 +373,7 @@ async function flappyGameOver() {
   // Save leaderboards
   await saveFlappyScore(finalScore);
   await saveFlappyWeeklyScore(finalScore);
+  if (typeof bpReportScore === 'function') { try { await bpReportScore('flappy', finalScore); } catch(e) { console.error('bp report', e); } }
 
   // Overlay
   const overlay = flappyOverlay();
@@ -407,7 +408,7 @@ async function renderFlappyLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('flappy_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score enregistré.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   const medals = ['🥇','🥈','🥉'];
   for (let i = 0; i < entries.length; i++) {
@@ -462,7 +463,7 @@ async function renderFlappyWeeklyLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('flappy_weekly_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   list.innerHTML = '';
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
@@ -503,7 +504,7 @@ async function checkFlappyWeeklyReset() {
   if (recheck !== true) return;
   const snap = await dbGet('flappy_weekly_lb');
   if (!snap) return;
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score);
   if (typeof distributeReliably === 'function') {
     await distributeReliably(entries.map((e, i) => ({
       code: e.code, amount: i < 3 ? FLAPPY_WEEKLY_PRIZES[i] : FLAPPY_WEEKLY_CONSOLATION,

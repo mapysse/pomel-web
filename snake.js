@@ -528,7 +528,7 @@ async function renderSnakeLb() {
   list.innerHTML = '<div class="history-empty">Chargement…</div>';
   const snap = await dbGet('snake_lb');
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score enregistré.</div>'; return; }
-  const entries = Object.values(snap).sort((a, b) => b.score - a.score).slice(0, SNAKE_MAX_LB);
+  const entries = Object.values(snap).filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code)).sort((a, b) => b.score - a.score).slice(0, SNAKE_MAX_LB);
   list.innerHTML = '';
   const medals = ['🥇','🥈','🥉'];
   for (let i = 0; i < entries.length; i++) {
@@ -584,6 +584,7 @@ async function renderSnakeWeeklyLb() {
   if (!snap) { list.innerHTML = '<div class="history-empty">Aucun score cette semaine.</div>'; return; }
   const currentWeek = getSnakeWeekKey();
   const entries = Object.values(snap)
+    .filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code))
     .filter(e => !e.weekKey || e.weekKey === currentWeek)
     .sort((a, b) => b.score - a.score);
   list.innerHTML = '';
@@ -625,6 +626,7 @@ async function checkSnakeWeeklyReset() {
   if (!snap) return;
   // Filtrer les scores de la semaine précédente (compatibilité : si pas de weekKey, inclure quand même)
   const entries = Object.values(snap)
+    .filter(e => typeof isSystemAccount !== 'function' || !isSystemAccount(e.code))
     .filter(e => !e.weekKey || e.weekKey === prevWeekKey)
     .sort((a, b) => b.score - a.score);
   if (entries.length === 0) return;
