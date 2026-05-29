@@ -95,18 +95,25 @@ const SNAKE_MAX_LB = Infinity;
 
 let snakeState = null;
 let snakeLoop = null;
+let snakeRenderLoop = null;
 let snakePaused = false;
 let snakePomelsEarned = 0;
 let snakeLastDir = null;
 
 const SNAKE_COLORS = {
-  bg:      '#0a0a0c',
-  grid:    '#111116',
-  head:    '#EB5846',
-  body:    '#c03c2c',
-  fruit:   '#3ecf6e',
-  fruitGlow: 'rgba(62,207,110,0.5)',
-  text:    '#eeeef0',
+  bg:        '#0d0a1f',
+  bg2:       '#15112c',
+  grid:      'rgba(220,200,255,0.045)',
+  headA:     '#FFD24A',
+  headB:     '#FF9528',
+  bodyA:     '#FF9528',
+  bodyB:     '#FF4E8A',
+  bodyTail:  '#A66BFF',
+  outline:   '#2a1f4d',
+  fruit:     '#4ED9F0',
+  fruitCore: '#aef3ff',
+  fruitGlow: 'rgba(78,217,240,0.6)',
+  text:      '#eeeef0',
 };
 
 
@@ -123,10 +130,10 @@ function initSnakeState() {
       { x: 8,  y: 10 },
     ],
     dir:   { x: 1, y: 0 },
-    nextDir: { x: 1, y: 0 },
+    dirQueue: [],          // file d'inputs (max 2) pour ne perdre aucune touche
     fruit: randomFruit([{ x:10,y:10},{x:9,y:10},{x:8,y:10}]),
     score: 0,
-    speed: 150,
+    speed: 120,
   };
 }
 
@@ -140,15 +147,26 @@ function randomFruit(snake) {
 
 
 // ── GAME ENGINE ──────────────────────────────────
+// Architecture : la LOGIQUE avance case par case sur setTimeout (gameplay
+// inchangé), mais le RENDU tourne sur requestAnimationFrame et INTERPOLE la
+// position des segments entre leur ancienne et leur nouvelle case → glissement
+// fluide au lieu de sauts d'une case.
+
 function startSnake() {
   snakeState = initSnakeState();
   snakePomelsEarned = 0;
   snakePaused = false;
   snakeLastDir = null;
+  // Mémoriser la position précédente de chaque segment pour l'interpolation
+  snakeState.prevSnake = snakeState.snake.map(s => ({ x: s.x, y: s.y }));
+  snakeState.tickStart = performance.now();
   snakeOverlay().classList.add('hidden');
+  // Rendu net
+  const ctx = snakeCtx();
+  if (ctx) ctx.imageSmoothingEnabled = false;
   updateSnakeScoreUI();
   scheduleSnakeTick();
-  renderSnake();
+  startSnakeRenderLoop();
 }
 
 function scheduleSnakeTick() {
@@ -158,7 +176,10 @@ function scheduleSnakeTick() {
 
 function snakeTick() {
   if (!snakeState || snakePaused) return;
-  snakeState.dir = snakeState.nextDir;
+  // Consommer la file d'inputs : prendre la 1ère direction valide
+  if (snakeState.dirQueue.length > 0) {
+    snakeState.dir = snakeState.dirQueue.shift();
+  }
   const head = snakeState.snake[0];
   const newHead = {
     x: (head.x + snakeState.dir.x + SNAKE_COLS) % SNAKE_COLS,
@@ -168,20 +189,60 @@ function snakeTick() {
     gameOverSnake();
     return;
   }
+  // Sauvegarder l'état précédent AVANT de bouger (pour interpolation)
+  snakeState.prevSnake = snakeState.snake.map(s => ({ x: s.x, y: s.y }));
+
   snakeState.snake.unshift(newHead);
+  let ate = false;
   if (newHead.x === snakeState.fruit.x && newHead.y === snakeState.fruit.y) {
+    ate = true;
     snakeState.score++;
     snakePomelsEarned += SNAKE_POMEL_PER_FRUIT;
     snakeState.fruit = randomFruit(snakeState.snake);
-    if (snakeState.score % 5 === 0 && snakeState.speed > 65) {
-      snakeState.speed = Math.max(65, snakeState.speed - 12);
+    snakeState.fruitPop = performance.now(); // pour l'anim de pop du nouveau fruit
+    if (snakeState.score % 5 === 0 && snakeState.speed > 55) {
+      snakeState.speed = Math.max(55, snakeState.speed - 10);
     }
     updateSnakeScoreUI();
   } else {
     snakeState.snake.pop();
   }
-  renderSnake();
+  // Si on a mangé, le serpent a grandi : le nouveau segment de queue n'a pas
+  // de position "précédente" → on lui en donne une identique pour éviter un
+  // glissement bizarre.
+  if (ate) {
+    while (snakeState.prevSnake.length < snakeState.snake.length) {
+      const tail = snakeState.snake[snakeState.snake.length - 1];
+      snakeState.prevSnake.push({ x: tail.x, y: tail.y });
+    }
+  }
+  snakeState.tickStart = performance.now();
   scheduleSnakeTick();
+}
+
+// Enregistre une nouvelle direction demandée par le joueur.
+// - File de 2 max pour ne perdre aucune touche rapide.
+// - Chaque direction est validée contre la dernière en file (pas de demi-tour).
+// Pas de tick anticipé : le mouvement reste régulier (pas de saut visuel),
+// l'interpolation du rendu garde le déplacement parfaitement lisse.
+function snakeQueueDir(nx, ny) {
+  if (!snakeState || snakePaused) return;
+  const q = snakeState.dirQueue;
+  const ref = q.length > 0 ? q[q.length - 1] : snakeState.dir;
+  if (nx === ref.x && ny === ref.y) return;       // identique
+  if (nx === -ref.x && ny === -ref.y) return;     // demi-tour interdit
+  if (q.length >= 2) return;                       // file limitée à 2
+  q.push({ x: nx, y: ny });
+}
+
+function startSnakeRenderLoop() {
+  if (snakeRenderLoop) cancelAnimationFrame(snakeRenderLoop);
+  const frame = () => {
+    if (!snakeState) return;
+    renderSnake();
+    snakeRenderLoop = requestAnimationFrame(frame);
+  };
+  snakeRenderLoop = requestAnimationFrame(frame);
 }
 
 function updateSnakeScoreUI() {
@@ -190,43 +251,178 @@ function updateSnakeScoreUI() {
 }
 
 
-// ── RENDERING ────────────────────────────────────
+// ── RENDERING (interpolé) ────────────────────────
+// Interpolation linéaire d'une coordonnée de grille en gérant le wrap (quand
+// le serpent traverse un bord, on ne veut pas qu'il "glisse" d'un bout à l'autre).
+function _snakeLerpCoord(prev, cur, t, max) {
+  let d = cur - prev;
+  // Détecter un wrap : si l'écart dépasse la moitié de la grille, c'est un saut de bord
+  if (d > max / 2)  d -= max;
+  if (d < -max / 2) d += max;
+  return prev + d * t;
+}
+
+// Canvas de fond pré-rendu (dégradé + grille) — dessiné une seule fois
+let _snakeBgCanvas = null;
+function _snakeBuildBg() {
+  const C = SNAKE_CELL, W = SNAKE_COLS * C, H = SNAKE_ROWS * C;
+  _snakeBgCanvas = document.createElement('canvas');
+  _snakeBgCanvas.width = W;
+  _snakeBgCanvas.height = H;
+  const bx = _snakeBgCanvas.getContext('2d');
+  const grad = bx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, SNAKE_COLORS.bg2);
+  grad.addColorStop(1, SNAKE_COLORS.bg);
+  bx.fillStyle = grad;
+  bx.fillRect(0, 0, W, H);
+  bx.strokeStyle = SNAKE_COLORS.grid;
+  bx.lineWidth = 1;
+  bx.beginPath();
+  for (let x = 0; x <= SNAKE_COLS; x++) { bx.moveTo(x * C, 0); bx.lineTo(x * C, H); }
+  for (let y = 0; y <= SNAKE_ROWS; y++) { bx.moveTo(0, y * C); bx.lineTo(W, y * C); }
+  bx.stroke();
+}
+
+// Cache des couleurs du corps, recalculé seulement quand la longueur change
+function _snakeBuildColorCache(n) {
+  const cache = new Array(n);
+  for (let i = 0; i < n; i++) {
+    if (i === 0) { cache[i] = SNAKE_COLORS.headB; continue; }
+    const ratio = n > 1 ? i / (n - 1) : 0;
+    cache[i] = ratio < 0.5
+      ? _snakeMix(SNAKE_COLORS.bodyA, SNAKE_COLORS.bodyB, ratio / 0.5)
+      : _snakeMix(SNAKE_COLORS.bodyB, SNAKE_COLORS.bodyTail, (ratio - 0.5) / 0.5);
+  }
+  return cache;
+}
+
+// Sprite de fruit pré-rendu (glow + dégradé radial), dessiné une seule fois
+let _snakeFruitSprite = null;
+const SNAKE_FRUIT_SPRITE_SIZE = 48; // résolution du sprite (avec marge pour le glow)
+function _snakeBuildFruitSprite() {
+  const S = SNAKE_FRUIT_SPRITE_SIZE;
+  _snakeFruitSprite = document.createElement('canvas');
+  _snakeFruitSprite.width = S;
+  _snakeFruitSprite.height = S;
+  const fx = _snakeFruitSprite.getContext('2d');
+  const cx = S / 2, cy = S / 2;
+  const radius = SNAKE_CELL / 2 - 2;
+  // Glow doux
+  fx.shadowColor = SNAKE_COLORS.fruitGlow;
+  fx.shadowBlur = 14;
+  // Dégradé radial (cœur clair → couleur)
+  const g = fx.createRadialGradient(cx - 2, cy - 2, 1, cx, cy, radius);
+  g.addColorStop(0, SNAKE_COLORS.fruitCore);
+  g.addColorStop(1, SNAKE_COLORS.fruit);
+  fx.fillStyle = g;
+  fx.beginPath();
+  fx.arc(cx, cy, radius, 0, Math.PI * 2);
+  fx.fill();
+}
+
 function renderSnake() {
   const ctx = snakeCtx();
   const C = SNAKE_CELL;
-  ctx.fillStyle = SNAKE_COLORS.bg;
-  ctx.fillRect(0, 0, SNAKE_COLS * C, SNAKE_ROWS * C);
-  ctx.strokeStyle = SNAKE_COLORS.grid;
-  ctx.lineWidth = 0.5;
-  for (let x = 0; x <= SNAKE_COLS; x++) {
-    ctx.beginPath(); ctx.moveTo(x * C, 0); ctx.lineTo(x * C, SNAKE_ROWS * C); ctx.stroke();
-  }
-  for (let y = 0; y <= SNAKE_ROWS; y++) {
-    ctx.beginPath(); ctx.moveTo(0, y * C); ctx.lineTo(SNAKE_COLS * C, y * C); ctx.stroke();
-  }
+  const W = SNAKE_COLS * C, H = SNAKE_ROWS * C;
+
+  // Fond pré-rendu (1 seul drawImage au lieu de gradient + ~42 lignes/frame)
+  if (!_snakeBgCanvas) _snakeBuildBg();
+  ctx.drawImage(_snakeBgCanvas, 0, 0);
+
   if (!snakeState) return;
-  const f = snakeState.fruit;
-  ctx.save();
-  ctx.shadowColor = SNAKE_COLORS.fruitGlow;
-  ctx.shadowBlur = 14;
-  ctx.fillStyle = SNAKE_COLORS.fruit;
-  ctx.beginPath();
-  ctx.arc(f.x * C + C/2, f.y * C + C/2, C/2 - 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-  snakeState.snake.forEach((seg, i) => {
+
+  // Facteur d'interpolation
+  let t = 1;
+  if (!snakePaused && snakeState.tickStart) {
+    t = (performance.now() - snakeState.tickStart) / snakeState.speed;
+    if (t > 1) t = 1;
+    if (t < 0) t = 0;
+  }
+
+  // ── Fruit (sprite pré-rendu : beau glow + dégradé, mais perf préservée) ──
+  if (!_snakeFruitSprite) _snakeBuildFruitSprite();
+  const fr = snakeState.fruit;
+  const now = performance.now();
+  let fruitScale = 1;
+  if (snakeState.fruitPop) {
+    const age = (now - snakeState.fruitPop) / 220;
+    if (age < 1) fruitScale = 0.3 + 0.7 * age;
+  }
+  const pulse = 1 + Math.sin(now / 260) * 0.06;
+  const scale = fruitScale * pulse;
+  const S = SNAKE_FRUIT_SPRITE_SIZE * scale;
+  const fcx = fr.x * C + C / 2, fcy = fr.y * C + C / 2;
+  ctx.drawImage(_snakeFruitSprite, fcx - S / 2, fcy - S / 2, S, S);
+
+  // ── Serpent (interpolé) ──
+  const snake = snakeState.snake;
+  const prev = snakeState.prevSnake || snake;
+  const n = snake.length;
+
+  // Cache de couleurs : reconstruit seulement si la longueur a changé
+  if (!snakeState.colorCache || snakeState.colorCache.length !== n) {
+    snakeState.colorCache = _snakeBuildColorCache(n);
+  }
+  const colors = snakeState.colorCache;
+
+  // Dessiner de la queue vers la tête
+  for (let i = n - 1; i >= 0; i--) {
+    const cur = snake[i];
+    const pv = prev[i] || cur;
+    const ix = _snakeLerpCoord(pv.x, cur.x, t, SNAKE_COLS);
+    const iy = _snakeLerpCoord(pv.y, cur.y, t, SNAKE_ROWS);
+    const px = ix * C, py = iy * C;
     const isHead = i === 0;
-    ctx.save();
-    ctx.fillStyle = isHead ? SNAKE_COLORS.head : SNAKE_COLORS.body;
-    if (isHead) { ctx.shadowColor = 'rgba(235,88,70,0.6)'; ctx.shadowBlur = 10; }
-    const r = isHead ? 6 : 4;
-    _snakeRoundRect(ctx, seg.x * C + 1, seg.y * C + 1, C - 2, C - 2, r);
+    const inset = isHead ? 0.5 : 0.5;
+    const r = isHead ? 7 : 6;
+
+    // Contour sombre pour délimiter chaque segment (lisibilité)
+    ctx.fillStyle = colors[i];
+    ctx.strokeStyle = SNAKE_COLORS.outline;
+    ctx.lineWidth = isHead ? 2.5 : 2;
+    ctx.lineJoin = 'round';
+    _snakeRoundRect(ctx, px + inset, py + inset, C - inset * 2, C - inset * 2, r);
     ctx.fill();
-    ctx.restore();
-  });
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font = "bold 11px 'Space Mono', monospace";
-  ctx.fillText('Score: ' + snakeState.score, 8, 16);
+    ctx.stroke();
+
+    // Wrap visuel
+    if (px < 0 || px > W - C || py < 0 || py > H - C) {
+      const wx = px < 0 ? px + W : (px > W - C ? px - W : px);
+      const wy = py < 0 ? py + H : (py > H - C ? py - H : py);
+      _snakeRoundRect(ctx, wx + inset, wy + inset, C - inset * 2, C - inset * 2, r);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // Yeux sur la tête
+    if (isHead) {
+      const dir = snakeState.dir;
+      ctx.fillStyle = '#1a0f24';
+      const eyeOff = 4.5, eyeR = 2.4;
+      const cx = px + C / 2, cy = py + C / 2;
+      let ex1, ey1, ex2, ey2;
+      if (dir.x !== 0) {
+        ex1 = cx + dir.x * 3; ey1 = cy - eyeOff;
+        ex2 = cx + dir.x * 3; ey2 = cy + eyeOff;
+      } else {
+        ex1 = cx - eyeOff; ey1 = cy + dir.y * 3;
+        ex2 = cx + eyeOff; ey2 = cy + dir.y * 3;
+      }
+      ctx.beginPath(); ctx.arc(ex1, ey1, eyeR, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(ex2, ey2, eyeR, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+
+// Mélange deux couleurs hex avec un ratio 0..1
+function _snakeMix(a, b, t) {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+  const ar = (pa >> 16) & 255, ag = (pa >> 8) & 255, ab = pa & 255;
+  const br = (pb >> 16) & 255, bg = (pb >> 8) & 255, bb = pb & 255;
+  const r = Math.round(ar + (br - ar) * t);
+  const g = Math.round(ag + (bg - ag) * t);
+  const bl = Math.round(ab + (bb - ab) * t);
+  return 'rgb(' + r + ',' + g + ',' + bl + ')';
 }
 
 function _snakeRoundRect(ctx, x, y, w, h, r) {
@@ -247,6 +443,7 @@ function _snakeRoundRect(ctx, x, y, w, h, r) {
 // ── GAME OVER ────────────────────────────────────
 async function gameOverSnake() {
   if (snakeLoop) clearTimeout(snakeLoop);
+  if (snakeRenderLoop) { cancelAnimationFrame(snakeRenderLoop); snakeRenderLoop = null; }
   const finalScore = snakeState.score;
   const finalPomels = snakePomelsEarned;
   if (finalPomels > 0) {
@@ -406,16 +603,19 @@ async function checkSnakeWeeklyReset() {
 // ── PAGE RENDER ──────────────────────────────────
 function renderSnakePage() {
   const ctx = snakeCtx();
-  ctx.fillStyle = SNAKE_COLORS.bg;
-  ctx.fillRect(0, 0, SNAKE_COLS * SNAKE_CELL, SNAKE_ROWS * SNAKE_CELL);
+  if (ctx) ctx.imageSmoothingEnabled = false;
+  const C = SNAKE_CELL, W = SNAKE_COLS * C, H = SNAKE_ROWS * C;
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, SNAKE_COLORS.bg2);
+  grad.addColorStop(1, SNAKE_COLORS.bg);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
   ctx.strokeStyle = SNAKE_COLORS.grid;
-  ctx.lineWidth = 0.5;
-  for (let x = 0; x <= SNAKE_COLS; x++) {
-    ctx.beginPath(); ctx.moveTo(x*SNAKE_CELL,0); ctx.lineTo(x*SNAKE_CELL,SNAKE_ROWS*SNAKE_CELL); ctx.stroke();
-  }
-  for (let y = 0; y <= SNAKE_ROWS; y++) {
-    ctx.beginPath(); ctx.moveTo(0,y*SNAKE_CELL); ctx.lineTo(SNAKE_COLS*SNAKE_CELL,y*SNAKE_CELL); ctx.stroke();
-  }
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = 0; x <= SNAKE_COLS; x++) { ctx.moveTo(x*C, 0); ctx.lineTo(x*C, H); }
+  for (let y = 0; y <= SNAKE_ROWS; y++) { ctx.moveTo(0, y*C); ctx.lineTo(W, y*C); }
+  ctx.stroke();
   document.getElementById('snakeOverlayTitle').textContent = '🐍 Serpent';
   document.getElementById('snakeOverlaySub').textContent = 'Mange des fruits pour gagner des Pomels !';
   document.getElementById('snakeStartBtn').textContent = 'Jouer !';
@@ -430,16 +630,13 @@ function renderSnakePage() {
 
 // ── MOBILE CONTROLS ──────────────────────────────
 function snakeDpadDir(x, y) {
-  if (!snakeState) return;
-  const cur = snakeState.dir;
-  if (x === -cur.x && y === -cur.y) return;
-  snakeState.nextDir = { x, y };
+  snakeQueueDir(x, y);
 }
 
 function snakeTogglePause() {
   if (!snakeState) return;
   snakePaused = !snakePaused;
-  if (!snakePaused) scheduleSnakeTick();
+  if (!snakePaused) { snakeState.tickStart = performance.now(); scheduleSnakeTick(); }
   const centerBtn = document.querySelector('.snake-dpad-center');
   if (centerBtn) centerBtn.textContent = snakePaused ? '▶' : '⏸';
 }
@@ -463,9 +660,7 @@ let _snakeTouchStart = null;
     const dir = Math.abs(dx) > Math.abs(dy)
       ? { x: dx > 0 ? 1 : -1, y: 0 }
       : { x: 0, y: dy > 0 ? 1 : -1 };
-    const cur = snakeState.dir;
-    if (dir.x === -cur.x && dir.y === -cur.y) return;
-    snakeState.nextDir = dir;
+    snakeQueueDir(dir.x, dir.y);
   }, { passive: true });
 })();
 
@@ -476,7 +671,9 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space') {
     e.preventDefault();
     snakePaused = !snakePaused;
-    if (!snakePaused) scheduleSnakeTick();
+    if (!snakePaused) { snakeState.tickStart = performance.now(); scheduleSnakeTick(); }
+    const centerBtn = document.querySelector('.snake-dpad-center');
+    if (centerBtn) centerBtn.textContent = snakePaused ? '▶' : '⏸';
     return;
   }
   const dirs = {
@@ -488,9 +685,7 @@ document.addEventListener('keydown', e => {
   const newDir = dirs[e.code];
   if (!newDir) return;
   e.preventDefault();
-  const cur = snakeState.dir;
-  if (newDir.x === -cur.x && newDir.y === -cur.y) return;
-  snakeState.nextDir = newDir;
+  snakeQueueDir(newDir.x, newDir.y);
 });
 
 console.log('[Snake] Module loaded ✓');
