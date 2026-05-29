@@ -373,7 +373,6 @@ async function flappyGameOver() {
   // Save leaderboards
   await saveFlappyScore(finalScore);
   await saveFlappyWeeklyScore(finalScore);
-  if (typeof bpReportScore === 'function') { try { await bpReportScore('flappy', finalScore); } catch(e) { console.error('bp report', e); } }
 
   // Overlay
   const overlay = flappyOverlay();

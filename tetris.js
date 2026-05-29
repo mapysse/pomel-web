@@ -446,7 +446,6 @@ async function gameOverTetris() {
 
   await saveTetrisScore(finalLines);
   await saveTetrisWeeklyScore(finalLines);
-  if (typeof bpReportScore === 'function') { try { await bpReportScore('tetris', finalLines); } catch(e) { console.error('bp report', e); } }
 
   // Overlay
   const overlay = tetOverlay();
