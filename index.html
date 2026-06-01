@@ -6518,6 +6518,8 @@ function launchApp() {
   startSidebarRefresh();
   // Timers live
   startTimerInterval();
+  // Listener temps réel Firebase sur le compte — aucun polling, Firebase pousse uniquement quand ça change
+  startBalanceListener();
   // Sidenav state
   initSidenav();
   // Avatar topbar
@@ -6534,6 +6536,24 @@ function refreshUI() {
   takeStateSnapshot();
 }
 
+let _balanceListenerRef = null;
+function startBalanceListener() {
+  if (_balanceListenerRef) { _balanceListenerRef.off('value'); }
+  _balanceListenerRef = db.ref('accounts/' + state.code);
+  _balanceListenerRef.on('value', snap => {
+    if (!state || !snap.exists()) return;
+    const fresh = snap.val();
+    // On ne touche qu'au solde pour ne pas écraser un state en cours de modification
+    if (fresh && typeof fresh.balance === 'number' && fresh.balance !== state.balance) {
+      state.balance = fresh.balance;
+      refreshUI();
+    }
+  });
+}
+function stopBalanceListener() {
+  if (_balanceListenerRef) { _balanceListenerRef.off('value'); _balanceListenerRef = null; }
+}
+
 function refreshTopbarAvatar() {
   const el = document.getElementById('topbarUserAvatar');
   if (!el || !state) return;
@@ -6541,6 +6561,7 @@ function refreshTopbarAvatar() {
 }
 
 function logout() {
+  stopBalanceListener();
   stopDiscussionListener();
   if (typeof stopClickerPage === 'function') stopClickerPage();
   state = null;
@@ -12760,14 +12781,21 @@ function updateAllTimers() {
   document.querySelectorAll('[data-expires]').forEach(el => {
     const exp = parseInt(el.getAttribute('data-expires'));
     const remaining = exp - now;
-    el.textContent = '⏱ ' + formatCountdown(remaining);
-    el.className = getTimerClass(remaining);
+    if (remaining <= 0) {
+      el.textContent = '⏱ Expiré';
+      el.className = 'timer-badge urgent';
+    } else {
+      el.textContent = '⏱ ' + formatCountdown(remaining);
+      el.className = getTimerClass(remaining);
+    }
   });
 }
 
 function startTimerInterval() {
-  if (_timerInterval) return;
+  // Toujours réinitialiser pour éviter qu'un ancien ID périmé bloque le redémarrage
+  if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
   _timerInterval = setInterval(updateAllTimers, 1000);
+  updateAllTimers(); // Mise à jour immédiate sans attendre 1s
 }
 
 
