@@ -4959,6 +4959,8 @@ function pmGenerateLeagueOpponent(roundNum) {
 
 // ── État UI PokePom ──
 let _pmView = 'home'; // home, collection, team, info, wild, gym, gymPick, league, battle, starter
+
+let _pmPvpFriendly = false; // Flag : true quand on entre dans la page PvP amical
 let _pmBattleState = null; // État du combat en cours
 let _pmPendingGym = null; // Arène sélectionnée en attente du choix du combattant
 
@@ -5185,6 +5187,13 @@ async function pmGoTo(view) {
   if (typeof _mobileSidenavOpen !== 'undefined' && _mobileSidenavOpen && typeof closeMobileSidenav === 'function') closeMobileSidenav();
 
   _pmView = view;
+  // Reset/set du flag amical selon la vue
+  if (view === 'pvpFriendly') {
+    _pmPvpFriendly = true;
+  } else if (view === 'pvp' || view === 'home') {
+    _pmPvpFriendly = false;
+  }
+  // (pvpList et pvpBattle conservent le flag courant)
   window.scrollTo(0, 0);
 
   // Détection de changement de compte (logout/login d'un autre user)
@@ -5235,6 +5244,7 @@ function pmRenderPage() {
     case 'battle': pmRenderBattle(page, player); break;
     case 'dojo': pmRenderDojo(page, player); break;
     case 'pvp': pmRenderPvpHub(page, player); break;
+    case 'pvpFriendly': pmRenderPvpFriendlyHub(page, player); break;
     case 'pvpList': pmRenderPvpList(page, player); break;
     case 'pvpBattle': pmRenderPvpBattle(page, player); break;
     default: pmRenderHome(page, player);
@@ -9364,7 +9374,7 @@ function pvpAttachListener(battleId, onUpdate) {
 
 let _pvpInitInProgress = false;
 
-async function pvpInitChallenge(opponentCode) {
+async function pvpInitChallenge(opponentCode, friendly) {
   if (_pvpInitInProgress) return;
   _pvpInitInProgress = true;
   try {
@@ -9384,8 +9394,8 @@ async function pvpInitChallenge(opponentCode) {
     let oppProfile;
 
     if (vsBot) {
-      // Check daily limit
-      if (!pvpBotCanFight(myProfile)) {
+      // En amical, pas de limite quotidienne contre Red
+      if (!friendly && !pvpBotCanFight(myProfile)) {
         alert('Tu as déjà combattu Red ' + PVP_BOT_DAILY_LIMIT + ' fois aujourd\'hui ! Reviens demain.');
         return;
       }
@@ -9446,6 +9456,7 @@ async function pvpInitChallenge(opponentCode) {
       createdAt: new Date(now).toISOString(),
       lastUpdate: new Date(now).toISOString(),
       vsBot: vsBot,                              // marqueur : combat contre le bot
+      friendly: !!friendly,                      // marqueur : combat amical (pas d'ELO ni Pomels)
       p1: {
         code: state.code,
         displayName: myProfile.displayName,
@@ -9519,7 +9530,8 @@ async function pvpInitChallenge(opponentCode) {
       currentBattleId: battleId,
       lastSeen: new Date().toISOString()
     };
-    if (vsBot) {
+    if (vsBot && !friendly) {
+      // Le compteur Red n'est mis à jour qu'en mode classé (amical = illimité)
       const today = (typeof getTodayKey === 'function') ? getTodayKey() : new Date().toISOString().slice(0, 10);
       const prevCount = pvpBotGetTodayCount(myProfile);
       myUpdates.botRedFights = { date: today, count: prevCount + 1 };
@@ -9532,7 +9544,7 @@ async function pvpInitChallenge(opponentCode) {
 
     if (_pvpProfileCache) {
       _pvpProfileCache.currentBattleId = battleId;
-      if (vsBot) {
+      if (vsBot && !friendly) {
         _pvpProfileCache.botRedFights = myUpdates.botRedFights;
       }
     }
@@ -9991,6 +10003,26 @@ async function pvpApplyBattleEnd(battle) {
   if (_pvpEndApplied[battle.id]) return;
   _pvpEndApplied[battle.id] = true;
 
+  // ─── Mode AMICAL : pas d'ELO, pas de Pomels, pas d'historique, pas de stats ─
+  // Mais on libère quand même les currentBattleId pour que les joueurs puissent
+  // relancer un combat ensuite.
+  if (battle.friendly) {
+    const isP1BotF = pvpIsBot(battle.p1.code);
+    const isP2BotF = pvpIsBot(battle.p2.code);
+    const p1ProfileF = isP1BotF ? null : await pvpLoadOtherProfile(battle.p1.code);
+    const p2ProfileF = isP2BotF ? null : await pvpLoadOtherProfile(battle.p2.code);
+    if (p1ProfileF) {
+      p1ProfileF.currentBattleId = '';
+      p1ProfileF.lastSeen = new Date().toISOString();
+      await pvpSaveProfile(p1ProfileF);
+    }
+    if (p2ProfileF) {
+      p2ProfileF.currentBattleId = '';
+      await pvpSaveProfile(p2ProfileF);
+    }
+    return; // Pas de gains Pomels en amical
+  }
+
   const p1Won = battle.winner === 'p1';
   let newP1Elo = pmEloCalc(battle.p1.eloAtStart, battle.p2.eloAtStart, p1Won);
   let newP2Elo = pmEloCalc(battle.p2.eloAtStart, battle.p1.eloAtStart, !p1Won);
@@ -10039,6 +10071,7 @@ async function pvpApplyBattleEnd(battle) {
 
 async function pvpClaimMyReward(battle) {
   if (!battle || battle.status !== 'completed') return;
+  if (battle.friendly) return;  // Pas de Pomels en mode amical
   if (_pvpRewardClaimed[battle.id]) return;
   _pvpRewardClaimed[battle.id] = true;
 
@@ -10238,6 +10271,45 @@ async function pvpCheckWeeklyReset() {
 // Hub PvP
 // ─────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────
+// PvP Amical : hub minimaliste, pas de stats ELO, pas de Pomels en jeu
+// ─────────────────────────────────────────────────────────────────────
+async function pmRenderPvpFriendlyHub(page, player) {
+  page.innerHTML = `
+    <div class="pm-wrap">
+      <div class="pm-header">
+        <div>
+          <div class="pm-title">🕊️ PvP Amical</div>
+          <div class="pm-sub">Combats sans enjeu — affronte qui tu veux quand tu veux</div>
+        </div>
+        <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
+      </div>
+
+      <div class="pm-card" style="padding:20px; text-align:center;">
+        <div style="font-size:3rem; margin-bottom:8px;">🕊️</div>
+        <div style="font-size:1.2rem; font-weight:bold; margin-bottom:6px; color:#4a8c7a;">Combats amicaux</div>
+        <div style="color:var(--muted); font-size:.9rem; line-height:1.5; margin-bottom:18px;">
+          Aucun ELO en jeu · aucun Pomel gagné ou perdu<br>
+          Idéal pour <strong>tester tes équipes</strong>, <strong>essayer une stratégie</strong> ou simplement <strong>s'entraîner contre Red</strong>.
+        </div>
+        <div style="background:rgba(74,140,122,0.1); border:1px solid rgba(74,140,122,0.3); border-radius:8px; padding:12px; margin-bottom:18px; font-size:.8rem; color:var(--text); text-align:left;">
+          <div style="font-weight:bold; margin-bottom:6px; color:#4a8c7a;">🟢 Spécificités du mode amical :</div>
+          <ul style="margin:0; padding-left:20px; line-height:1.6;">
+            <li>Pas de limite quotidienne contre Red</li>
+            <li>Pas d'impact sur ton ELO ni ton win rate classé</li>
+            <li>Pas de pomels gagnés en victoire ou perdus en défaite</li>
+            <li>Les combats sont éphémères (pas d'historique)</li>
+          </ul>
+        </div>
+        <button onclick="pmGoTo('pvpList')"
+          style="width:100%; padding:14px; background:#4a8c7a; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:1rem; font-weight:bold; cursor:pointer;">
+          🕊️ Voir les joueurs à défier
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 async function pmRenderPvpHub(page, player) {
   page.innerHTML = `
     <div class="pm-wrap">
@@ -10354,6 +10426,10 @@ async function pmRenderPvpHub(page, player) {
       style="width:100%; padding:14px; background:${disabled ? '#555' : '#a83838'}; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:1rem; font-weight:bold; cursor:${disabled ? 'not-allowed' : 'pointer'};">
       ⚔️ Voir les joueurs à défier
     </button>
+    <button onclick="pmGoTo('pvpFriendly')" ${disabled ? 'disabled' : ''}
+      style="width:100%; margin-top:8px; padding:12px; background:${disabled ? '#444' : 'transparent'}; color:${disabled ? '#888' : '#4a8c7a'}; border:1px solid ${disabled ? '#555' : '#4a8c7a'}; border-radius:8px; font-family:inherit; font-size:.92rem; font-weight:bold; cursor:${disabled ? 'not-allowed' : 'pointer'};">
+      🕊️ Combat amical (pas d'ELO, pas de Pomels)
+    </button>
     <div style="margin-top:18px; padding:14px; background:var(--surface2); border:1px solid var(--border); border-radius:10px;">
       <div style="margin-bottom:10px;">
         <div style="font-weight:bold;">🏆 Classement hebdo PvP</div>
@@ -10400,14 +10476,23 @@ async function pmRenderPvpHub(page, player) {
 // ─────────────────────────────────────────────────────────────────────
 
 async function pmRenderPvpList(page, player) {
+  // Le mode est stocké dans une variable globale fixée par pmGoTo
+  // (false = classé, true = amical)
+  const friendly = !!_pmPvpFriendly;
+  const titleEmoji = friendly ? '🕊️' : '⚔️';
+  const title = friendly ? 'Combat amical' : 'Choisir un adversaire';
+  const subtitle = friendly
+    ? "Pas d'ELO, pas de Pomels — juste pour le fun"
+    : 'Tous les joueurs Pomel · ordre alphabétique';
+  const backTo = friendly ? 'pvpFriendly' : 'pvp';
   page.innerHTML = `
     <div class="pm-wrap">
       <div class="pm-header">
         <div>
-          <div class="pm-title">⚔️ Choisir un adversaire</div>
-          <div class="pm-sub">Tous les joueurs Pomel · ordre alphabétique</div>
+          <div class="pm-title">${titleEmoji} ${title}</div>
+          <div class="pm-sub">${subtitle}</div>
         </div>
-        <button class="btn-outline" onclick="pmGoTo('pvp')">← Retour</button>
+        <button class="btn-outline" onclick="pmGoTo('${backTo}')">← Retour</button>
       </div>
       <div id="pvp-list-content" class="pm-card">
         <div style="color:var(--muted); text-align:center; padding:20px;">Chargement…</div>
@@ -10469,11 +10554,15 @@ async function pmRenderPvpList(page, player) {
 
     let stats;
     if (isBot) {
-      const remaining = p.botRemaining;
-      if (remaining > 0) {
-        stats = `<div style="font-size:.68rem; color:#5fe89a;">⚡ ${remaining}/${p.botLimit} combat${remaining > 1 ? 's' : ''} restant${remaining > 1 ? 's' : ''} aujourd'hui</div>`;
+      if (friendly) {
+        stats = `<div style="font-size:.68rem; color:#5fe89a;">🕊️ Amical · combats illimités</div>`;
       } else {
-        stats = `<div style="font-size:.68rem; color:#a86040;">⏳ Limite quotidienne atteinte — reviens demain !</div>`;
+        const remaining = p.botRemaining;
+        if (remaining > 0) {
+          stats = `<div style="font-size:.68rem; color:#5fe89a;">⚡ ${remaining}/${p.botLimit} combat${remaining > 1 ? 's' : ''} restant${remaining > 1 ? 's' : ''} aujourd'hui</div>`;
+        } else {
+          stats = `<div style="font-size:.68rem; color:#a86040;">⏳ Limite quotidienne atteinte — reviens demain !</div>`;
+        }
       }
     } else if (total > 0) {
       stats = `<div style="font-size:.68rem; color:var(--muted);">${p.wins}V / ${p.losses}D · ${Math.round(p.wins*100/total)}% wr</div>`;
@@ -10482,14 +10571,15 @@ async function pmRenderPvpList(page, player) {
     }
 
     let btn;
+    const friendlyArg = friendly ? ', true' : '';
     if (isBot) {
-      if (p.botRemaining <= 0) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">Demain</button>';
-      else btn = `<button onclick="pvpInitChallenge('${p.code}')" style="padding:8px 14px; background:linear-gradient(135deg,#FF9528,#FF4E8A); color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold; font-size:.82rem;">Défier ⚔</button>`;
+      if (!friendly && p.botRemaining <= 0) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">Demain</button>';
+      else btn = `<button onclick="pvpInitChallenge('${p.code}'${friendlyArg})" style="padding:8px 14px; background:linear-gradient(135deg,#FF9528,#FF4E8A); color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold; font-size:.82rem;">Défier ⚔</button>`;
     }
     else if (inBattle) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">En combat</button>';
     else if (noPokepom) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">N/A</button>';
     else if (noTeam) btn = '<button disabled style="padding:6px 14px; background:#666; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-size:.78rem;">Indisponible</button>';
-    else btn = `<button onclick="pvpInitChallenge('${p.code}')" style="padding:8px 14px; background:#a83838; color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold; font-size:.82rem;">Défier ⚔</button>`;
+    else btn = `<button onclick="pvpInitChallenge('${p.code}'${friendlyArg})" style="padding:8px 14px; background:${friendly ? '#4a8c7a' : '#a83838'}; color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold; font-size:.82rem;">Défier ${friendly ? '🕊️' : '⚔'}</button>`;
 
     const dimmed = !isBot && (noPokepom || noTeam);
     let tierLine;
@@ -10538,14 +10628,18 @@ async function pmRenderPvpList(page, player) {
 // ─────────────────────────────────────────────────────────────────────
 
 async function pmRenderPvpBattle(page, player) {
+  const friendly = !!_pmPvpFriendly;
+  const titleEmoji = friendly ? '🕊️' : '⚔️';
+  const title = friendly ? 'Combat amical' : 'Combat PvP';
+  const backTo = friendly ? 'pvpFriendly' : 'pvp';
   page.innerHTML = `
     <div class="pm-wrap">
       <div class="pm-header">
         <div>
-          <div class="pm-title">⚔️ Combat PvP</div>
+          <div class="pm-title">${titleEmoji} ${title}</div>
           <div class="pm-sub" id="pvp-battle-sub">Chargement…</div>
         </div>
-        <button class="btn-outline" onclick="pvpDetachListener(); pmGoTo('pvp');">← Retour</button>
+        <button class="btn-outline" onclick="pvpDetachListener(); pmGoTo('${backTo}');">← Retour</button>
       </div>
       <div id="pvp-battle-content">
         <div class="pm-card" style="text-align:center; padding:20px;">Récupération de l'état…</div>
@@ -10600,6 +10694,9 @@ async function pmRenderPvpBattle(page, player) {
     }
     // Reset du mode switch UI quand l'état Firebase change (nouveau tour)
     _pvpUiSwitching = false;
+    // Synchroniser le flag amical local avec celui de la battle (utile si
+    // le joueur revient sur un combat amical sans passer par le hub amical)
+    _pmPvpFriendly = !!battle.friendly;
     pvpRenderBattleUI(battle);
     if (battle.status === 'completed') {
       await pvpClaimMyReward(battle);
