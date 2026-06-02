@@ -472,7 +472,7 @@ const PM_DEX_IDS = Object.keys(PM_DEX);
 const PM_MOVES = {
   // Plante
   fouet_roncier:   { id:'fouet_roncier',   name:'Fouet Roncier',    type:'plante',     power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Plante puissante.' },
-  photosynthese:   { id:'photosynthese',   name:'Photosynthèse',    type:'plante',     power:0,  accuracy:100, pp:3, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
+  photosynthese:   { id:'photosynthese',   name:'Photosynthèse',    type:'plante',     power:0,  accuracy:100, pp:6, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
   lancer_seve:     { id:'lancer_seve',     name:'Jet d\'Écume',      type:'eau',        power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Eau (couvre les Feu).' },
   pollen_lourd:    { id:'pollen_lourd',    name:'Pollen Lourd',     type:'plante',     power:0,  accuracy:90,  pp:6, category:'debuff', stat:'vit', stages:-1, desc:'Baisse la Vitesse adverse d\'un cran.' },
 
@@ -8679,27 +8679,27 @@ function pvpBotChooseAction(battle, difficulty) {
           if (d > oppBestDmg) oppBestDmg = d;
         }
         if (oppBestDmg < myActive.hp) {
-          // L'adversaire ne nous tue pas ce tour, on heal
-          if (Math.random() < 0.70) return { type: 'move', moveIdx: healIdx, by: 'p2' };
+          // L'adversaire ne nous tue pas ce tour, on heal (55% chance)
+          if (Math.random() < 0.55) return { type: 'move', moveIdx: healIdx, by: 'p2' };
         }
       }
     }
     // Évaluer le matchup actuel
     const matchupScore = pvpBotEvalMatchup(myActive, oppActive);
     // Si très défavorable (l'adversaire nous tue en 1-2 tours et on en met 3+),
-    // chercher un meilleur switch
+    // chercher un meilleur switch (50% chance, adouci)
     if (matchupScore <= -2) {
       const switchIdx = pvpBotPickBestSwitch(battle, matchupScore);
-      if (switchIdx !== null && Math.random() < 0.65) {
+      if (switchIdx !== null && Math.random() < 0.50) {
         return { type: 'switch', toIdx: switchIdx, by: 'p2' };
       }
     }
-    const idx = pvpBotChooseBestMove(myActive, oppActive, 0.15);  // 15% de bruit
+    const idx = pvpBotChooseBestMove(myActive, oppActive, 0.25);  // 25% de bruit (adouci depuis 15%)
     return { type: 'move', moveIdx: idx, by: 'p2' };
   }
 
-  // ── EXPERT : presque optimal ──
-  // Heal très smart, switch agressif sur mauvais matchup, dégâts précis
+  // ── EXPERT : très bon mais battable (adouci une seconde fois) ──
+  // Heal smart, switch sur matchup vraiment défavorable, dégâts précis
   if (myActive.hp < myActive.maxHp * 0.35) {
     const healIdx = myActive.moves.findIndex(m => m && m.category === 'heal' && m.currentPp > 0);
     if (healIdx >= 0) {
@@ -8709,20 +8709,22 @@ function pvpBotChooseAction(battle, difficulty) {
         const d = pmCalcDamage(oppActive, myActive, m);
         if (d > oppBestDmg) oppBestDmg = d;
       }
-      // Si l'adversaire ne nous tue pas ce tour, on heal (90% chance)
-      if (oppBestDmg < myActive.hp && Math.random() < 0.90) {
+      // Si l'adversaire ne nous tue pas ce tour, on heal (60% chance — adouci)
+      if (oppBestDmg < myActive.hp && Math.random() < 0.60) {
         return { type: 'move', moveIdx: healIdx, by: 'p2' };
       }
     }
   }
   const matchupScore = pvpBotEvalMatchup(myActive, oppActive);
-  if (matchupScore <= -1) {
+  // Switch uniquement sur matchup vraiment défavorable (≤ -2)
+  if (matchupScore <= -2) {
     const switchIdx = pvpBotPickBestSwitch(battle, matchupScore);
-    if (switchIdx !== null && Math.random() < 0.80) {
+    // 50% chance de switch (adouci)
+    if (switchIdx !== null && Math.random() < 0.50) {
       return { type: 'switch', toIdx: switchIdx, by: 'p2' };
     }
   }
-  const idx = pvpBotChooseBestMove(myActive, oppActive, 0.05);  // 5% de bruit (quasi optimal)
+  const idx = pvpBotChooseBestMove(myActive, oppActive, 0.30);  // 30% de bruit (adouci)
   return { type: 'move', moveIdx: idx, by: 'p2' };
 }
 
@@ -9732,13 +9734,25 @@ async function pvpApplyBattleEnd(battle) {
   _pvpEndApplied[battle.id] = true;
 
   const p1Won = battle.winner === 'p1';
-  const newP1Elo = pmEloCalc(battle.p1.eloAtStart, battle.p2.eloAtStart, p1Won);
-  const newP2Elo = pmEloCalc(battle.p2.eloAtStart, battle.p1.eloAtStart, !p1Won);
+  let newP1Elo = pmEloCalc(battle.p1.eloAtStart, battle.p2.eloAtStart, p1Won);
+  let newP2Elo = pmEloCalc(battle.p2.eloAtStart, battle.p1.eloAtStart, !p1Won);
 
-  // Met à jour les profils Firebase (relectures car les profils peuvent avoir
-  // changé entre temps, par ex. autres combats)
+  // ── BONUS RED : +12 ELO fixe en victoire si Champion+ (1400+) contre le bot Red ──
+  // Le bot Red est "fixe à ELO 1000" mais en réalité bien plus dur en Champion/Maître.
+  // On compense en bonus de gain pour récompenser la difficulté réelle.
   const isP1Bot = pvpIsBot(battle.p1.code);
   const isP2Bot = pvpIsBot(battle.p2.code);
+  const RED_BONUS_THRESHOLD = 1400;  // Champion+
+  const RED_BONUS = 12;
+  if (battle.vsBot) {
+    // Le joueur humain est celui qui n'est pas le bot
+    if (isP2Bot && p1Won && battle.p1.eloAtStart >= RED_BONUS_THRESHOLD) {
+      newP1Elo += RED_BONUS;
+    }
+    if (isP1Bot && !p1Won && battle.p2.eloAtStart >= RED_BONUS_THRESHOLD) {
+      newP2Elo += RED_BONUS;
+    }
+  }
 
   const p1Profile = isP1Bot ? null : await pvpLoadOtherProfile(battle.p1.code);
   const p2Profile = isP2Bot ? null : await pvpLoadOtherProfile(battle.p2.code);
