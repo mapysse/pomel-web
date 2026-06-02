@@ -297,9 +297,9 @@ const PM_DEX = {
                 lore:'Petit quadrupède à la carapace végétale. Son bulbe dorsal absorbe la lumière du jour et libère un parfum apaisant.' },
   thornet:    { id:'thornet',    name:'Thornet',    type:'plante',     hp:80, atk:55, def:60, vit:45, talent:'toisonMagique',
                 lore:'Scarabée aux élytres couverts d\'épines. Il s\'enfouit dans la mousse et tend des embuscades aux imprudents.' },
-  sylvagor:   { id:'sylvagor',   name:'Sylvagor',   type:'plante',     hp:120, atk:55, def:95, vit:45, talent:'sangFroid',
+  sylvagor:   { id:'sylvagor',   name:'Sylvagor',   type:'plante',     hp:115, atk:50, def:90, vit:39, talent:'sangFroid',
                 lore:'Golem sylvestre qui s\'éveille à chaque printemps. Ses racines plongent si loin qu\'on dit qu\'il connaît les secrets du sol.' },
-  sakuraze:   { id:'sakuraze',   name:'Sakuraze',   type:'plante',     hp:115, atk:65, def:85, vit:50, talent:'coeurFestif',
+  sakuraze:   { id:'sakuraze',   name:'Sakuraze',   type:'plante',     hp:110, atk:60, def:80, vit:44, talent:'coeurFestif',
                 lore:'Esprit des cerisiers en fleurs. Sa danse fait tomber les pétales roses qui endorment ses adversaires.' },
 
   // 🔥 FEU — rapide, offensif (identité : +VIT +ATK, -HP)
@@ -307,9 +307,9 @@ const PM_DEX = {
                 lore:'Petit lézard à la queue enflammée. Sa flamme ne s\'éteint jamais, même sous la pluie — un mystère pour les érudits.' },
   viperod:    { id:'viperod',    name:'Vipérod',    type:'feu',        hp:50, atk:60, def:45, vit:85, talent:'vitessePlus',
                 lore:'Serpent de braise qui chasse la nuit. Son venin brûle la chair avant même que la morsure ne soit visible.' },
-  magmaturne: { id:'magmaturne', name:'Magmaturne', type:'feu',        hp:85, atk:65, def:105, vit:60, talent:'carapace',
+  magmaturne: { id:'magmaturne', name:'Magmaturne', type:'feu',        hp:80, atk:60, def:100, vit:54, talent:'carapace',
                 lore:'Tortue volcanique dont la carapace abrite un cœur de lave. Elle hiberne dans les cratères actifs.' },
-  tauralys:   { id:'tauralys',   name:'Tauralys',   type:'feu',        hp:85, atk:115, def:55, vit:60, talent:'forcePure',
+  tauralys:   { id:'tauralys',   name:'Tauralys',   type:'feu',        hp:80, atk:110, def:50, vit:54, talent:'forcePure',
                 lore:'Taureau des plaines brûlées. Ses cornes rougeoyantes peuvent fendre la pierre quand il charge.' },
 
   // 💧 EAU — équilibré (identité : aucune stat extrême)
@@ -317,9 +317,9 @@ const PM_DEX = {
                 lore:'Têtard joyeux des torrents limpides. Il saute hors de l\'eau pour communiquer par bulles chantantes.' },
   carapulse:  { id:'carapulse',  name:'Carapulse',  type:'eau',        hp:65, atk:55, def:60, vit:60, talent:'carapace',
                 lore:'Crabe aux pinces capables de projeter des jets d\'eau à haute pression. Il arpente les récifs à la recherche de coquillages.' },
-  abyssale:   { id:'abyssale',   name:'Abyssale',   type:'eau',        hp:100, atk:70, def:95, vit:50, talent:'sangFroid',
+  abyssale:   { id:'abyssale',   name:'Abyssale',   type:'eau',        hp:95, atk:65, def:90, vit:44, talent:'sangFroid',
                 lore:'Méduse des grandes profondeurs. Ses filaments bioluminescents hypnotisent ses proies avant la décharge paralysante.' },
-  onduline:   { id:'onduline',   name:'Onduline',   type:'eau',        hp:85, atk:75, def:75, vit:80, talent:'reflux',
+  onduline:   { id:'onduline',   name:'Onduline',   type:'eau',        hp:75, atk:75, def:70, vit:74, talent:'reflux',
                 lore:'Hippocampe des courants chauds. Il se déplace toujours à contre-courant, porté par des remous invisibles.' },
 
   // ⚡ ÉLECTRIQUE — glass cannon (identité : +ATK +VIT, -DEF)
@@ -327,33 +327,33 @@ const PM_DEX = {
                 lore:'Écureuil électrique qui saute de branche en branche. Ses joues stockent assez d\'énergie pour allumer une maison.' },
   fulguron:   { id:'fulguron',   name:'Fulguron',   type:'electrique', hp:50, atk:70, def:40, vit:80, talent:'vitessePlus',
                 lore:'Sphère d\'énergie pure flottant dans l\'atmosphère. On la confond souvent avec la foudre en boule.' },
-  rhinovolt:  { id:'rhinovolt',  name:'Rhinovolt',  type:'electrique', hp:90, atk:110, def:60, vit:55, talent:'cran',
+  rhinovolt:  { id:'rhinovolt',  name:'Rhinovolt',  type:'electrique', hp:85, atk:105, def:55, vit:49, talent:'cran',
                 lore:'Rhinocéros à la corne conductrice. Sa charge génère des arcs électriques qui paralysent sur plusieurs mètres.' },
-  raispore:   { id:'raispore',   name:'Raispore',   type:'electrique', hp:60, atk:115, def:45, vit:95, talent:'toisonMagique',
+  raispore:   { id:'raispore',   name:'Raispore',   type:'electrique', hp:55, atk:110, def:40, vit:89, talent:'toisonMagique',
                 lore:'Hybride champignon-arachnide. Ses spores électrisées s\'accrochent à l\'air humide pour former des décharges aléatoires.' },
 
   // 🌀 AIR — agile (identité : +VIT, -HP)
   zephibri:   { id:'zephibri',   name:'Zéphibri',   type:'air',        hp:50, atk:55, def:50, vit:85, talent:'multiscale',
                 lore:'Minuscule colibri aux ailes si rapides qu\'elles deviennent invisibles. Il défie les lois de la gravité.' },
-  cyclonin:   { id:'cyclonin',   name:'Cyclonin',   type:'air',        hp:65, atk:75, def:60, vit:115, talent:'vitessePlus',
+  cyclonin:   { id:'cyclonin',   name:'Cyclonin',   type:'air',        hp:60, atk:70, def:55, vit:109, talent:'vitessePlus',
                 lore:'Ninja des nuages, maître du vent tranchant. On raconte qu\'il peut traverser une tempête sans se mouiller.' },
-  stratocepe: { id:'stratocepe', name:'Stratocèpe', type:'air',        hp:55, atk:65, def:95, vit:100, talent:'sangFroid',
+  stratocepe: { id:'stratocepe', name:'Stratocèpe', type:'air',        hp:50, atk:60, def:90, vit:94, talent:'sangFroid',
                 lore:'Champignon nuageux qui flotte en haute altitude. Son chapeau se condense et libère de brèves averses.' },
 
   // 🌑 OMBRE — défensif (identité : +HP +DEF, -ATK)
   spectrelis: { id:'spectrelis', name:'Spectrelis', type:'ombre',      hp:75, atk:45, def:70, vit:50, talent:'multiscale',
                 lore:'Graine fantôme hantée par l\'âme d\'un vieux jardin oublié. Elle murmure des berceuses aux plantes mourantes.' },
-  putrefel:   { id:'putrefel',   name:'Putréfel',   type:'ombre',      hp:110, atk:55, def:95, vit:55, talent:'mue',
+  putrefel:   { id:'putrefel',   name:'Putréfel',   type:'ombre',      hp:105, atk:50, def:90, vit:49, talent:'mue',
                 lore:'Pomme zombie maudite. Plus on la coupe, plus elle repousse — et plus elle sent mauvais.' },
-  nihilium:   { id:'nihilium',   name:'Nihilium',   type:'ombre',      hp:115, atk:75, def:110, vit:70, talent:'pression', legendary:true,
+  nihilium:   { id:'nihilium',   name:'Nihilium',   type:'ombre',      hp:90, atk:80, def:80, vit:60, talent:'pression', legendary:true,
                 lore:'Sphère de vide absolu, apparition rarissime. Sa simple présence absorbe la lumière des étoiles.' },
 
   // ✨ LUMIÈRE — offensif (identité : +ATK, -DEF)
-  papiluxe:   { id:'papiluxe',   name:'Papiluxe',   type:'lumiere',    hp:70, atk:85, def:55, vit:105, talent:'coeurFestif',
+  papiluxe:   { id:'papiluxe',   name:'Papiluxe',   type:'lumiere',    hp:65, atk:80, def:50, vit:99, talent:'coeurFestif',
                 lore:'Papillon dont les ailes réfléchissent la lumière du soleil en mille reflets dorés. Il guide les voyageurs égarés.' },
-  solarion:   { id:'solarion',   name:'Solarion',   type:'lumiere',    hp:70, atk:105, def:55, vit:85, talent:'secheresse',
+  solarion:   { id:'solarion',   name:'Solarion',   type:'lumiere',    hp:65, atk:100, def:50, vit:79, talent:'secheresse',
                 lore:'Lion-soleil, gardien des aubes. Sa crinière flamboyante brûle sans consumer et illumine les vallées au lever du jour.' },
-  astraflore: { id:'astraflore', name:'Astraflore', type:'lumiere',    hp:90, atk:110, def:75, vit:95, talent:'sangFroid', legendary:true,
+  astraflore: { id:'astraflore', name:'Astraflore', type:'lumiere',    hp:70, atk:100, def:60, vit:80, talent:'sangFroid', legendary:true,
                 lore:'Déesse florale des cieux étoilés. Sa fleur frontale contient, dit-on, un fragment de constellation vivante.' },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -366,11 +366,11 @@ const PM_DEX = {
                  lore:'Petite biche aux bois de cristal. Ses sabots gravent des runes glacées sur le sol qu\'elle foule.' },
   frimadon:    { id:'frimadon',    name:'Frimadon',    type:'glace',      hp:55, atk:65, def:45, vit:75, talent:'forcePure', region:2,
                  lore:'Dragon des congères. Son souffle fige l\'air en sculptures fugaces que seul un œil pur peut voir.' },
-  glacelune:   { id:'glacelune',   name:'Glacelune',   type:'glace',      hp:65, atk:80, def:60, vit:110, talent:'sangFroid', region:2,
+  glacelune:   { id:'glacelune',   name:'Glacelune',   type:'glace',      hp:60, atk:75, def:55, vit:104, talent:'sangFroid', region:2,
                  lore:'Renarde des aurores polaires. Sa fourrure capture la lumière des étoiles et la rend, transformée.' },
-  cryomorphe:  { id:'cryomorphe',  name:'Cryomorphe',  type:'glace',      hp:95, atk:70, def:100, vit:50, talent:'carapace', region:2,
+  cryomorphe:  { id:'cryomorphe',  name:'Cryomorphe',  type:'glace',      hp:90, atk:65, def:95, vit:44, talent:'carapace', region:2,
                  lore:'Esprit des tempêtes blanches. On dit qu\'il fut jadis un voyageur qui n\'a jamais voulu rentrer chez lui.' },
-  hivernel:    { id:'hivernel',    name:'Hivernel',    type:'glace',      hp:95, atk:100, def:75, vit:100, talent:'regeForce', region:2, legendary:true,
+  hivernel:    { id:'hivernel',    name:'Hivernel',    type:'glace',      hp:75, atk:85, def:70, vit:80, talent:'regeForce', region:2, legendary:true,
                  lore:'Cervidé royal des glaces éternelles. Ses bois portent la mémoire de tous les hivers du monde.' },
 
   // ⚙️ MÉTAL (5) — tank lourd (+HP +DEF, -VIT)
@@ -378,11 +378,11 @@ const PM_DEX = {
                  lore:'Petite enclume vivante. Elle chante quand on la frappe, et ne chante que pour les forgerons honnêtes.' },
   acierus:     { id:'acierus',     name:'Aciérus',     type:'metal',      hp:80, atk:65, def:85, vit:35, talent:'carapace', region:2,
                  lore:'Chevalier sans visage, armure animée par un serment oublié. Il garde encore quelque chose, mais quoi ?' },
-  orichale:    { id:'orichale',    name:'Orichale',    type:'metal',      hp:105, atk:65, def:110, vit:35, talent:'toisonMagique', region:2,
+  orichale:    { id:'orichale',    name:'Orichale',    type:'metal',      hp:100, atk:60, def:105, vit:29, talent:'toisonMagique', region:2,
                  lore:'Golem de minerai pur. Plus on le travaille, plus il devient beau, et plus il devient vieux.' },
-  sentinhelm:  { id:'sentinhelm',  name:'Sentinhelm',  type:'metal',      hp:85, atk:95, def:100, vit:35, talent:'intimidation', region:2,
+  sentinhelm:  { id:'sentinhelm',  name:'Sentinhelm',  type:'metal',      hp:80, atk:90, def:95, vit:29, talent:'intimidation', region:2,
                  lore:'Heaume hanté errant dans les ruines. Son cri est celui d\'une bataille qui ne s\'est jamais arrêtée.' },
-  rouilleron:  { id:'rouilleron',  name:'Rouilleron',  type:'metal',      hp:110, atk:95, def:120, vit:45, talent:'mue', region:2, legendary:true,
+  rouilleron:  { id:'rouilleron',  name:'Rouilleron',  type:'metal',      hp:95, atk:75, def:100, vit:40, talent:'mue', region:2, legendary:true,
                  lore:'Titan de fer corrodé. Chaque éclat de rouille qui tombe de lui a la valeur d\'un siècle.' },
 
   // 🌿 PLANTE (2) — natifs R2
@@ -398,11 +398,11 @@ const PM_DEX = {
                  lore:'Mante religieuse de braise. Ses lames trancheraient l\'aube si elle l\'osait.' },
 
   // 💧 EAU (1) — natif R2
-  profondine:  { id:'profondine',  name:'Profondine',  type:'eau',        hp:90, atk:65, def:105, vit:55, talent:'pression', region:2,
+  profondine:  { id:'profondine',  name:'Profondine',  type:'eau',        hp:80, atk:60, def:100, vit:54, talent:'pression', region:2,
                  lore:'Anguille des fosses oubliées. Sa lumière interne attire ceux qui cherchent ce qu\'ils ne devraient pas trouver.' },
 
   // ⚡ ÉLECTRIQUE (1) — natif R2
-  voltaigle:   { id:'voltaigle',   name:'Voltaigle',   type:'electrique', hp:65, atk:85, def:60, vit:105, talent:'tinte', region:2,
+  voltaigle:   { id:'voltaigle',   name:'Voltaigle',   type:'electrique', hp:60, atk:80, def:55, vit:99, talent:'tinte', region:2,
                  lore:'Aigle des hauteurs orageuses. Sa serre saisit la foudre comme d\'autres saisissent une plume.' },
 
   // 🌀 AIR (1) — natif R2
@@ -420,47 +420,47 @@ const PM_DEX = {
   // ═══════════════════════════════════════════════════════════════════════════
 
   // Évolutions R1 (10)
-  pomalor:     { id:'pomalor',     name:'Pomalor',     type:'plante',     hp:113, atk:75, def:83, vit:60, talent:'phototropisme', isEvolution:true,
+  pomalor:     { id:'pomalor',     name:'Pomalor',     type:'plante',     hp:80, atk:90, def:80, vit:52, talent:'phototropisme', isEvolution:true,
                  lore:'Le bulbe a fleuri en couronne végétale. Son parfum apaise désormais des cités entières.' },
-  thornogor:   { id:'thornogor',   name:'Thornogor',   type:'plante',     hp:120, atk:83, def:90, vit:68, talent:'intimidation', isEvolution:true,
+  thornogor:   { id:'thornogor',   name:'Thornogor',   type:'plante',     hp:100, atk:50, def:100, vit:52, talent:'intimidation', isEvolution:true,
                  lore:'Ses élytres se sont fondus en armure de chitine. Il ne tend plus d\'embuscades : il livre bataille.' },
-  brasileon:   { id:'brasileon',   name:'Brasileon',   type:'feu',        hp:83, atk:83, def:68, vit:98, talent:'intimidation', isEvolution:true,
+  brasileon:   { id:'brasileon',   name:'Brasileon',   type:'feu',        hp:70, atk:90, def:65, vit:77, talent:'intimidation', isEvolution:true,
                  lore:'Lézard royal au poitrail incandescent. Sa flamme guide les voyageurs perdus dans les nuits froides.' },
-  viperiphon:  { id:'viperiphon',  name:'Vipériphon',  type:'feu',        hp:75, atk:90, def:68, vit:128, talent:'cran', isEvolution:true,
+  viperiphon:  { id:'viperiphon',  name:'Vipériphon',  type:'feu',        hp:60, atk:85, def:55, vit:102, talent:'cran', isEvolution:true,
                  lore:'Serpent ailé de braise. Sa morsure scelle des pactes dont nul ne connaît plus les termes.' },
-  goutaragon:  { id:'goutaragon',  name:'Goutaragon',  type:'eau',        hp:90, atk:75, def:83, vit:83, talent:'pluie', isEvolution:true,
+  goutaragon:  { id:'goutaragon',  name:'Goutaragon',  type:'eau',        hp:70, atk:90, def:65, vit:77, talent:'pluie', isEvolution:true,
                  lore:'Le têtard est devenu seigneur des torrents. Ses bulbes-gemmes chantent sous les cascades.' },
-  carapharos:  { id:'carapharos',  name:'Carapharos',  type:'eau',        hp:98, atk:83, def:90, vit:90, talent:'toisonMagique', isEvolution:true,
+  carapharos:  { id:'carapharos',  name:'Carapharos',  type:'eau',        hp:90, atk:60, def:90, vit:62, talent:'toisonMagique', isEvolution:true,
                  lore:'Crabe-phare aux pinces titanesques. Les marins lui doivent plus qu\'ils ne le sauront jamais.' },
-  volterion:   { id:'volterion',   name:'Voltérion',   type:'electrique', hp:83, atk:90, def:68, vit:120, talent:'foudre', isEvolution:true,
+  volterion:   { id:'volterion',   name:'Voltérion',   type:'electrique', hp:60, atk:85, def:55, vit:102, talent:'foudre', isEvolution:true,
                  lore:'Écureuil-éclair aux moustaches conductrices. Il garde l\'énergie d\'une tempête entière dans sa queue.' },
-  fulgurion:   { id:'fulgurion',   name:'Fulgurion',   type:'electrique', hp:75, atk:105, def:60, vit:120, talent:'forcePure', isEvolution:true,
+  fulgurion:   { id:'fulgurion',   name:'Fulgurion',   type:'electrique', hp:55, atk:120, def:45, vit:82, talent:'forcePure', isEvolution:true,
                  lore:'Sphère devenue tempête en miniature. Ceux qui la touchent ne s\'en souviennent jamais clairement.' },
-  zephirion:   { id:'zephirion',   name:'Zéphirion',   type:'air',        hp:75, atk:83, def:75, vit:128, talent:'multiscale', isEvolution:true,
+  zephirion:   { id:'zephirion',   name:'Zéphirion',   type:'air',        hp:75, atk:75, def:70, vit:82, talent:'multiscale', isEvolution:true,
                  lore:'Colibri-prince aux ailes d\'arc-en-ciel. Sa danse au matin est dit-on un rituel ancien.' },
-  spectreval:  { id:'spectreval',  name:'Spectreval',  type:'ombre',      hp:113, atk:68, def:105, vit:75, talent:'cran', isEvolution:true,
+  spectreval:  { id:'spectreval',  name:'Spectreval',  type:'ombre',      hp:80, atk:90, def:80, vit:52, talent:'cran', isEvolution:true,
                  lore:'La graine fantôme a poussé en arbuste hanté. Ses fruits ne tombent que pour les âmes apaisées.' },
 
   // Évolutions R2 (10)
-  cristelune:  { id:'cristelune',  name:'Cristelune',  type:'glace',      hp:75, atk:83, def:60, vit:105, talent:'frisson', isEvolution:true,
+  cristelune:  { id:'cristelune',  name:'Cristelune',  type:'glace',      hp:55, atk:120, def:45, vit:82, talent:'frisson', isEvolution:true,
                  lore:'Biche-prêtresse, bois fait de constellations gelées. Elle marche entre les rêves des dormeurs.' },
-  glacedrak:   { id:'glacedrak',   name:'Glacedrak',   type:'glace',      hp:83, atk:98, def:68, vit:113, talent:'intimidation', isEvolution:true,
+  glacedrak:   { id:'glacedrak',   name:'Glacedrak',   type:'glace',      hp:70, atk:90, def:65, vit:77, talent:'intimidation', isEvolution:true,
                  lore:'Dragon des hivers anciens. Son souffle a un jour gelé une mer entière, dit la légende.' },
-  forgehammer: { id:'forgehammer', name:'Forgehammer', type:'metal',      hp:105, atk:83, def:113, vit:45, talent:'cran', isEvolution:true,
+  forgehammer: { id:'forgehammer', name:'Forgehammer', type:'metal',      hp:65, atk:110, def:55, vit:72, talent:'cran', isEvolution:true,
                  lore:'Enclume animée portant le marteau de son défunt maître. Elle frappe encore selon le rythme appris.' },
-  acierox:     { id:'acierox',     name:'Aciérox',     type:'metal',      hp:120, atk:98, def:128, vit:53, talent:'multiscale', isEvolution:true,
+  acierox:     { id:'acierox',     name:'Aciérox',     type:'metal',      hp:100, atk:50, def:100, vit:52, talent:'multiscale', isEvolution:true,
                  lore:'Chevalier-roi sans royaume. L\'éclat de son armure révèle la vérité des cœurs.' },
-  mousseroi:   { id:'mousseroi',   name:'Mousseroi',   type:'plante',     hp:113, atk:83, def:98, vit:60, talent:'mue', isEvolution:true,
+  mousseroi:   { id:'mousseroi',   name:'Mousseroi',   type:'plante',     hp:110, atk:40, def:100, vit:52, talent:'mue', isEvolution:true,
                  lore:'Sage millénaire des forêts profondes. Ses paroles font germer les pierres.' },
-  vrillarcane: { id:'vrillarcane', name:'Vrillarcane', type:'plante',     hp:120, atk:90, def:105, vit:68, talent:'pression', isEvolution:true,
+  vrillarcane: { id:'vrillarcane', name:'Vrillarcane', type:'plante',     hp:90, atk:60, def:90, vit:62, talent:'pression', isEvolution:true,
                  lore:'Liane-archiviste aux yeux d\'ambre. Elle a vu pousser et mourir des civilisations.' },
-  braslunaire: { id:'braslunaire', name:'Braslunaire', type:'feu',        hp:83, atk:98, def:68, vit:113, talent:'toisonMagique', isEvolution:true,
+  braslunaire: { id:'braslunaire', name:'Braslunaire', type:'feu',        hp:75, atk:75, def:70, vit:82, talent:'toisonMagique', isEvolution:true,
                  lore:'Loup-roi aux flammes argentées. Il ne hurle plus : il décide, et la nuit obéit.' },
-  pyrecarde:   { id:'pyrecarde',   name:'Pyrécarde',   type:'feu',        hp:90, atk:105, def:75, vit:98, talent:'brulure', isEvolution:true,
+  pyrecarde:   { id:'pyrecarde',   name:'Pyrécarde',   type:'feu',        hp:65, atk:110, def:55, vit:72, talent:'brulure', isEvolution:true,
                  lore:'Mante-générale aux lames doubles. Elle tranche désormais ce qu\'elle voulait jadis seulement effleurer.' },
-  voilarchive: { id:'voilarchive', name:'Voilarchive', type:'ombre',      hp:120, atk:83, def:113, vit:83, talent:'toisonMagique', isEvolution:true,
+  voilarchive: { id:'voilarchive', name:'Voilarchive', type:'ombre',      hp:100, atk:50, def:100, vit:52, talent:'toisonMagique', isEvolution:true,
                  lore:'Manteau ancien qui contient mille mémoires. Il cherche maintenant à les transmettre.' },
-  brumelord:   { id:'brumelord',   name:'Brumélord',   type:'air',        hp:83, atk:90, def:83, vit:128, talent:'intimidation', isEvolution:true,
+  brumelord:   { id:'brumelord',   name:'Brumélord',   type:'air',        hp:60, atk:85, def:55, vit:102, talent:'intimidation', isEvolution:true,
                  lore:'Antilope-souverain des nuées. Ceux qui le suivent au crépuscule ne reviennent jamais tout à fait pareils.' }
 };
 
@@ -548,11 +548,11 @@ const PM_MOVES = {
   malediction:     { id:'malediction',     name:'Malédiction',      type:'ombre',      power:0, accuracy:90,  pp:6, category:'debuff', multiStat:['atk','def'], stages:-1, dojoOnly:true, desc:'Baisse l\'Attaque ET la Défense adverses d\'un cran.' },
 
   // ═══ MOVES DOJO SPÉCIAUX — SAISON ALL STAR ═══
-  // Attaques à charge (power 100, 1 tour de préparation, attaquant vulnérable)
-  geyser_latent:   { id:'geyser_latent',   name:'Geyser Latent',    type:'eau',        power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : prépare la pression. Tour 2 : geyser dévastateur (100 puissance).' },
-  decharge_diff:   { id:'decharge_diff',   name:'Décharge Différée', type:'electrique', power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : accumule l\'énergie. Tour 2 : décharge massive (100 puissance).' },
-  embrasement:     { id:'embrasement',     name:'Embrasement',      type:'feu',        power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : concentre les flammes. Tour 2 : explosion incendiaire (100 puissance).' },
-  tornade_spirale: { id:'tornade_spirale', name:'Tornade Spirale',  type:'air',        power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : forme la spirale. Tour 2 : tornade dévastatrice (100 puissance).' },
+  // Attaques puissantes avec recul (110 power, 25% recul sur lanceur)
+  geyser_latent:   { id:'geyser_latent',   name:'Geyser Latent',    type:'eau',        power:110, accuracy:90, pp:5, category:'attack', recoilPct:0.25, dojoOnly:true, desc:'Geyser dévastateur (110 puissance) mais coûte 25% des HP max du lanceur en recul.' },
+  decharge_diff:   { id:'decharge_diff',   name:'Décharge Différée', type:'electrique', power:110, accuracy:90, pp:5, category:'attack', recoilPct:0.25, dojoOnly:true, desc:'Décharge massive (110 puissance) mais coûte 25% des HP max en recul.' },
+  embrasement:     { id:'embrasement',     name:'Embrasement',      type:'feu',        power:110, accuracy:90, pp:5, category:'attack', recoilPct:0.25, dojoOnly:true, desc:'Explosion incendiaire (110 puissance) mais coûte 25% des HP max en recul.' },
+  tornade_spirale: { id:'tornade_spirale', name:'Tornade Spirale',  type:'air',        power:110, accuracy:90, pp:5, category:'attack', recoilPct:0.25, dojoOnly:true, desc:'Tornade dévastatrice (110 puissance) mais coûte 25% des HP max en recul.' },
 
   // Moves "meilleure stat" (utilise ATK ou DEF selon la plus haute)
   lame_adaptative: { id:'lame_adaptative', name:'Lame Adaptative',  type:'ombre',      power:90, accuracy:100, pp:8, category:'attack', useBestStat:true, dojoOnly:true, desc:'Frappe avec sa meilleure stat physique (ATK ou DEF).' },
@@ -4265,32 +4265,6 @@ function pmEffectivenessLabel(moveType, defenderType) {
 // pièges).
 function pmExecuteMove(attacker, defender, move, context) {
   const events = [];
-
-  // ─── Attaques à charge (chargeTurn) ───
-  // Tour 1 : annonce la charge, ne fait rien d'autre. attacker.charging = move.id
-  // Tour 2 : exécute le move normalement (et reset attacker.charging)
-  if (move.chargeTurn) {
-    if (!attacker.charging) {
-      // Premier tour : on prépare
-      attacker.charging = move.id;
-      events.push({ type:'use_move', attacker: attacker.name, move: move.name, moveType: move.type });
-      // Messages thématiques selon le move
-      const chargeMessages = {
-        geyser_latent: `${attacker.name} accumule une pression aquatique colossale...`,
-        decharge_diff: `${attacker.name} concentre une charge électrique massive...`,
-        embrasement:   `${attacker.name} laisse les flammes grandir autour de lui...`,
-        tornade_spirale: `${attacker.name} forme une spirale d'air dévastatrice...`,
-      };
-      const msg = chargeMessages[move.id] || `${attacker.name} se prépare !`;
-      events.push({ type:'talent_proc', target: attacker.name, talent: 'chargeup', message: msg });
-      // PP non consommé encore (sera consommé au tour 2)
-      return events;
-    } else {
-      // Deuxième tour : on libère la charge. Reset le flag avant de continuer.
-      attacker.charging = null;
-      // Le reste du moteur déroule comme une attaque normale (chargeTurn ignoré ensuite)
-    }
-  }
 
   events.push({ type:'use_move', attacker: attacker.name, move: move.name, moveType: move.type });
 
