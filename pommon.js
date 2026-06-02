@@ -203,72 +203,154 @@ const PM_PVP_DISTRIBUTED_PATH = 'pokepom_pvp_distributed';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   2.0 TALENTS (passifs) — chaque espèce a 1 talent fixe
+   ═══════════════════════════════════════════════════════════════════════════
+   Chaque talent a :
+   - id : identifiant interne
+   - name : nom affiché
+   - emoji : icône
+   - trigger : 'permanent' | 'switch_in' | 'switch_out' | 'on_attack' | 'on_hit' | 'conditional'
+   - desc : description courte montrée au joueur
+   - effect : description longue (pour fiche détail)
+
+   L'application concrète des effets en combat se fait dans le moteur (Phase 2).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const PM_TALENTS = {
+  // ── PERMANENTS ──
+  sangFroid:   { id:'sangFroid',   name:'Sang-Froid',   emoji:'🧠', trigger:'permanent',
+                 desc:'Immunise contre la confusion et les baisses de stats.',
+                 effect:'Esprit imperturbable : aucune confusion ne peut le toucher et ses stats ne peuvent jamais être baissées par l\'adversaire.' },
+  carapace:    { id:'carapace',    name:'Carapace',     emoji:'🛡️', trigger:'permanent',
+                 desc:'+25% défense quand les HP tombent sous 50%.',
+                 effect:'Quand son énergie vitale décline, sa défense s\'épaissit. +25% de défense en dessous de 50% HP.' },
+  cran:        { id:'cran',        name:'Cran',         emoji:'💀', trigger:'permanent',
+                 desc:'+1 atk à chaque KO infligé pendant le combat.',
+                 effect:'Chaque adversaire mis K.O. nourrit sa rage : +1 niveau d\'attaque par KO infligé.' },
+  multiscale:  { id:'multiscale',  name:'Multiscale',   emoji:'🛡️', trigger:'on_hit',
+                 desc:'Divise par 2 les dégâts reçus si HP = 100%.',
+                 effect:'Quand son énergie est intacte, une aura protectrice atténue le premier coup : les dégâts subis à pleine vie sont divisés par 2.' },
+  toisonMagique:{id:'toisonMagique',name:'Toison Magique',emoji:'💧',trigger:'on_hit',
+                 desc:'Renvoie 25% des dégâts physiques reçus à l\'attaquant.',
+                 effect:'Sa peau enchantée retourne une partie de l\'énergie reçue : l\'attaquant subit 25% des dégâts infligés.' },
+  mue:         { id:'mue',         name:'Mue',          emoji:'🍄', trigger:'permanent',
+                 desc:'Soigne automatiquement les altérations de statut chaque tour.',
+                 effect:'Son corps se renouvelle constamment : à chaque tour, brûlure, poison et autres statuts sont dissipés.' },
+  coeurFestif: { id:'coeurFestif', name:'Cœur Festif',  emoji:'✨', trigger:'permanent',
+                 desc:'+10% de Pomels gagnés en victoire (Ligue ou Arène) si présent dans l\'équipe.',
+                 effect:'Son esprit joyeux attire la chance : sa simple présence dans ton équipe (titulaire ou banc) majore de 10% les Pomels gagnés en victoire de Ligue ou d\'Arène.' },
+
+  // ── AU SWITCH ──
+  intimidation:{ id:'intimidation',name:'Intimidation', emoji:'👹', trigger:'switch_in',
+                 desc:'Baisse l\'attaque de l\'adversaire de -1 cran à l\'entrée.',
+                 effect:'Sa simple présence en impose : à chaque entrée sur le terrain, l\'attaque de l\'adversaire chute d\'un cran.' },
+  regeForce:   { id:'regeForce',   name:'Régé-Force',   emoji:'🌫️', trigger:'switch_out',
+                 desc:'Récupère 25% de ses HP max en quittant le combat.',
+                 effect:'Quand il se retire, son énergie vitale se reconstitue rapidement : il récupère 25% de ses HP max.' },
+  pression:    { id:'pression',    name:'Pression',     emoji:'🔄', trigger:'permanent',
+                 desc:'Force l\'adversaire à dépenser 2 PP par attaque au lieu de 1.',
+                 effect:'Son aura oppressante double l\'effort mental de l\'adversaire : chaque attaque ennemie consomme 2 PP.' },
+
+  // ── À L'ATTAQUE ──
+  brulure:     { id:'brulure',     name:'Brûlure',      emoji:'🔥', trigger:'on_attack',
+                 desc:'Ses attaques de type 🔥 ont 20% de chance d\'infliger Brûlé.',
+                 effect:'Sa fureur incandescente embrase ses ennemis : 20% de chance d\'infliger Brûlé avec une attaque Feu.' },
+  tinte:       { id:'tinte',       name:'Tinté',        emoji:'🎯', trigger:'on_attack',
+                 desc:'Ses attaques peu efficaces (×0.5) deviennent neutres (×1).',
+                 effect:'Sa technique transcende les faiblesses élémentaires : aucune résistance ne réduit ses dégâts.' },
+  forcePure:   { id:'forcePure',   name:'Force Pure',   emoji:'💪', trigger:'on_attack',
+                 desc:'+50% d\'attaque, mais consomme 2 PP par attaque au lieu de 1.',
+                 effect:'Frappes décuplées au prix d\'un effort considérable : +50% d\'attaque, 2 PP consommés par coup.' },
+  vitessePlus: { id:'vitessePlus', name:'Vitesse Plus', emoji:'⚡', trigger:'switch_in',
+                 desc:'+1 niveau de vitesse à chaque entrée sur le terrain.',
+                 effect:'Réflexes aiguisés à chaque déploiement : sa vitesse monte d\'un cran à l\'entrée.' },
+
+  // ── CONDITIONNELS (boost de type) ──
+  secheresse:    { id:'secheresse',    name:'Sécheresse',    emoji:'☀️', trigger:'conditional',
+                   desc:'Boost ses attaques de type 🔥 de +30%.',
+                   effect:'L\'air autour de lui s\'embrase : ses attaques Feu gagnent +30% de puissance.' },
+  pluie:         { id:'pluie',         name:'Pluie',         emoji:'💦', trigger:'conditional',
+                   desc:'Boost ses attaques de type 💧 de +30%.',
+                   effect:'L\'humidité ambiante amplifie ses pouvoirs : ses attaques Eau gagnent +30% de puissance.' },
+  foudre:        { id:'foudre',        name:'Foudre',        emoji:'⚡', trigger:'conditional',
+                   desc:'Boost ses attaques de type ⚡ de +30%.',
+                   effect:'L\'air se charge électriquement autour de lui : ses attaques Électrique gagnent +30% de puissance.' },
+  phototropisme: { id:'phototropisme', name:'Phototropisme', emoji:'🌱', trigger:'conditional',
+                   desc:'Boost ses attaques de type 🌱 de +30%.',
+                   effect:'Sa connexion végétale décuple son potentiel : ses attaques Plante gagnent +30% de puissance.' },
+  frisson:       { id:'frisson',       name:'Frisson',       emoji:'❄️', trigger:'conditional',
+                   desc:'Boost ses attaques de type ❄️ de +30%.',
+                   effect:'Le froid s\'intensifie en sa présence : ses attaques Glace gagnent +30% de puissance.' },
+};
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
    2. DONNÉES POMMONS (25 créatures)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const PM_DEX = {
   // 🌿 PLANTE — tanky, lent (identité : +HP +DEF, -VIT)
-  pomalis:    { id:'pomalis',    name:'Pomalis',    type:'plante',     hp:75, atk:50, def:55, vit:40, starter:true,
+  pomalis:    { id:'pomalis',    name:'Pomalis',    type:'plante',     hp:75, atk:50, def:55, vit:40, talent:'phototropisme', starter:true,
                 lore:'Petit quadrupède à la carapace végétale. Son bulbe dorsal absorbe la lumière du jour et libère un parfum apaisant.' },
-  thornet:    { id:'thornet',    name:'Thornet',    type:'plante',     hp:80, atk:55, def:60, vit:45,
+  thornet:    { id:'thornet',    name:'Thornet',    type:'plante',     hp:80, atk:55, def:60, vit:45, talent:'toisonMagique',
                 lore:'Scarabée aux élytres couverts d\'épines. Il s\'enfouit dans la mousse et tend des embuscades aux imprudents.' },
-  sylvagor:   { id:'sylvagor',   name:'Sylvagor',   type:'plante',     hp:95, atk:50, def:70, vit:45,
+  sylvagor:   { id:'sylvagor',   name:'Sylvagor',   type:'plante',     hp:95, atk:50, def:70, vit:45, talent:'sangFroid',
                 lore:'Golem sylvestre qui s\'éveille à chaque printemps. Ses racines plongent si loin qu\'on dit qu\'il connaît les secrets du sol.' },
-  sakuraze:   { id:'sakuraze',   name:'Sakuraze',   type:'plante',     hp:85, atk:55, def:55, vit:45,
+  sakuraze:   { id:'sakuraze',   name:'Sakuraze',   type:'plante',     hp:85, atk:55, def:55, vit:45, talent:'coeurFestif',
                 lore:'Esprit des cerisiers en fleurs. Sa danse fait tomber les pétales roses qui endorment ses adversaires.' },
 
   // 🔥 FEU — rapide, offensif (identité : +VIT +ATK, -HP)
-  flameche:   { id:'flameche',   name:'Flamèche',   type:'feu',        hp:55, atk:55, def:45, vit:65, starter:true,
+  flameche:   { id:'flameche',   name:'Flamèche',   type:'feu',        hp:55, atk:55, def:45, vit:65, talent:'brulure', starter:true,
                 lore:'Petit lézard à la queue enflammée. Sa flamme ne s\'éteint jamais, même sous la pluie — un mystère pour les érudits.' },
-  viperod:    { id:'viperod',    name:'Vipérod',    type:'feu',        hp:50, atk:60, def:45, vit:85,
+  viperod:    { id:'viperod',    name:'Vipérod',    type:'feu',        hp:50, atk:60, def:45, vit:85, talent:'vitessePlus',
                 lore:'Serpent de braise qui chasse la nuit. Son venin brûle la chair avant même que la morsure ne soit visible.' },
-  magmaturne: { id:'magmaturne', name:'Magmaturne', type:'feu',        hp:65, atk:65, def:55, vit:75,
+  magmaturne: { id:'magmaturne', name:'Magmaturne', type:'feu',        hp:65, atk:65, def:55, vit:75, talent:'carapace',
                 lore:'Tortue volcanique dont la carapace abrite un cœur de lave. Elle hiberne dans les cratères actifs.' },
-  tauralys:   { id:'tauralys',   name:'Tauralys',   type:'feu',        hp:55, atk:70, def:50, vit:65,
+  tauralys:   { id:'tauralys',   name:'Tauralys',   type:'feu',        hp:55, atk:70, def:50, vit:65, talent:'forcePure',
                 lore:'Taureau des plaines brûlées. Ses cornes rougeoyantes peuvent fendre la pierre quand il charge.' },
 
   // 💧 EAU — équilibré (identité : aucune stat extrême)
-  goutapom:   { id:'goutapom',   name:'Goutapom',   type:'eau',        hp:60, atk:50, def:55, vit:55, starter:true,
+  goutapom:   { id:'goutapom',   name:'Goutapom',   type:'eau',        hp:60, atk:50, def:55, vit:55, talent:'pluie', starter:true,
                 lore:'Têtard joyeux des torrents limpides. Il saute hors de l\'eau pour communiquer par bulles chantantes.' },
-  carapulse:  { id:'carapulse',  name:'Carapulse',  type:'eau',        hp:65, atk:55, def:60, vit:60,
+  carapulse:  { id:'carapulse',  name:'Carapulse',  type:'eau',        hp:65, atk:55, def:60, vit:60, talent:'carapace',
                 lore:'Crabe aux pinces capables de projeter des jets d\'eau à haute pression. Il arpente les récifs à la recherche de coquillages.' },
-  abyssale:   { id:'abyssale',   name:'Abyssale',   type:'eau',        hp:70, atk:65, def:65, vit:60,
+  abyssale:   { id:'abyssale',   name:'Abyssale',   type:'eau',        hp:70, atk:65, def:65, vit:60, talent:'sangFroid',
                 lore:'Méduse des grandes profondeurs. Ses filaments bioluminescents hypnotisent ses proies avant la décharge paralysante.' },
-  onduline:   { id:'onduline',   name:'Onduline',   type:'eau',        hp:60, atk:60, def:60, vit:60,
+  onduline:   { id:'onduline',   name:'Onduline',   type:'eau',        hp:60, atk:60, def:60, vit:60, talent:'regeForce',
                 lore:'Hippocampe des courants chauds. Il se déplace toujours à contre-courant, porté par des remous invisibles.' },
 
   // ⚡ ÉLECTRIQUE — glass cannon (identité : +ATK +VIT, -DEF)
-  volture:    { id:'volture',    name:'Volture',    type:'electrique', hp:55, atk:60, def:45, vit:80,
+  volture:    { id:'volture',    name:'Volture',    type:'electrique', hp:55, atk:60, def:45, vit:80, talent:'foudre',
                 lore:'Écureuil électrique qui saute de branche en branche. Ses joues stockent assez d\'énergie pour allumer une maison.' },
-  fulguron:   { id:'fulguron',   name:'Fulguron',   type:'electrique', hp:50, atk:70, def:40, vit:80,
+  fulguron:   { id:'fulguron',   name:'Fulguron',   type:'electrique', hp:50, atk:70, def:40, vit:80, talent:'vitessePlus',
                 lore:'Sphère d\'énergie pure flottant dans l\'atmosphère. On la confond souvent avec la foudre en boule.' },
-  rhinovolt:  { id:'rhinovolt',  name:'Rhinovolt',  type:'electrique', hp:60, atk:65, def:45, vit:70,
+  rhinovolt:  { id:'rhinovolt',  name:'Rhinovolt',  type:'electrique', hp:60, atk:65, def:45, vit:70, talent:'cran',
                 lore:'Rhinocéros à la corne conductrice. Sa charge génère des arcs électriques qui paralysent sur plusieurs mètres.' },
-  raispore:   { id:'raispore',   name:'Raispore',   type:'electrique', hp:55, atk:75, def:45, vit:85,
+  raispore:   { id:'raispore',   name:'Raispore',   type:'electrique', hp:55, atk:75, def:45, vit:85, talent:'toisonMagique',
                 lore:'Hybride champignon-arachnide. Ses spores électrisées s\'accrochent à l\'air humide pour former des décharges aléatoires.' },
 
   // 🌀 AIR — agile (identité : +VIT, -HP)
-  zephibri:   { id:'zephibri',   name:'Zéphibri',   type:'air',        hp:50, atk:55, def:50, vit:85,
+  zephibri:   { id:'zephibri',   name:'Zéphibri',   type:'air',        hp:50, atk:55, def:50, vit:85, talent:'multiscale',
                 lore:'Minuscule colibri aux ailes si rapides qu\'elles deviennent invisibles. Il défie les lois de la gravité.' },
-  cyclonin:   { id:'cyclonin',   name:'Cyclonin',   type:'air',        hp:55, atk:65, def:55, vit:85,
+  cyclonin:   { id:'cyclonin',   name:'Cyclonin',   type:'air',        hp:55, atk:65, def:55, vit:85, talent:'vitessePlus',
                 lore:'Ninja des nuages, maître du vent tranchant. On raconte qu\'il peut traverser une tempête sans se mouiller.' },
-  stratocepe: { id:'stratocepe', name:'Stratocèpe', type:'air',        hp:45, atk:60, def:50, vit:85,
+  stratocepe: { id:'stratocepe', name:'Stratocèpe', type:'air',        hp:45, atk:60, def:50, vit:85, talent:'sangFroid',
                 lore:'Champignon nuageux qui flotte en haute altitude. Son chapeau se condense et libère de brèves averses.' },
 
   // 🌑 OMBRE — défensif (identité : +HP +DEF, -ATK)
-  spectrelis: { id:'spectrelis', name:'Spectrelis', type:'ombre',      hp:75, atk:45, def:70, vit:50,
+  spectrelis: { id:'spectrelis', name:'Spectrelis', type:'ombre',      hp:75, atk:45, def:70, vit:50, talent:'multiscale',
                 lore:'Graine fantôme hantée par l\'âme d\'un vieux jardin oublié. Elle murmure des berceuses aux plantes mourantes.' },
-  putrefel:   { id:'putrefel',   name:'Putréfel',   type:'ombre',      hp:85, atk:45, def:75, vit:55,
+  putrefel:   { id:'putrefel',   name:'Putréfel',   type:'ombre',      hp:85, atk:45, def:75, vit:55, talent:'mue',
                 lore:'Pomme zombie maudite. Plus on la coupe, plus elle repousse — et plus elle sent mauvais.' },
-  nihilium:   { id:'nihilium',   name:'Nihilium',   type:'ombre',      hp:90, atk:55, def:85, vit:60, legendary:true,
+  nihilium:   { id:'nihilium',   name:'Nihilium',   type:'ombre',      hp:90, atk:55, def:85, vit:60, talent:'pression', legendary:true,
                 lore:'Sphère de vide absolu, apparition rarissime. Sa simple présence absorbe la lumière des étoiles.' },
 
   // ✨ LUMIÈRE — offensif (identité : +ATK, -DEF)
-  papiluxe:   { id:'papiluxe',   name:'Papiluxe',   type:'lumiere',    hp:60, atk:70, def:45, vit:65,
+  papiluxe:   { id:'papiluxe',   name:'Papiluxe',   type:'lumiere',    hp:60, atk:70, def:45, vit:65, talent:'coeurFestif',
                 lore:'Papillon dont les ailes réfléchissent la lumière du soleil en mille reflets dorés. Il guide les voyageurs égarés.' },
-  solarion:   { id:'solarion',   name:'Solarion',   type:'lumiere',    hp:65, atk:75, def:50, vit:70,
+  solarion:   { id:'solarion',   name:'Solarion',   type:'lumiere',    hp:65, atk:75, def:50, vit:70, talent:'secheresse',
                 lore:'Lion-soleil, gardien des aubes. Sa crinière flamboyante brûle sans consumer et illumine les vallées au lever du jour.' },
-  astraflore: { id:'astraflore', name:'Astraflore', type:'lumiere',    hp:70, atk:85, def:55, vit:80, legendary:true,
+  astraflore: { id:'astraflore', name:'Astraflore', type:'lumiere',    hp:70, atk:85, def:55, vit:80, talent:'sangFroid', legendary:true,
                 lore:'Déesse florale des cieux étoilés. Sa fleur frontale contient, dit-on, un fragment de constellation vivante.' },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -277,55 +359,55 @@ const PM_DEX = {
   // ═══════════════════════════════════════════════════════════════════════════
 
   // ❄️ GLACE (5) — glass cannon (+VIT +ATK, -DEF -HP)
-  cristellis:  { id:'cristellis',  name:'Cristellis',  type:'glace',      hp:50, atk:55, def:40, vit:70, region:2,
+  cristellis:  { id:'cristellis',  name:'Cristellis',  type:'glace',      hp:50, atk:55, def:40, vit:70, talent:'frisson', region:2,
                  lore:'Petite biche aux bois de cristal. Ses sabots gravent des runes glacées sur le sol qu\'elle foule.' },
-  frimadon:    { id:'frimadon',    name:'Frimadon',    type:'glace',      hp:55, atk:65, def:45, vit:75, region:2,
+  frimadon:    { id:'frimadon',    name:'Frimadon',    type:'glace',      hp:55, atk:65, def:45, vit:75, talent:'forcePure', region:2,
                  lore:'Dragon des congères. Son souffle fige l\'air en sculptures fugaces que seul un œil pur peut voir.' },
-  glacelune:   { id:'glacelune',   name:'Glacelune',   type:'glace',      hp:60, atk:55, def:55, vit:70, region:2,
+  glacelune:   { id:'glacelune',   name:'Glacelune',   type:'glace',      hp:60, atk:55, def:55, vit:70, talent:'sangFroid', region:2,
                  lore:'Renarde des aurores polaires. Sa fourrure capture la lumière des étoiles et la rend, transformée.' },
-  cryomorphe:  { id:'cryomorphe',  name:'Cryomorphe',  type:'glace',      hp:55, atk:70, def:50, vit:80, region:2,
+  cryomorphe:  { id:'cryomorphe',  name:'Cryomorphe',  type:'glace',      hp:55, atk:70, def:50, vit:80, talent:'carapace', region:2,
                  lore:'Esprit des tempêtes blanches. On dit qu\'il fut jadis un voyageur qui n\'a jamais voulu rentrer chez lui.' },
-  hivernel:    { id:'hivernel',    name:'Hivernel',    type:'glace',      hp:80, atk:85, def:65, vit:90, region:2, legendary:true,
+  hivernel:    { id:'hivernel',    name:'Hivernel',    type:'glace',      hp:80, atk:85, def:65, vit:90, talent:'regeForce', region:2, legendary:true,
                  lore:'Cervidé royal des glaces éternelles. Ses bois portent la mémoire de tous les hivers du monde.' },
 
   // ⚙️ MÉTAL (5) — tank lourd (+HP +DEF, -VIT)
-  forgemin:    { id:'forgemin',    name:'Forgemin',    type:'metal',      hp:70, atk:55, def:75, vit:30, region:2,
+  forgemin:    { id:'forgemin',    name:'Forgemin',    type:'metal',      hp:70, atk:55, def:75, vit:30, talent:'forcePure', region:2,
                  lore:'Petite enclume vivante. Elle chante quand on la frappe, et ne chante que pour les forgerons honnêtes.' },
-  acierus:     { id:'acierus',     name:'Aciérus',     type:'metal',      hp:80, atk:65, def:85, vit:35, region:2,
+  acierus:     { id:'acierus',     name:'Aciérus',     type:'metal',      hp:80, atk:65, def:85, vit:35, talent:'carapace', region:2,
                  lore:'Chevalier sans visage, armure animée par un serment oublié. Il garde encore quelque chose, mais quoi ?' },
-  orichale:    { id:'orichale',    name:'Orichale',    type:'metal',      hp:85, atk:60, def:95, vit:40, region:2,
+  orichale:    { id:'orichale',    name:'Orichale',    type:'metal',      hp:85, atk:60, def:95, vit:40, talent:'toisonMagique', region:2,
                  lore:'Golem de minerai pur. Plus on le travaille, plus il devient beau, et plus il devient vieux.' },
-  sentinhelm:  { id:'sentinhelm',  name:'Sentinhelm',  type:'metal',      hp:75, atk:75, def:80, vit:45, region:2,
+  sentinhelm:  { id:'sentinhelm',  name:'Sentinhelm',  type:'metal',      hp:75, atk:75, def:80, vit:45, talent:'intimidation', region:2,
                  lore:'Heaume hanté errant dans les ruines. Son cri est celui d\'une bataille qui ne s\'est jamais arrêtée.' },
-  rouilleron:  { id:'rouilleron',  name:'Rouilleron',  type:'metal',      hp:95, atk:80, def:100, vit:35, region:2, legendary:true,
+  rouilleron:  { id:'rouilleron',  name:'Rouilleron',  type:'metal',      hp:95, atk:80, def:100, vit:35, talent:'mue', region:2, legendary:true,
                  lore:'Titan de fer corrodé. Chaque éclat de rouille qui tombe de lui a la valeur d\'un siècle.' },
 
   // 🌿 PLANTE (2) — natifs R2
-  mousseron:   { id:'mousseron',   name:'Mousseron',   type:'plante',     hp:75, atk:55, def:65, vit:40, region:2,
+  mousseron:   { id:'mousseron',   name:'Mousseron',   type:'plante',     hp:75, atk:55, def:65, vit:40, talent:'mue', region:2,
                  lore:'Sage des sous-bois, couvert de lichens rares. Ses pas font pousser des fleurs là où il a marché.' },
-  vrillemousse:{ id:'vrillemousse',name:'Vrillemousse',type:'plante',     hp:80, atk:60, def:70, vit:45, region:2,
+  vrillemousse:{ id:'vrillemousse',name:'Vrillemousse',type:'plante',     hp:80, atk:60, def:70, vit:45, talent:'forcePure', region:2,
                  lore:'Liane épineuse aux yeux multiples. Elle chasse en silence ce que les jardiniers oublient.' },
 
   // 🔥 FEU (2) — natifs R2
-  braslune:    { id:'braslune',    name:'Braslune',    type:'feu',        hp:55, atk:65, def:45, vit:75, region:2,
+  braslune:    { id:'braslune',    name:'Braslune',    type:'feu',        hp:55, atk:65, def:45, vit:75, talent:'coeurFestif', region:2,
                  lore:'Loup des cendres, pelage incandescent. Il hurle aux nuits sans étoiles pour les rappeler à l\'ordre.' },
-  pyrecate:    { id:'pyrecate',    name:'Pyrécate',    type:'feu',        hp:60, atk:70, def:50, vit:65, region:2,
+  pyrecate:    { id:'pyrecate',    name:'Pyrécate',    type:'feu',        hp:60, atk:70, def:50, vit:65, talent:'secheresse', region:2,
                  lore:'Mante religieuse de braise. Ses lames trancheraient l\'aube si elle l\'osait.' },
 
   // 💧 EAU (1) — natif R2
-  profondine:  { id:'profondine',  name:'Profondine',  type:'eau',        hp:70, atk:65, def:65, vit:65, region:2,
+  profondine:  { id:'profondine',  name:'Profondine',  type:'eau',        hp:70, atk:65, def:65, vit:65, talent:'pression', region:2,
                  lore:'Anguille des fosses oubliées. Sa lumière interne attire ceux qui cherchent ce qu\'ils ne devraient pas trouver.' },
 
   // ⚡ ÉLECTRIQUE (1) — natif R2
-  voltaigle:   { id:'voltaigle',   name:'Voltaigle',   type:'electrique', hp:60, atk:75, def:45, vit:85, region:2,
+  voltaigle:   { id:'voltaigle',   name:'Voltaigle',   type:'electrique', hp:60, atk:75, def:45, vit:85, talent:'tinte', region:2,
                  lore:'Aigle des hauteurs orageuses. Sa serre saisit la foudre comme d\'autres saisissent une plume.' },
 
   // 🌀 AIR (1) — natif R2
-  brumelope:   { id:'brumelope',   name:'Brumélope',   type:'air',        hp:55, atk:60, def:55, vit:85, region:2,
+  brumelope:   { id:'brumelope',   name:'Brumélope',   type:'air',        hp:55, atk:60, def:55, vit:85, talent:'regeForce', region:2,
                  lore:'Antilope des nuées. On ne la voit qu\'à l\'aube, quand le ciel hésite encore.' },
 
   // 🌑 OMBRE (1) — natif R2
-  voilombre:   { id:'voilombre',   name:'Voilombre',   type:'ombre',      hp:80, atk:55, def:75, vit:55, region:2,
+  voilombre:   { id:'voilombre',   name:'Voilombre',   type:'ombre',      hp:80, atk:55, def:75, vit:55, talent:'intimidation', region:2,
                  lore:'Manteau abandonné par un voyageur d\'autrefois. Il cherche encore quelqu\'un à protéger.' },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -335,47 +417,47 @@ const PM_DEX = {
   // ═══════════════════════════════════════════════════════════════════════════
 
   // Évolutions R1 (10)
-  pomalor:     { id:'pomalor',     name:'Pomalor',     type:'plante',     hp:113, atk:75, def:83, vit:60, isEvolution:true,
+  pomalor:     { id:'pomalor',     name:'Pomalor',     type:'plante',     hp:113, atk:75, def:83, vit:60, talent:'phototropisme', isEvolution:true,
                  lore:'Le bulbe a fleuri en couronne végétale. Son parfum apaise désormais des cités entières.' },
-  thornogor:   { id:'thornogor',   name:'Thornogor',   type:'plante',     hp:120, atk:83, def:90, vit:68, isEvolution:true,
+  thornogor:   { id:'thornogor',   name:'Thornogor',   type:'plante',     hp:120, atk:83, def:90, vit:68, talent:'intimidation', isEvolution:true,
                  lore:'Ses élytres se sont fondus en armure de chitine. Il ne tend plus d\'embuscades : il livre bataille.' },
-  brasileon:   { id:'brasileon',   name:'Brasileon',   type:'feu',        hp:83, atk:83, def:68, vit:98, isEvolution:true,
+  brasileon:   { id:'brasileon',   name:'Brasileon',   type:'feu',        hp:83, atk:83, def:68, vit:98, talent:'intimidation', isEvolution:true,
                  lore:'Lézard royal au poitrail incandescent. Sa flamme guide les voyageurs perdus dans les nuits froides.' },
-  viperiphon:  { id:'viperiphon',  name:'Vipériphon',  type:'feu',        hp:75, atk:90, def:68, vit:128, isEvolution:true,
+  viperiphon:  { id:'viperiphon',  name:'Vipériphon',  type:'feu',        hp:75, atk:90, def:68, vit:128, talent:'cran', isEvolution:true,
                  lore:'Serpent ailé de braise. Sa morsure scelle des pactes dont nul ne connaît plus les termes.' },
-  goutaragon:  { id:'goutaragon',  name:'Goutaragon',  type:'eau',        hp:90, atk:75, def:83, vit:83, isEvolution:true,
+  goutaragon:  { id:'goutaragon',  name:'Goutaragon',  type:'eau',        hp:90, atk:75, def:83, vit:83, talent:'pluie', isEvolution:true,
                  lore:'Le têtard est devenu seigneur des torrents. Ses bulbes-gemmes chantent sous les cascades.' },
-  carapharos:  { id:'carapharos',  name:'Carapharos',  type:'eau',        hp:98, atk:83, def:90, vit:90, isEvolution:true,
+  carapharos:  { id:'carapharos',  name:'Carapharos',  type:'eau',        hp:98, atk:83, def:90, vit:90, talent:'toisonMagique', isEvolution:true,
                  lore:'Crabe-phare aux pinces titanesques. Les marins lui doivent plus qu\'ils ne le sauront jamais.' },
-  volterion:   { id:'volterion',   name:'Voltérion',   type:'electrique', hp:83, atk:90, def:68, vit:120, isEvolution:true,
+  volterion:   { id:'volterion',   name:'Voltérion',   type:'electrique', hp:83, atk:90, def:68, vit:120, talent:'foudre', isEvolution:true,
                  lore:'Écureuil-éclair aux moustaches conductrices. Il garde l\'énergie d\'une tempête entière dans sa queue.' },
-  fulgurion:   { id:'fulgurion',   name:'Fulgurion',   type:'electrique', hp:75, atk:105, def:60, vit:120, isEvolution:true,
+  fulgurion:   { id:'fulgurion',   name:'Fulgurion',   type:'electrique', hp:75, atk:105, def:60, vit:120, talent:'forcePure', isEvolution:true,
                  lore:'Sphère devenue tempête en miniature. Ceux qui la touchent ne s\'en souviennent jamais clairement.' },
-  zephirion:   { id:'zephirion',   name:'Zéphirion',   type:'air',        hp:75, atk:83, def:75, vit:128, isEvolution:true,
+  zephirion:   { id:'zephirion',   name:'Zéphirion',   type:'air',        hp:75, atk:83, def:75, vit:128, talent:'multiscale', isEvolution:true,
                  lore:'Colibri-prince aux ailes d\'arc-en-ciel. Sa danse au matin est dit-on un rituel ancien.' },
-  spectreval:  { id:'spectreval',  name:'Spectreval',  type:'ombre',      hp:113, atk:68, def:105, vit:75, isEvolution:true,
+  spectreval:  { id:'spectreval',  name:'Spectreval',  type:'ombre',      hp:113, atk:68, def:105, vit:75, talent:'cran', isEvolution:true,
                  lore:'La graine fantôme a poussé en arbuste hanté. Ses fruits ne tombent que pour les âmes apaisées.' },
 
   // Évolutions R2 (10)
-  cristelune:  { id:'cristelune',  name:'Cristelune',  type:'glace',      hp:75, atk:83, def:60, vit:105, isEvolution:true,
+  cristelune:  { id:'cristelune',  name:'Cristelune',  type:'glace',      hp:75, atk:83, def:60, vit:105, talent:'frisson', isEvolution:true,
                  lore:'Biche-prêtresse, bois fait de constellations gelées. Elle marche entre les rêves des dormeurs.' },
-  glacedrak:   { id:'glacedrak',   name:'Glacedrak',   type:'glace',      hp:83, atk:98, def:68, vit:113, isEvolution:true,
+  glacedrak:   { id:'glacedrak',   name:'Glacedrak',   type:'glace',      hp:83, atk:98, def:68, vit:113, talent:'intimidation', isEvolution:true,
                  lore:'Dragon des hivers anciens. Son souffle a un jour gelé une mer entière, dit la légende.' },
-  forgehammer: { id:'forgehammer', name:'Forgehammer', type:'metal',      hp:105, atk:83, def:113, vit:45, isEvolution:true,
+  forgehammer: { id:'forgehammer', name:'Forgehammer', type:'metal',      hp:105, atk:83, def:113, vit:45, talent:'cran', isEvolution:true,
                  lore:'Enclume animée portant le marteau de son défunt maître. Elle frappe encore selon le rythme appris.' },
-  acierox:     { id:'acierox',     name:'Aciérox',     type:'metal',      hp:120, atk:98, def:128, vit:53, isEvolution:true,
+  acierox:     { id:'acierox',     name:'Aciérox',     type:'metal',      hp:120, atk:98, def:128, vit:53, talent:'multiscale', isEvolution:true,
                  lore:'Chevalier-roi sans royaume. L\'éclat de son armure révèle la vérité des cœurs.' },
-  mousseroi:   { id:'mousseroi',   name:'Mousseroi',   type:'plante',     hp:113, atk:83, def:98, vit:60, isEvolution:true,
+  mousseroi:   { id:'mousseroi',   name:'Mousseroi',   type:'plante',     hp:113, atk:83, def:98, vit:60, talent:'mue', isEvolution:true,
                  lore:'Sage millénaire des forêts profondes. Ses paroles font germer les pierres.' },
-  vrillarcane: { id:'vrillarcane', name:'Vrillarcane', type:'plante',     hp:120, atk:90, def:105, vit:68, isEvolution:true,
+  vrillarcane: { id:'vrillarcane', name:'Vrillarcane', type:'plante',     hp:120, atk:90, def:105, vit:68, talent:'pression', isEvolution:true,
                  lore:'Liane-archiviste aux yeux d\'ambre. Elle a vu pousser et mourir des civilisations.' },
-  braslunaire: { id:'braslunaire', name:'Braslunaire', type:'feu',        hp:83, atk:98, def:68, vit:113, isEvolution:true,
+  braslunaire: { id:'braslunaire', name:'Braslunaire', type:'feu',        hp:83, atk:98, def:68, vit:113, talent:'toisonMagique', isEvolution:true,
                  lore:'Loup-roi aux flammes argentées. Il ne hurle plus : il décide, et la nuit obéit.' },
-  pyrecarde:   { id:'pyrecarde',   name:'Pyrécarde',   type:'feu',        hp:90, atk:105, def:75, vit:98, isEvolution:true,
+  pyrecarde:   { id:'pyrecarde',   name:'Pyrécarde',   type:'feu',        hp:90, atk:105, def:75, vit:98, talent:'brulure', isEvolution:true,
                  lore:'Mante-générale aux lames doubles. Elle tranche désormais ce qu\'elle voulait jadis seulement effleurer.' },
-  voilarchive: { id:'voilarchive', name:'Voilarchive', type:'ombre',      hp:120, atk:83, def:113, vit:83, isEvolution:true,
+  voilarchive: { id:'voilarchive', name:'Voilarchive', type:'ombre',      hp:120, atk:83, def:113, vit:83, talent:'toisonMagique', isEvolution:true,
                  lore:'Manteau ancien qui contient mille mémoires. Il cherche maintenant à les transmettre.' },
-  brumelord:   { id:'brumelord',   name:'Brumélord',   type:'air',        hp:83, atk:90, def:83, vit:128, isEvolution:true,
+  brumelord:   { id:'brumelord',   name:'Brumélord',   type:'air',        hp:83, atk:90, def:83, vit:128, talent:'intimidation', isEvolution:true,
                  lore:'Antilope-souverain des nuées. Ceux qui le suivent au crépuscule ne reviennent jamais tout à fait pareils.' }
 };
 
@@ -4047,6 +4129,7 @@ function pmCreateFighter(instance, statMultiplier = 1.0) {
     name: instance.nickname || base.name,
     type: base.type,
     level: instance.level,
+    talent: base.talent || null,  // ID du talent (passif d'espèce) — utilisé par le moteur
     maxHp: stats.hp,
     hp: stats.hp,
     atk: Math.floor(stats.atk * statMultiplier),
@@ -4074,16 +4157,52 @@ function pmCalcDamage(attacker, defender, move) {
   if (move.power === 0) return 0;
   const stab = (move.type === attacker.type) ? PM_STAB : 1.0;
   // Lecture : PM_WEAK[défenseur][typeAttaque] = multiplicateur subi par le défenseur
-  const typeMod = (PM_WEAK[defender.type] && PM_WEAK[defender.type][move.type]) || 1.0;
+  let typeMod = (PM_WEAK[defender.type] && PM_WEAK[defender.type][move.type]) || 1.0;
+
+  // ── TALENTS qui modifient le typeMod (efficacité du type d'attaque) ──
+  // Tinté : les attaques peu efficaces deviennent neutres
+  if (attacker.talent === 'tinte' && typeMod < 1) {
+    typeMod = 1.0;
+  }
+
   // Si le move ignore les buffs DEF (ex: Lame d'Orichal), utiliser baseDef
   // si l'adversaire a un buff DEF positif. Une DEF déjà debuffée reste plus basse.
   let defValue = defender.def;
   if (move.ignoreDefBuffs && defender.stages && defender.stages.def > 0) {
     defValue = defender.baseDef;
   }
-  const baseDmg = (attacker.atk * move.power / defValue) / 3;
-  const dmg = Math.floor(baseDmg * stab * typeMod);
-  return Math.max(1, dmg);
+
+  // ── TALENTS qui modifient la défense ──
+  // Carapace : +25% def si HP < 50%
+  if (defender.talent === 'carapace' && defender.hp < defender.maxHp * 0.5) {
+    defValue = Math.floor(defValue * 1.25);
+  }
+
+  // ── TALENTS qui modifient l'attaque ──
+  let atkValue = attacker.atk;
+  // Force Pure : +50% attaque
+  if (attacker.talent === 'forcePure') {
+    atkValue = Math.floor(atkValue * 1.5);
+  }
+
+  const baseDmg = (atkValue * move.power / defValue) / 3;
+  let dmg = baseDmg * stab * typeMod;
+
+  // ── TALENTS conditionnels (boost type d'attaque) ──
+  // Sécheresse → +30% feu | Pluie → +30% eau | Foudre → +30% électrique
+  // Phototropisme → +30% plante | Frisson → +30% glace
+  const typeBoosts = {
+    secheresse:    'feu',
+    pluie:         'eau',
+    foudre:        'electrique',
+    phototropisme: 'plante',
+    frisson:       'glace',
+  };
+  if (typeBoosts[attacker.talent] && move.type === typeBoosts[attacker.talent]) {
+    dmg *= 1.30;
+  }
+
+  return Math.max(1, Math.floor(dmg));
 }
 
 // Effectiveness label
@@ -4104,19 +4223,56 @@ function pmExecuteMove(attacker, defender, move) {
   const roll = Math.random() * 100;
   if (roll > move.accuracy) {
     events.push({ type:'miss', attacker: attacker.name });
-    // Consomme PP même si raté
-    if (move.id !== 'lutte') move.currentPp--;
+    // Consomme PP même si raté (Force Pure côté attaquant OU Pression côté défenseur : -2 au lieu de -1)
+    if (move.id !== 'lutte') {
+      const forcePure = attacker.talent === 'forcePure';
+      const pression = defender.talent === 'pression';
+      const ppCost = (forcePure || pression) ? 2 : 1;
+      move.currentPp = Math.max(0, move.currentPp - ppCost);
+    }
     return events;
   }
 
-  // Consomme PP
-  if (move.id !== 'lutte') move.currentPp--;
+  // Consomme PP (Force Pure OU Pression : -2 au lieu de -1)
+  if (move.id !== 'lutte') {
+    const forcePure = attacker.talent === 'forcePure';
+    const pression = defender.talent === 'pression';
+    const ppCost = (forcePure || pression) ? 2 : 1;
+    // Logger Pression la première fois qu'elle se déclenche dans ce tour (info au joueur)
+    if (pression && !forcePure) {
+      events.push({ type:'talent_proc', target: attacker.name, talent: 'pression',
+        message: `<strong>Pression</strong> de ${defender.name} : ${attacker.name} dépense 2 PP !` });
+    }
+    move.currentPp = Math.max(0, move.currentPp - ppCost);
+  }
 
   // Exécution selon catégorie
   if (move.category === 'attack') {
-    const dmg = pmCalcDamage(attacker, defender, move);
+    let dmg = pmCalcDamage(attacker, defender, move);
+    // Talent Multiscale : divise par 2 les dégâts à HP plein
+    if (defender.talent === 'multiscale' && defender.hp === defender.maxHp && dmg > 0) {
+      dmg = Math.max(1, Math.floor(dmg / 2));
+      events.push({ type:'talent_proc', target: defender.name, talent: 'multiscale',
+        message: `<strong>Multiscale</strong> : ${defender.name} encaisse moitié moins de dégâts à pleine vie !` });
+    }
     defender.hp = Math.max(0, defender.hp - dmg);
     events.push({ type:'damage', target: defender.name, amount: dmg });
+
+    // Toison Magique : le défenseur renvoie 25% des dégâts à l'attaquant
+    if (defender.talent === 'toisonMagique' && dmg > 0 && !attacker.ko) {
+      const reflected = Math.max(1, Math.floor(dmg * 0.25));
+      attacker.hp = Math.max(0, attacker.hp - reflected);
+      events.push({ type:'talent_proc', target: attacker.name, talent: 'toisonMagique',
+        message: `<strong>Toison Magique</strong> : ${attacker.name} subit ${reflected} PV en retour !` });
+      // Si l'attaquant tombe à 0 → KO (Cran peut s'enchaîner via le check KO du défenseur plus bas)
+      if (attacker.hp === 0) {
+        attacker.ko = true;
+        events.push({ type:'ko', target: attacker.name });
+        // Cran du défenseur si applicable (rare mais possible)
+        const cranBack = pmApplyTalentOnKO(defender);
+        cranBack.forEach(e => events.push(e));
+      }
+    }
 
     const effLabel = pmEffectivenessLabel(move.type, defender.type);
     if (effLabel) events.push({ type:'effectiveness', label: effLabel });
@@ -4151,10 +4307,22 @@ function pmExecuteMove(attacker, defender, move) {
         events.push({ type:'burn_applied', target: defender.name });
       }
     }
+    // Talent Brûlure : 20% chance d'infliger Brûlé sur les attaques feu
+    if (attacker.talent === 'brulure' && move.type === 'feu' && defender.burnTurns === 0 && Math.random() < 0.20) {
+      defender.burnTurns = PM_BURN_DURATION;
+      events.push({ type:'talent_proc', target: defender.name, talent: 'brulure',
+        message: `<strong>Brûlure</strong> : ${defender.name} prend feu !` });
+      events.push({ type:'burn_applied', target: defender.name });
+    }
 
     // Effet secondaire
     if (move.sideEffect && move.chance && Math.random() < move.chance) {
-      if (move.sideEffect === 'debuff_def') {
+      // Sang-Froid : immunise le défenseur contre les baisses de stats
+      const isDebuff = (move.sideEffect === 'debuff_def' || move.sideEffect === 'debuff_vit');
+      if (isDebuff && defender.talent === 'sangFroid') {
+        events.push({ type:'talent_proc', target: defender.name, talent: 'sangFroid',
+          message: `<strong>Sang-Froid</strong> de ${defender.name} bloque la baisse de stat !` });
+      } else if (move.sideEffect === 'debuff_def') {
         if (defender.stages.def > -3) {
           defender.stages.def--;
           pmApplyStages(defender);
@@ -4179,6 +4347,9 @@ function pmExecuteMove(attacker, defender, move) {
     if (defender.hp === 0) {
       defender.ko = true;
       events.push({ type:'ko', target: defender.name });
+      // Cran : +1 atk de l'attaquant après KO infligé
+      const cranEvents = pmApplyTalentOnKO(attacker);
+      cranEvents.forEach(e => events.push(e));
     }
   } else if (move.category === 'heal') {
     const heal = Math.floor(attacker.maxHp * move.healPct);
@@ -4194,20 +4365,26 @@ function pmExecuteMove(attacker, defender, move) {
       events.push({ type:'stat_max', target: attacker.name, stat: move.stat.toUpperCase() });
     }
   } else if (move.category === 'debuff') {
-    // Support pour move multi-stats (ex: Malédiction → ATK + DEF)
-    const statsToDebuff = move.multiStat || [move.stat];
-    let anyApplied = false;
-    for (const stat of statsToDebuff) {
-      if (defender.stages[stat] > -3) {
-        defender.stages[stat] += move.stages;
-        if (defender.stages[stat] < -3) defender.stages[stat] = -3;
-        anyApplied = true;
-        events.push({ type:'stage', target: defender.name, stat: stat.toUpperCase(), dir: move.stages });
-      } else {
-        events.push({ type:'stat_min', target: defender.name, stat: stat.toUpperCase() });
+    // Sang-Froid : immunise le défenseur contre les baisses de stats
+    if (defender.talent === 'sangFroid') {
+      events.push({ type:'talent_proc', target: defender.name, talent: 'sangFroid',
+        message: `<strong>Sang-Froid</strong> de ${defender.name} bloque les baisses de stats !` });
+    } else {
+      // Support pour move multi-stats (ex: Malédiction → ATK + DEF)
+      const statsToDebuff = move.multiStat || [move.stat];
+      let anyApplied = false;
+      for (const stat of statsToDebuff) {
+        if (defender.stages[stat] > -3) {
+          defender.stages[stat] += move.stages;
+          if (defender.stages[stat] < -3) defender.stages[stat] = -3;
+          anyApplied = true;
+          events.push({ type:'stage', target: defender.name, stat: stat.toUpperCase(), dir: move.stages });
+        } else {
+          events.push({ type:'stat_min', target: defender.name, stat: stat.toUpperCase() });
+        }
       }
+      if (anyApplied) pmApplyStages(defender);
     }
-    if (anyApplied) pmApplyStages(defender);
   }
 
   return events;
@@ -4216,6 +4393,14 @@ function pmExecuteMove(attacker, defender, move) {
 // Applique la brûlure en fin de tour
 function pmApplyEndOfTurnEffects(fighter) {
   const events = [];
+  // Talent Mue : soigne la brûlure (et autres statuts à terme) en début/fin de tour
+  // Note : exécuté AVANT le tick de brûlure pour ne pas prendre les dégâts du tour
+  if (fighter.talent === 'mue' && fighter.burnTurns > 0 && !fighter.ko) {
+    fighter.burnTurns = 0;
+    events.push({ type:'talent_proc', target: fighter.name, talent: 'mue',
+      message: `<strong>Mue</strong> : ${fighter.name} se débarrasse de sa brûlure !` });
+    return events;
+  }
   if (fighter.burnTurns > 0 && !fighter.ko) {
     const dmg = Math.floor(fighter.maxHp * PM_BURN_DAMAGE_PCT);
     fighter.hp = Math.max(0, fighter.hp - dmg);
@@ -4243,6 +4428,86 @@ function pmResetFighterStateOnExit(fighter) {
   fighter.burnTurns = 0;
   // hp et ko sont préservés intentionnellement — si le PokePom revient au combat
   // plus tard, il garde ses HP actuels.
+}
+
+// ═══ TALENTS — Helpers d'application des effets ═══
+
+// Appelé quand un PokePom QUITTE le terrain (switch volontaire seulement, pas KO)
+// Régé-Force : récupère 25% HP en quittant le combat.
+// Retourne la liste des événements à logguer.
+function pmApplyTalentOnSwitchOut(leavingFighter) {
+  const events = [];
+  if (!leavingFighter || leavingFighter.ko) return events;
+  if (leavingFighter.talent === 'regeForce') {
+    const heal = Math.floor(leavingFighter.maxHp * 0.25);
+    if (heal > 0 && leavingFighter.hp < leavingFighter.maxHp) {
+      leavingFighter.hp = Math.min(leavingFighter.maxHp, leavingFighter.hp + heal);
+      events.push({ type:'talent_proc', target: leavingFighter.name, talent: 'regeForce',
+        message: `<strong>Régé-Force</strong> : ${leavingFighter.name} récupère ${heal} PV en se retirant !` });
+    }
+  }
+  return events;
+}
+
+// Appelé quand un PokePom ENTRE sur le terrain (premier déploiement + switch + KO auto-switch)
+// Intimidation : -1 atk de l'adversaire à l'entrée.
+// Vitesse Plus : +1 niveau de vitesse pour soi-même à l'entrée.
+function pmApplyTalentOnSwitchIn(enteringFighter, opponentFighter) {
+  const events = [];
+  if (!enteringFighter || enteringFighter.ko) return events;
+
+  // Vitesse Plus : auto-boost vitesse à l'entrée
+  if (enteringFighter.talent === 'vitessePlus' && enteringFighter.stages.vit < 3) {
+    enteringFighter.stages.vit++;
+    if (enteringFighter.stages.vit > 3) enteringFighter.stages.vit = 3;
+    pmApplyStages(enteringFighter);
+    events.push({ type:'talent_proc', target: enteringFighter.name, talent: 'vitessePlus',
+      message: `<strong>Vitesse Plus</strong> : la vitesse de ${enteringFighter.name} augmente !` });
+  }
+
+  // Intimidation : baisse l'attaque de l'adversaire de -1
+  if (enteringFighter.talent === 'intimidation' && opponentFighter && !opponentFighter.ko) {
+    // Sang-Froid de l'adversaire bloque la baisse de stat
+    if (opponentFighter.talent === 'sangFroid') {
+      events.push({ type:'talent_proc', target: opponentFighter.name, talent: 'sangFroid',
+        message: `<strong>Sang-Froid</strong> de ${opponentFighter.name} bloque l'Intimidation !` });
+    } else if (opponentFighter.stages.atk > -3) {
+      opponentFighter.stages.atk--;
+      pmApplyStages(opponentFighter);
+      events.push({ type:'talent_proc', target: enteringFighter.name, talent: 'intimidation',
+        message: `<strong>Intimidation</strong> de ${enteringFighter.name} : l'attaque de ${opponentFighter.name} baisse !` });
+    }
+  }
+
+  return events;
+}
+
+// Appelé après un KO infligé, sur l'attaquant qui vient de mettre KO
+// Cran : +1 atk à chaque KO infligé
+function pmApplyTalentOnKO(killerFighter) {
+  const events = [];
+  if (!killerFighter || killerFighter.ko) return events;
+  if (killerFighter.talent === 'cran' && killerFighter.stages.atk < 3) {
+    killerFighter.stages.atk++;
+    if (killerFighter.stages.atk > 3) killerFighter.stages.atk = 3;
+    pmApplyStages(killerFighter);
+    events.push({ type:'talent_proc', target: killerFighter.name, talent: 'cran',
+      message: `<strong>Cran</strong> : l'attaque de ${killerFighter.name} augmente après le K.O. !` });
+  }
+  return events;
+}
+
+// Cœur Festif : retourne le multiplicateur à appliquer aux gains Pomels selon la
+// composition de l'équipe (titulaire + banc). Si au moins un PokePom de l'équipe
+// porte Cœur Festif, on majore de 10%. Effet non cumulatif (un seul porteur = +10%
+// pour éviter +30% en sortant 3 Cœurs Festifs ensemble).
+function pmCoeurFestifMultiplier() {
+  try {
+    const bs = _pmBattleState;
+    if (!bs || !Array.isArray(bs.teamFighters)) return 1.0;
+    const hasIt = bs.teamFighters.some(f => f && f.talent === 'coeurFestif');
+    return hasIt ? 1.10 : 1.0;
+  } catch(e) { return 1.0; }
 }
 
 // Vérifie si le fighter n'a plus aucun PP
@@ -4580,6 +4845,20 @@ function pmInjectStyles() {
     .pm-coll-move-name { font-size:.74rem; font-weight:700; }
     .pm-coll-move-meta { font-size:.64rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:1px; }
 
+    /* TALENTS (passifs d'espèce) */
+    .pm-coll-talent {
+      width: 100%; margin-top: 6px;
+      background: linear-gradient(135deg, rgba(166,107,255,0.14), rgba(78,217,240,0.10));
+      border: 1px solid rgba(166,107,255,0.32);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      cursor: help;
+    }
+    .pm-coll-talent-emoji { font-size: 1.05rem; line-height: 1; }
+    .pm-coll-talent-name { font-size: .78rem; font-weight: 800; color: var(--accent, #A66BFF); }
+    .pm-coll-talent-desc { font-size: .68rem; color: var(--muted); width: 100%; line-height: 1.35; }
+
     .pm-battle-arena { display:flex; flex-direction:column; gap:16px; }
     .pm-battle-field { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     .pm-battle-side { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; display:flex; flex-direction:column; align-items:center; gap:8px; }
@@ -4587,6 +4866,17 @@ function pmInjectStyles() {
     .pm-battle-info { width:100%; }
     .pm-battle-name { font-size:.95rem; font-weight:700; text-align:center; }
     .pm-battle-level { font-size:.7rem; color:var(--muted); text-align:center; font-family:'Space Mono',monospace; }
+    .pm-battle-talent {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin: 4px auto 0;
+      background: linear-gradient(135deg, rgba(166,107,255,0.18), rgba(78,217,240,0.12));
+      border: 1px solid rgba(166,107,255,0.36);
+      border-radius: 100px;
+      padding: 3px 9px;
+      cursor: help;
+    }
+    .pm-battle-talent-emoji { font-size: .82rem; line-height: 1; }
+    .pm-battle-talent-name { font-size: .68rem; font-weight: 800; color: var(--accent, #A66BFF); white-space: nowrap; }
     .pm-battle-hp-text { font-family:'Space Mono',monospace; font-size:.75rem; text-align:right; margin-top:4px; color:var(--muted); }
     .pm-battle-status { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; justify-content:center; }
     .pm-battle-status-icon { font-size:.9rem; }
@@ -4597,6 +4887,7 @@ function pmInjectStyles() {
     .pm-log-line.eff { color:var(--yellow); font-weight:600; }
     .pm-log-line.miss { color:var(--muted); font-style:italic; }
     .pm-log-line.ko { color:var(--red); font-weight:700; }
+    .pm-log-line.talent { color:var(--accent, #A66BFF); font-weight:600; }
 
     .pm-moves-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
     .pm-move-btn { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:left; cursor:pointer; transition:all .15s; font-family:'Syne',sans-serif; color:var(--text); }
@@ -6407,6 +6698,15 @@ function pmRenderTeamManager(page, player) {
         <div class="pm-coll-move-meta">${m.power > 0 ? 'P.' + m.power + ' · ' : ''}${m.accuracy}% · ${m.pp}PP</div>
       </div>`;
     }).join('');
+    // Talent (passif fixe par espèce)
+    const talent = base.talent && PM_TALENTS[base.talent];
+    const talentHtml = talent
+      ? `<div class="pm-coll-talent" title="${talent.effect.replace(/"/g, '&quot;')}">
+           <span class="pm-coll-talent-emoji">${talent.emoji}</span>
+           <span class="pm-coll-talent-name">${talent.name}</span>
+           <span class="pm-coll-talent-desc">${talent.desc}</span>
+         </div>`
+      : '';
     card.innerHTML = `
       <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-team-${inst.uid}"></canvas>
       <div class="pm-collection-name">${base.name}${inTeam ? ' ✓' : ''}${base.legendary ? ' ✦' : ''}</div>
@@ -6419,6 +6719,7 @@ function pmRenderTeamManager(page, player) {
         <div class="pm-coll-stat"><span class="pm-coll-stat-k">DEF</span><span class="pm-coll-stat-v">${stats.def}</span></div>
         <div class="pm-coll-stat"><span class="pm-coll-stat-k">VIT</span><span class="pm-coll-stat-v">${stats.vit}</span></div>
       </div>
+      ${talentHtml}
       <div class="pm-coll-moves">
         ${movesHtml}
       </div>
@@ -6478,11 +6779,20 @@ function pmRenderCollection(page, player) {
       const levelLine = owned
         ? `Niv ${inst.level}${base.legendary ? ' · Légendaire' : ''}`
         : (base.legendary ? 'Légendaire' : 'Vu (évolué)');
+      // Talent (passif fixe par espèce)
+      const talent = base.talent && PM_TALENTS[base.talent];
+      const talentLine = talent
+        ? `<div class="pm-coll-talent" title="${talent.effect.replace(/"/g, '&quot;')}">
+             <span class="pm-coll-talent-emoji">${talent.emoji}</span>
+             <span class="pm-coll-talent-name">${talent.name}</span>
+           </div>`
+        : '';
       card.innerHTML = `
         <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-coll-${slotId}"></canvas>
         <div class="pm-collection-name">${base.name}${inTeam ? ' ✓' : ''}${base.legendary ? ' ✦' : ''}</div>
         <span class="pm-type-badge" style="background:${PM_TYPE_COLOR[base.type]};">${PM_TYPE_EMOJI[base.type]} ${PM_TYPE_LABEL[base.type]}</span>
         <div class="pm-collection-level">${levelLine}</div>
+        ${talentLine}
         ${base.lore ? `<div class="pm-coll-lore">${base.lore}</div>` : ''}
       `;
       grid.appendChild(card);
@@ -6629,6 +6939,11 @@ function pmStartWildBattle(firstInstance) {
     finished: false,
     ended: false
   };
+  // Talents à l'entrée initiale (joueur et adversaire, dans cet ordre)
+  const myFirstEvents  = pmApplyTalentOnSwitchIn(teamFighters[firstIdx], wildFighter);
+  myFirstEvents.forEach(ev => _pmBattleState.log.push(pmEventToText(ev)));
+  const oppFirstEvents = pmApplyTalentOnSwitchIn(wildFighter, teamFighters[firstIdx]);
+  oppFirstEvents.forEach(ev => _pmBattleState.log.push(pmEventToText(ev)));
   _pmView = 'battle';
   pmRenderPage();
 }
@@ -6764,6 +7079,11 @@ function pmLaunchGymBattle(gym, firstInstance) {
     finished: false,
     ended: false
   };
+  // Talents à l'entrée initiale (joueur et adversaire)
+  const myFirstEvents  = pmApplyTalentOnSwitchIn(teamFighters[firstIdx], championFighter);
+  myFirstEvents.forEach(ev => _pmBattleState.log.push(pmEventToText(ev)));
+  const oppFirstEvents = pmApplyTalentOnSwitchIn(championFighter, teamFighters[firstIdx]);
+  oppFirstEvents.forEach(ev => _pmBattleState.log.push(pmEventToText(ev)));
   _pmPendingGym = null;
   _pmView = 'battle';
   pmRenderPage();
@@ -7004,6 +7324,11 @@ function pmStartLeagueRun() {
     finished: false,
     ended: false
   };
+  // Talents à l'entrée initiale (joueur et adversaire)
+  const myFirstEvents  = pmApplyTalentOnSwitchIn(teamFighters[0], oppFighter);
+  myFirstEvents.forEach(ev => _pmBattleState.log.push(pmEventToText(ev)));
+  const oppFirstEvents = pmApplyTalentOnSwitchIn(oppFighter, teamFighters[0]);
+  oppFirstEvents.forEach(ev => _pmBattleState.log.push(pmEventToText(ev)));
 
   // Décompter une tentative
   player.dailyLeagueCount++;
@@ -7379,6 +7704,7 @@ function pmRenderBattle(page, player) {
             <div class="pm-battle-info">
               <div class="pm-battle-name">${p.name}</div>
               <div class="pm-battle-level">Niv ${p.level} · ${PM_TYPE_EMOJI[p.type]}</div>
+              ${pmRenderTalentBadge(p)}
               <div class="pm-hp-bar"><div class="pm-hp-fill ${pmHpClass(p)}" style="width:${(p.hp/p.maxHp)*100}%"></div></div>
               <div class="pm-battle-hp-text">${p.hp} / ${p.maxHp} HP</div>
               ${pmRenderStatusBadges(p)}
@@ -7391,6 +7717,7 @@ function pmRenderBattle(page, player) {
             <div class="pm-battle-info">
               <div class="pm-battle-name">${o.name}${pmCaptureBadge(player, o.pokepomId)}</div>
               <div class="pm-battle-level">Niv ${o.level} · ${PM_TYPE_EMOJI[o.type]}</div>
+              ${pmRenderTalentBadge(o)}
               <div class="pm-hp-bar"><div class="pm-hp-fill ${pmHpClass(o)}" style="width:${(o.hp/o.maxHp)*100}%"></div></div>
               <div class="pm-battle-hp-text">${o.hp} / ${o.maxHp} HP</div>
               ${pmRenderStatusBadges(o)}
@@ -7464,6 +7791,15 @@ function pmIsPokepomCaptured(player, pokepomId) {
 function pmCaptureBadge(player, pokepomId) {
   if (!pmIsPokepomCaptured(player, pokepomId)) return '';
   return ' <span title="Déjà capturé" style="display:inline-block; padding:1px 6px; border-radius:8px; background:rgba(62,207,110,0.18); color:var(--green); font-size:.62rem; font-weight:700; vertical-align:middle;">✓ Capturé</span>';
+}
+
+function pmRenderTalentBadge(fighter) {
+  if (!fighter.talent || !PM_TALENTS[fighter.talent]) return '';
+  const t = PM_TALENTS[fighter.talent];
+  return `<div class="pm-battle-talent" title="${t.effect.replace(/"/g, '&quot;')}">
+    <span class="pm-battle-talent-emoji">${t.emoji}</span>
+    <span class="pm-battle-talent-name">${t.name}</span>
+  </div>`;
 }
 
 function pmRenderStatusBadges(fighter) {
@@ -7597,6 +7933,10 @@ function pmDoSwitch(newIdx, costsTurn) {
   const oldName = oldFighter.name;
   const newName = newFighter.name;
 
+  // Régé-Force : le PokePom qui sort récupère 25% HP (AVANT le reset des états)
+  const switchOutEvents = pmApplyTalentOnSwitchOut(oldFighter);
+  switchOutEvents.forEach(ev => bs.log.push(pmEventToText(ev)));
+
   // Le PokePom qui sort perd ses buffs/nerfs et sa brûlure. C'est la règle :
   // les altérations sont liées à la présence sur le terrain. S'il revient plus
   // tard, il revient "neutre".
@@ -7607,6 +7947,10 @@ function pmDoSwitch(newIdx, costsTurn) {
   bs.playerInstance = bs.team[newIdx];
   bs.switching = false;
   bs.forcedSwitch = false;
+
+  // Talents à l'entrée : Intimidation, Vitesse Plus
+  const switchInEvents = pmApplyTalentOnSwitchIn(newFighter, bs.opponentFighter);
+  switchInEvents.forEach(ev => bs.log.push(pmEventToText(ev)));
 
   if (costsTurn) {
     bs.log.push(`Tu rappelles ${oldName} et envoies ${newName} !`);
@@ -7694,6 +8038,7 @@ function pmEventToText(ev) {
     case 'stat_max': return `${ev.target} a déjà ${ev.stat} au maximum !`;
     case 'stat_min': return `${ev.target} a déjà ${ev.stat} au minimum !`;
     case 'ko': return `<span class="pm-log-line ko">${ev.target} est K.O. !</span>`;
+    case 'talent_proc': return `<span class="pm-log-line talent">✨ ${ev.message}</span>`;
     default: return '';
   }
 }
@@ -7730,11 +8075,13 @@ function pmHandleBattleEnd() {
       });
 
       // Reward Pomels (gain atomique via addBalanceTransaction)
+      // Cœur Festif (équipe) : +10% si au moins un porteur dans l'équipe
+      const leagueReward = Math.floor(PM_REWARD_LEAGUE_PER_WIN * pmCoeurFestifMultiplier());
       if (typeof addBalanceTransaction === 'function') {
-        addBalanceTransaction(state.code, PM_REWARD_LEAGUE_PER_WIN, {
+        addBalanceTransaction(state.code, leagueReward, {
           type: 'pokepom_league',
           desc: `Victoire Ligue PokePom (round ${bs.roundNum})`,
-          amount: PM_REWARD_LEAGUE_PER_WIN,
+          amount: leagueReward,
           date: new Date().toISOString()
         }).then(updated => {
           if (updated && typeof migrateAccount === 'function') {
@@ -7743,11 +8090,15 @@ function pmHandleBattleEnd() {
           }
         });
       } else if (typeof state !== 'undefined' && state) {
-        state.balance = (state.balance || 0) + PM_REWARD_LEAGUE_PER_WIN;
+        state.balance = (state.balance || 0) + leagueReward;
         if (typeof saveAccount === 'function') saveAccount(state);
       }
 
-      bs.log.push(`🎉 +${PM_REWARD_LEAGUE_PER_WIN} 🪙 Pomels !`);
+      const festifBonus = leagueReward - PM_REWARD_LEAGUE_PER_WIN;
+      if (festifBonus > 0) {
+        bs.log.push(`✨ <strong>Cœur Festif</strong> de l'équipe : +${festifBonus} Pomels !`);
+      }
+      bs.log.push(`🎉 +${leagueReward} 🪙 Pomels !`);
 
       // Sauvegarder instances équipe
       bs.teamFighters.forEach(f => {
@@ -7766,6 +8117,9 @@ function pmHandleBattleEnd() {
       bs.opponentInstance = nextOpp;
       bs.opponentFighter = pmCreateFighter(nextOpp, 1.0);
       bs.log.push(`<strong>Round ${bs.roundNum}</strong> : un ${bs.opponentFighter.name} (Niv ${nextOpp.level}) apparaît !`);
+      // Talents à l'entrée de l'adversaire (Intimidation contre TOI, Vitesse Plus pour lui)
+      const oppSwitchInEvents = pmApplyTalentOnSwitchIn(bs.opponentFighter, p);
+      oppSwitchInEvents.forEach(ev => bs.log.push(pmEventToText(ev)));
       return; // Continue le combat
     } else if (p.ko) {
       // Reset stages/brûlure du PokePom KO qui sort du combat
@@ -7776,6 +8130,9 @@ function pmHandleBattleEnd() {
       if (nextFighter && !nextFighter.ko) {
         bs.playerFighter = nextFighter;
         bs.log.push(`Tu envoies ${nextFighter.name} au combat !`);
+        // Talents à l'entrée
+        const switchInEvents = pmApplyTalentOnSwitchIn(nextFighter, bs.opponentFighter);
+        switchInEvents.forEach(ev => bs.log.push(pmEventToText(ev)));
         return;
       }
       // Plus personne → fin run
@@ -7899,7 +8256,9 @@ function pmHandleBattleEnd() {
       }
 
       // Récompense Pomels (montant variable selon arène)
-      const reward = pmGetGymReward(bs.gym);
+      // Cœur Festif (équipe) : +10% si au moins un porteur
+      const baseGymReward = pmGetGymReward(bs.gym);
+      const reward = Math.floor(baseGymReward * pmCoeurFestifMultiplier());
       // Label du type via le champion (gym.id peut être 'plante2', invalide pour PM_TYPE_LABEL)
       const championType = (PM_DEX[bs.gym.champion] || {}).type || 'neutre';
       const typeLabel = PM_TYPE_LABEL[championType] || bs.gym.name;
@@ -7921,6 +8280,10 @@ function pmHandleBattleEnd() {
         if (typeof saveAccount === 'function') saveAccount(state);
       }
 
+      const festifGymBonus = reward - baseGymReward;
+      if (festifGymBonus > 0) {
+        bs.log.push(`✨ <strong>Cœur Festif</strong> de l'équipe : +${festifGymBonus} Pomels !`);
+      }
       bs.log.push(`<strong>🏆 ${bs.gym.name} vaincue ! Badge obtenu + ${reward} 🪙 Pomels !</strong>`);
       pmSavePlayer(player);
       bs.ended = true;
@@ -8073,7 +8436,7 @@ const ELO_START      = PM_ELO_START;
 // aucun compte réel et n'apparaît jamais dans le classement ELO. Le joueur
 // peut le combattre jusqu'à PVP_BOT_DAILY_LIMIT fois par jour.
 //
-// Équipe : 3 PokePoms aléatoires non-légendaires de niveau PVP_BOT_LEVEL.
+// Équipe : 3 évolutions (formes finales) aléatoires non-légendaires de niveau PVP_BOT_LEVEL.
 // L'équipe est régénérée à chaque combat (pas fixe entre combats).
 
 const PVP_BOT_CODE          = 'BOT_RED';
@@ -8093,9 +8456,12 @@ function pvpIsBot(code) {
 // Génère une équipe random pour Red : 3 PokePoms non-légendaires niveau 30,
 // chacun avec ses moves par défaut (customMoves=null → utilisation de PM_DEX).
 function pvpBotBuildRandomTeam() {
+  // Red est un adversaire de fin de PvP : il ne pioche QUE dans les évolutions
+  // (formes finales) — pas de formes de base trop faibles ni de légendaires.
+  // Donne une équipe systématiquement coriace, avec des stats compétitives.
   const pool = Object.keys(PM_DEX).filter(id => {
     const dex = PM_DEX[id];
-    return dex && !dex.legendary && !dex.isEvolution;  // pas de légendaires, pas d'évolutions directes
+    return dex && !dex.legendary && dex.isEvolution;
   });
   // Mélanger + prendre les N premiers (sans doublons)
   const shuffled = pool.slice();
@@ -8566,12 +8932,15 @@ function pvpSerializeFighter(fighter) {
 }
 
 function pvpDeserializeFighter(data) {
+  // Talent dérivé de l'espèce (PM_DEX) → pas besoin de migrer les anciens snapshots
+  const base = PM_DEX[data.pokepomId];
   return {
     uid: data.uid || '',
     pokepomId: data.pokepomId,
     name: data.name,
     type: data.type,
     level: data.level,
+    talent: (base && base.talent) || null,
     hp: data.hp,
     maxHp: data.maxHp,
     atk: data.atk,
@@ -8875,6 +9244,32 @@ async function pvpInitChallenge(opponentCode) {
     battle.currentPlayer = 'p1';
     battle.log.push(battle.p1.displayName + ' joue en premier (rappel : la vitesse de chacun n\'est révélée qu\'en cours de combat).');
 
+    // ─── Talents à l'entrée initiale (Intimidation, Vitesse Plus) ───
+    // On désérialise les 2 actifs initiaux, applique les talents, re-sérialise.
+    // p1 entre en premier (déclenche son talent contre p2), puis p2 (déclenche
+    // son talent contre p1 — qui peut avoir déjà été modifié par p1).
+    {
+      const fp1 = pvpDeserializeFighter(myTeam[0]);
+      const fp2 = pvpDeserializeFighter(oppTeam[0]);
+      const ev1 = pmApplyTalentOnSwitchIn(fp1, fp2);
+      ev1.forEach(ev => {
+        if (typeof pmEventToText === 'function') {
+          const txt = pmEventToText(ev);
+          if (txt) battle.log.push(txt);
+        }
+      });
+      const ev2 = pmApplyTalentOnSwitchIn(fp2, fp1);
+      ev2.forEach(ev => {
+        if (typeof pmEventToText === 'function') {
+          const txt = pmEventToText(ev);
+          if (txt) battle.log.push(txt);
+        }
+      });
+      // Re-sérialiser pour persister les changements (stages, hp via heal éventuel, etc.)
+      battle.p1Team[0] = pvpSerializeFighter(fp1);
+      battle.p2Team[0] = pvpSerializeFighter(fp2);
+    }
+
     console.log('[pvp] creating battle', battleId, 'size:', JSON.stringify(battle).length, vsBot ? '(vs BOT)' : '');
     await pvpWrite(BATTLES_PATH + '/' + battleId, battle);
     console.log('[pvp] battle saved');
@@ -9126,19 +9521,29 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
       // Switch : retire le PokePom actif (en resettant ses buffs/brûlure
       // comme en PvE), envoie le nouveau (clone deserialized = état frais)
       if (by === 'p1') {
+        // Talent Régé-Force : récupère 25% HP en quittant
+        const outEv = pmApplyTalentOnSwitchOut(p1Active);
+        outEv.forEach(logEvent);
         pmResetFighterStateOnExit(p1Active);
         teamP1[p1Idx] = pvpSerializeFighter(p1Active);
         const oldName = p1Active.name;
         p1Idx = action.toIdx;
         p1Active = pvpDeserializeFighter(teamP1[p1Idx]);
         newLogs.push(battle.p1.displayName + ' retire ' + oldName + ' et envoie ' + p1Active.name + ' !');
+        // Talents à l'entrée (Intimidation, Vitesse Plus)
+        const inEv = pmApplyTalentOnSwitchIn(p1Active, p2Active);
+        inEv.forEach(logEvent);
       } else {
+        const outEv = pmApplyTalentOnSwitchOut(p2Active);
+        outEv.forEach(logEvent);
         pmResetFighterStateOnExit(p2Active);
         teamP2[p2Idx] = pvpSerializeFighter(p2Active);
         const oldName = p2Active.name;
         p2Idx = action.toIdx;
         p2Active = pvpDeserializeFighter(teamP2[p2Idx]);
         newLogs.push(battle.p2.displayName + ' retire ' + oldName + ' et envoie ' + p2Active.name + ' !');
+        const inEv = pmApplyTalentOnSwitchIn(p2Active, p1Active);
+        inEv.forEach(logEvent);
       }
       return true;
     }
@@ -9253,6 +9658,14 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
       if (nextIdx >= 0) {
         p1Idx = nextIdx;
         newLogs.push(battle.p1.displayName + ' envoie ' + teamP1[p1Idx].name + ' !');
+        // Talents à l'entrée (Intimidation, Vitesse Plus) du remplaçant
+        const inP1 = pvpDeserializeFighter(teamP1[p1Idx]);
+        const oppP2 = pvpDeserializeFighter(teamP2[p2Idx]);
+        const ev = pmApplyTalentOnSwitchIn(inP1, oppP2);
+        ev.forEach(logEvent);
+        // Re-serialize les modifications (stages buffés via Vitesse Plus, etc.)
+        teamP1[p1Idx] = pvpSerializeFighter(inP1);
+        teamP2[p2Idx] = pvpSerializeFighter(oppP2); // Intimidation a pu modifier l'adversaire
       }
     }
     if (teamP2[p2Idx].ko || teamP2[p2Idx].hp <= 0) {
@@ -9262,6 +9675,13 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
       if (nextIdx >= 0) {
         p2Idx = nextIdx;
         newLogs.push(battle.p2.displayName + ' envoie ' + teamP2[p2Idx].name + ' !');
+        // Talents à l'entrée (Intimidation, Vitesse Plus) du remplaçant
+        const inP2 = pvpDeserializeFighter(teamP2[p2Idx]);
+        const oppP1 = pvpDeserializeFighter(teamP1[p1Idx]);
+        const ev = pmApplyTalentOnSwitchIn(inP2, oppP1);
+        ev.forEach(logEvent);
+        teamP2[p2Idx] = pvpSerializeFighter(inP2);
+        teamP1[p1Idx] = pvpSerializeFighter(oppP1); // Intimidation a pu modifier l'adversaire
       }
     }
   }
@@ -10048,6 +10468,7 @@ function pvpRenderBattleUI(battle) {
         <div class="pm-battle-info">
           <div class="pm-battle-name">${fighter.name}${capBadge}</div>
           <div class="pm-battle-level">Niv ${fighter.level} · ${PM_TYPE_EMOJI[fighter.type]||''} ${PM_TYPE_LABEL[fighter.type]||''}</div>
+          ${pmRenderTalentBadge(fighter)}
           <div class="pm-hp-bar"><div class="pm-hp-fill ${hpClass(fighter)}" style="width:${hpPct}%"></div></div>
           <div class="pm-battle-hp-text">${fighter.hp} / ${fighter.maxHp} HP</div>
           ${renderStatusBadges(fighter)}
