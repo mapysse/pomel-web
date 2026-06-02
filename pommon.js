@@ -547,6 +547,26 @@ const PM_MOVES = {
   hate_ancienne:   { id:'hate_ancienne',   name:'Hâte Ancienne',    type:'neutre',     power:0, accuracy:100, pp:6, category:'buff',   stat:'vit', stages:2, dojoOnly:true, desc:'Augmente sa propre Vitesse de 2 crans.' },
   malediction:     { id:'malediction',     name:'Malédiction',      type:'ombre',      power:0, accuracy:90,  pp:6, category:'debuff', multiStat:['atk','def'], stages:-1, dojoOnly:true, desc:'Baisse l\'Attaque ET la Défense adverses d\'un cran.' },
 
+  // ═══ MOVES DOJO SPÉCIAUX — SAISON ALL STAR ═══
+  // Attaques à charge (power 100, 1 tour de préparation, attaquant vulnérable)
+  geyser_latent:   { id:'geyser_latent',   name:'Geyser Latent',    type:'eau',        power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : prépare la pression. Tour 2 : geyser dévastateur (100 puissance).' },
+  decharge_diff:   { id:'decharge_diff',   name:'Décharge Différée', type:'electrique', power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : accumule l\'énergie. Tour 2 : décharge massive (100 puissance).' },
+  embrasement:     { id:'embrasement',     name:'Embrasement',      type:'feu',        power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : concentre les flammes. Tour 2 : explosion incendiaire (100 puissance).' },
+  tornade_spirale: { id:'tornade_spirale', name:'Tornade Spirale',  type:'air',        power:100, accuracy:90, pp:5, category:'attack', chargeTurn:true, dojoOnly:true, desc:'Tour 1 : forme la spirale. Tour 2 : tornade dévastatrice (100 puissance).' },
+
+  // Moves "meilleure stat" (utilise ATK ou DEF selon la plus haute)
+  lame_adaptative: { id:'lame_adaptative', name:'Lame Adaptative',  type:'ombre',      power:90, accuracy:100, pp:8, category:'attack', useBestStat:true, dojoOnly:true, desc:'Frappe avec sa meilleure stat physique (ATK ou DEF).' },
+  trait_adaptatif: { id:'trait_adaptatif', name:'Trait Adaptatif',  type:'lumiere',    power:90, accuracy:100, pp:8, category:'attack', useBestStat:true, dojoOnly:true, desc:'Frappe avec sa meilleure stat physique (ATK ou DEF).' },
+
+  // Attaque glace avec recul (25% maxHP du lanceur)
+  avalanche_glaciale: { id:'avalanche_glaciale', name:'Avalanche Glaciale', type:'glace', power:100, accuracy:95, pp:5, category:'attack', recoilPct:0.25, dojoOnly:true, desc:'Avalanche dévastatrice mais coûteuse : 25% de recul sur l\'utilisateur.' },
+
+  // Piège de roc (métal) : pose un piège qui inflige 6% maxHP à chaque entrée adverse
+  piege_de_roc:    { id:'piege_de_roc',    name:'Piège de Roc',     type:'metal',      power:0, accuracy:100, pp:10, category:'set_trap', dojoOnly:true, desc:'Dépose un piège : chaque PokePom adverse qui entre sur le terrain subit 6% de ses HP max.' },
+
+  // Souffle Purificateur : attaque + retire les pièges de SON camp
+  souffle_purif:   { id:'souffle_purif',   name:'Souffle Purificateur', type:'air',    power:50, accuracy:100, pp:10, category:'remove_trap', dojoOnly:true, desc:'Souffle qui balaie le terrain : inflige 50 dégâts ET retire les pièges de votre camp.' },
+
   // Universel (backup quand plus de PP)
   lutte:           { id:'lutte',           name:'Lutte',            type:'neutre',     power:30, accuracy:100, pp:99, category:'attack', recoilPct:0.15, desc:'Attaque désespérée, inflige 15% de recul à l\'utilisateur.' }
 };
@@ -588,51 +608,67 @@ const PM_DOJO_CATALOG = {
     'brasier', 'flamme_vive', 'tranchant', 'surchauffe',
     'volcan_sacre',
     // Couverture : Feu peut taper Glace et Plante → Cristal Brisé Glace, Lame d'Orichal Métal
-    'cristal_eclat', 'lame_orichal'
+    'cristal_eclat', 'lame_orichal',
+    // Saison All Star : attaque à charge + retire-pièges
+    'embrasement', 'souffle_purif'
   ],
   eau: [
     'torrent', 'aqua_jet', 'eclair_marin', 'corrosion',
     'raz_de_maree',
     // Couverture : Eau peut taper Feu et Roche-équivalent → Givre Acéré Glace, Vent Polaire Air
-    'givre_acere', 'vent_polaire'
+    'givre_acere', 'vent_polaire',
+    // Saison All Star : attaque à charge + retire-pièges
+    'geyser_latent', 'souffle_purif'
   ],
   electrique: [
     'arc_voltaique', 'surcharge', 'galvanisation', 'racine_choc',
     'foudre_pure',
     // Couverture : Élec peut taper Eau et Air → Aqua Jet Eau, Cyclone Air
-    'aqua_jet', 'cyclone'
+    'aqua_jet', 'cyclone',
+    // Saison All Star : attaque à charge + retire-pièges
+    'decharge_diff', 'souffle_purif'
   ],
   air: [
     'cyclone', 'brise_vitale', 'eclat_celeste', 'vent_curatif',
     'souffle_aurore',
     // Couverture : Air peut taper Plante et Glace → Lancer Sève Plante, Blizzard Glace
-    'lancer_seve', 'blizzard'
+    'lancer_seve', 'blizzard',
+    // Saison All Star : attaque à charge + retire-pièges (signature air)
+    'tornade_spirale', 'souffle_purif'
   ],
   ombre: [
     'nuit_noire', 'griffure_spec', 'voile_obscur', 'flamme_maudite',
     // Pas de move signature de type "ombre" stricto sensu — Malédiction (universel) est leur signature
     'malediction',
     // Couverture : Ombre peut taper Lumière et Air → Eclat Doré Lumière, Cyclone Air
-    'eclat_dore', 'cyclone'
+    'eclat_dore', 'cyclone',
+    // Saison All Star : move "meilleure stat"
+    'lame_adaptative'
   ],
   lumiere: [
     'rayon_sacre', 'eclat_dore', 'aura_radieuse', 'ombre_inversee',
     // Pas de signature lumière stricto — utilisons le move air signature, vu Hauteurs de Solenne (lumière + air)
     'souffle_aurore',
     // Couverture : Lumière peut taper Glace et Ombre → Cristal Brisé Glace, Voile Obscur Ombre
-    'cristal_brise', 'voile_obscur'
+    'cristal_brise', 'voile_obscur',
+    // Saison All Star : move "meilleure stat" + retire-pièges
+    'trait_adaptatif', 'souffle_purif'
   ],
   glace: [
     'blizzard', 'cristal_eclat', 'vent_polaire', 'givre_acere',
     'cristal_brise',
     // Couverture : Glace peut taper Plante et Air → Lancer Sève, Cyclone
-    'lancer_seve', 'cyclone'
+    'lancer_seve', 'cyclone',
+    // Saison All Star : attaque puissante avec recul + retire-pièges
+    'avalanche_glaciale', 'souffle_purif'
   ],
   metal: [
     'charge_lourde', 'lame_acier', 'poing_brulant', 'forteresse',
     'lame_orichal',
     // Couverture : Métal peut taper Glace et Lumière → Givre Acéré, Eclat Doré
-    'givre_acere', 'eclat_dore'
+    'givre_acere', 'eclat_dore',
+    // Saison All Star : piège de roc
+    'piege_de_roc'
   ],
 };
 
@@ -4183,6 +4219,10 @@ function pmCalcDamage(attacker, defender, move) {
 
   // ── TALENTS qui modifient l'attaque ──
   let atkValue = attacker.atk;
+  // Move "useBestStat" (Lame/Trait Adaptatif) : utilise la meilleure entre ATK et DEF
+  if (move.useBestStat) {
+    atkValue = Math.max(attacker.atk, attacker.def);
+  }
   // Force Pure : +50% attaque
   if (attacker.talent === 'forcePure') {
     atkValue = Math.floor(atkValue * 1.5);
@@ -4218,8 +4258,40 @@ function pmEffectivenessLabel(moveType, defenderType) {
 }
 
 // Exécute un move et retourne les événements du tour
-function pmExecuteMove(attacker, defender, move) {
+// Le `context` est optionnel et permet aux modes (PvE/PvP) de partager l'état des
+// pièges entre les deux camps. Il a la forme {attackerSide, defenderSide} où chaque
+// "side" est un objet {traps: number}. Les moves set_trap/remove_trap modifient ces
+// objets. Les modes qui ne passent pas de context se comportent comme avant (pas de
+// pièges).
+function pmExecuteMove(attacker, defender, move, context) {
   const events = [];
+
+  // ─── Attaques à charge (chargeTurn) ───
+  // Tour 1 : annonce la charge, ne fait rien d'autre. attacker.charging = move.id
+  // Tour 2 : exécute le move normalement (et reset attacker.charging)
+  if (move.chargeTurn) {
+    if (!attacker.charging) {
+      // Premier tour : on prépare
+      attacker.charging = move.id;
+      events.push({ type:'use_move', attacker: attacker.name, move: move.name, moveType: move.type });
+      // Messages thématiques selon le move
+      const chargeMessages = {
+        geyser_latent: `${attacker.name} accumule une pression aquatique colossale...`,
+        decharge_diff: `${attacker.name} concentre une charge électrique massive...`,
+        embrasement:   `${attacker.name} laisse les flammes grandir autour de lui...`,
+        tornade_spirale: `${attacker.name} forme une spirale d'air dévastatrice...`,
+      };
+      const msg = chargeMessages[move.id] || `${attacker.name} se prépare !`;
+      events.push({ type:'talent_proc', target: attacker.name, talent: 'chargeup', message: msg });
+      // PP non consommé encore (sera consommé au tour 2)
+      return events;
+    } else {
+      // Deuxième tour : on libère la charge. Reset le flag avant de continuer.
+      attacker.charging = null;
+      // Le reste du moteur déroule comme une attaque normale (chargeTurn ignoré ensuite)
+    }
+  }
+
   events.push({ type:'use_move', attacker: attacker.name, move: move.name, moveType: move.type });
 
   // Jet de précision
@@ -4397,6 +4469,43 @@ function pmExecuteMove(attacker, defender, move) {
       }
       if (anyApplied) pmApplyStages(defender);
     }
+  } else if (move.category === 'set_trap') {
+    // Piège de Roc : pose un piège côté adverse (max 1, pas cumulable)
+    if (context && context.defenderSide) {
+      if ((context.defenderSide.traps || 0) === 0) {
+        context.defenderSide.traps = 1;
+        events.push({ type:'talent_proc', target: defender.name, talent: 'set_trap',
+          message: `🪨 <strong>Piège de Roc</strong> : des pierres tranchantes encerclent le camp de ${defender.name} !` });
+      } else {
+        events.push({ type:'talent_proc', target: defender.name, talent: 'set_trap',
+          message: `Un piège est déjà posé côté ${defender.name}.` });
+      }
+    }
+  } else if (move.category === 'remove_trap') {
+    // Souffle Purificateur : attaque + retire les pièges de SON camp
+    // Partie 1 : retire les pièges de son côté (attackerSide)
+    if (context && context.attackerSide && (context.attackerSide.traps || 0) > 0) {
+      context.attackerSide.traps = 0;
+      events.push({ type:'talent_proc', target: attacker.name, talent: 'remove_trap',
+        message: `💨 <strong>Souffle Purificateur</strong> : ${attacker.name} balaie les pièges de son camp !` });
+    }
+    // Partie 2 : inflige des dégâts comme une attaque normale (utilise move.power)
+    let dmg = pmCalcDamage(attacker, defender, move);
+    if (defender.talent === 'multiscale' && defender.hp === defender.maxHp && dmg > 0) {
+      dmg = Math.max(1, Math.floor(dmg / 2));
+      events.push({ type:'talent_proc', target: defender.name, talent: 'multiscale',
+        message: `<strong>Multiscale</strong> : ${defender.name} encaisse moitié moins de dégâts à pleine vie !` });
+    }
+    defender.hp = Math.max(0, defender.hp - dmg);
+    events.push({ type:'damage', target: defender.name, amount: dmg });
+    if (defender.hp === 0) {
+      defender.ko = true;
+      events.push({ type:'ko', target: defender.name });
+      const cranEvents = pmApplyTalentOnKO(attacker);
+      cranEvents.forEach(e => events.push(e));
+      const refluxEv = pmApplyTalentOnDeath(defender, attacker);
+      refluxEv.forEach(e => events.push(e));
+    }
   }
 
   return events;
@@ -4542,6 +4651,25 @@ function pmApplyTalentOnDeath(deadFighter, opponentFighter) {
 // composition de l'équipe (titulaire + banc). Si au moins un PokePom de l'équipe
 // porte Cœur Festif, on majore de 10%. Effet non cumulatif (un seul porteur = +10%
 // pour éviter +30% en sortant 3 Cœurs Festifs ensemble).
+// Pièges de Roc : appelé quand un PokePom entre sur le terrain.
+// `side` est l'objet {traps: N} du camp de l'entrant. Si N > 0, inflige 6% maxHP.
+// Le piège reste actif (compteur ne décrémente pas). Retourne les events.
+function pmApplyTrapDamage(enteringFighter, side) {
+  const events = [];
+  if (!enteringFighter || enteringFighter.ko || !side || (side.traps || 0) === 0) return events;
+  const dmg = Math.max(1, Math.floor(enteringFighter.maxHp * 0.06));
+  enteringFighter.hp = Math.max(0, enteringFighter.hp - dmg);
+  events.push({ type:'talent_proc', target: enteringFighter.name, talent: 'trap_damage',
+    message: `🪨 <strong>Piège de Roc</strong> : ${enteringFighter.name} subit ${dmg} PV en entrant sur le terrain !` });
+  if (enteringFighter.hp === 0) {
+    enteringFighter.ko = true;
+    events.push({ type:'ko', target: enteringFighter.name });
+    // Reflux possible si le PokePom porteur de Reflux est KO par le piège
+    // (mais on n'a pas d'opponent direct ici, on laisse passer — cas rare)
+  }
+  return events;
+}
+
 function pmCoeurFestifMultiplier() {
   try {
     const bs = _pmBattleState;
@@ -4562,7 +4690,11 @@ function pmGetLutte() {
 }
 
 // Effectue un tour de combat complet
-function pmRunTurn(attacker, defender, attackerMoveIdx, defenderMoveIdx) {
+// `context` optionnel : {attackerSide, defenderSide} pour la gestion des pièges.
+// "attacker" et "defender" sont les rôles fixes (joueur attaque, adversaire défend),
+// mais selon qui joue en premier, les sides du context sont assignés correctement à
+// chaque appel pmExecuteMove.
+function pmRunTurn(attacker, defender, attackerMoveIdx, defenderMoveIdx, context) {
   let attackerMove = attacker.moves[attackerMoveIdx];
   let defenderMove = defender.moves[defenderMoveIdx];
 
@@ -4572,25 +4704,39 @@ function pmRunTurn(attacker, defender, attackerMoveIdx, defenderMoveIdx) {
 
   // Déterminer qui commence
   let first = attacker, firstMove = attackerMove, second = defender, secondMove = defenderMove;
+  let firstIsAttacker = true;
   if (defenderMove.priority && !attackerMove.priority) {
     first = defender; firstMove = defenderMove; second = attacker; secondMove = attackerMove;
+    firstIsAttacker = false;
   } else if (attackerMove.priority && !defenderMove.priority) {
     // attacker reste premier (déjà)
   } else if (attacker.vit === defender.vit) {
     if (Math.random() < 0.5) {
       first = defender; firstMove = defenderMove; second = attacker; secondMove = attackerMove;
+      firstIsAttacker = false;
     }
   } else if (defender.vit > attacker.vit) {
     first = defender; firstMove = defenderMove; second = attacker; secondMove = attackerMove;
+    firstIsAttacker = false;
   }
+
+  // Préparer les contextes selon qui attaque (pour les pièges)
+  const ctxFirst = context
+    ? { attackerSide: firstIsAttacker ? context.attackerSide : context.defenderSide,
+        defenderSide: firstIsAttacker ? context.defenderSide : context.attackerSide }
+    : undefined;
+  const ctxSecond = context
+    ? { attackerSide: firstIsAttacker ? context.defenderSide : context.attackerSide,
+        defenderSide: firstIsAttacker ? context.attackerSide : context.defenderSide }
+    : undefined;
 
   const allEvents = [];
   // Premier
-  const ev1 = pmExecuteMove(first, second, firstMove);
+  const ev1 = pmExecuteMove(first, second, firstMove, ctxFirst);
   allEvents.push(...ev1);
   // Second attaque seulement si pas KO
   if (!second.ko) {
-    const ev2 = pmExecuteMove(second, first, secondMove);
+    const ev2 = pmExecuteMove(second, first, secondMove, ctxSecond);
     allEvents.push(...ev2);
   }
   // Fin de tour (passe l'opposant pour Reflux)
@@ -4918,6 +5064,20 @@ function pmInjectStyles() {
     }
     .pm-battle-talent-emoji { font-size: .82rem; line-height: 1; }
     .pm-battle-talent-name { font-size: .68rem; font-weight: 800; color: var(--accent, #A66BFF); white-space: nowrap; }
+    .pm-trap-badge {
+      display: inline-block;
+      margin: 4px auto 0;
+      background: linear-gradient(135deg, rgba(154,113,79,0.25), rgba(110,77,52,0.15));
+      border: 1px solid rgba(154,113,79,0.55);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-size: .68rem;
+      font-weight: 800;
+      color: #c69a6a;
+      cursor: help;
+      text-align: center;
+      white-space: nowrap;
+    }
     .pm-battle-hp-text { font-family:'Space Mono',monospace; font-size:.75rem; text-align:right; margin-top:4px; color:var(--muted); }
     .pm-battle-status { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; justify-content:center; }
     .pm-battle-status-icon { font-size:.9rem; }
@@ -6977,6 +7137,8 @@ function pmStartWildBattle(firstInstance) {
       `Tu envoies ${teamFighters[firstIdx].name} au combat !`
     ],
     turn: 0,
+    playerSide: { traps: 0 },
+    opponentSide: { traps: 0 },
     finished: false,
     ended: false
   };
@@ -7117,6 +7279,8 @@ function pmLaunchGymBattle(gym, firstInstance) {
       `Tu envoies ${teamFighters[firstIdx].name} !`
     ],
     turn: 0,
+    playerSide: { traps: 0 },
+    opponentSide: { traps: 0 },
     finished: false,
     ended: false
   };
@@ -7362,6 +7526,8 @@ function pmStartLeagueRun() {
     winsInRun: 0,
     log: [`🌟 Début de la run Ligue !`, `Round 1 : un ${oppFighter.name} (Niv ${firstOpp.level}) apparaît !`, `Tu envoies ${teamFighters[0].name} !`],
     turn: 0,
+    playerSide: { traps: 0 },
+    opponentSide: { traps: 0 },
     finished: false,
     ended: false
   };
@@ -7749,6 +7915,7 @@ function pmRenderBattle(page, player) {
               <div class="pm-hp-bar"><div class="pm-hp-fill ${pmHpClass(p)}" style="width:${(p.hp/p.maxHp)*100}%"></div></div>
               <div class="pm-battle-hp-text">${p.hp} / ${p.maxHp} HP</div>
               ${pmRenderStatusBadges(p)}
+              ${pmRenderTrapBadge(bs.playerSide)}
             </div>
           </div>
 
@@ -7762,6 +7929,7 @@ function pmRenderBattle(page, player) {
               <div class="pm-hp-bar"><div class="pm-hp-fill ${pmHpClass(o)}" style="width:${(o.hp/o.maxHp)*100}%"></div></div>
               <div class="pm-battle-hp-text">${o.hp} / ${o.maxHp} HP</div>
               ${pmRenderStatusBadges(o)}
+              ${pmRenderTrapBadge(bs.opponentSide)}
             </div>
           </div>
         </div>
@@ -7832,6 +8000,11 @@ function pmIsPokepomCaptured(player, pokepomId) {
 function pmCaptureBadge(player, pokepomId) {
   if (!pmIsPokepomCaptured(player, pokepomId)) return '';
   return ' <span title="Déjà capturé" style="display:inline-block; padding:1px 6px; border-radius:8px; background:rgba(62,207,110,0.18); color:var(--green); font-size:.62rem; font-weight:700; vertical-align:middle;">✓ Capturé</span>';
+}
+
+function pmRenderTrapBadge(side) {
+  if (!side || !side.traps || side.traps === 0) return '';
+  return `<div class="pm-trap-badge" title="Piège de Roc : 6% HP max à chaque entrée">🪨 Piège de Roc</div>`;
 }
 
 function pmRenderTalentBadge(fighter) {
@@ -7992,6 +8165,11 @@ function pmDoSwitch(newIdx, costsTurn) {
   // Talents à l'entrée : Intimidation, Vitesse Plus
   const switchInEvents = pmApplyTalentOnSwitchIn(newFighter, bs.opponentFighter);
   switchInEvents.forEach(ev => bs.log.push(pmEventToText(ev)));
+  // Dégâts de piège (Piège de Roc côté joueur)
+  if (bs.playerSide) {
+    const trapEv = pmApplyTrapDamage(newFighter, bs.playerSide);
+    trapEv.forEach(ev => bs.log.push(pmEventToText(ev)));
+  }
 
   if (costsTurn) {
     bs.log.push(`Tu rappelles ${oldName} et envoies ${newName} !`);
@@ -7999,7 +8177,11 @@ function pmDoSwitch(newIdx, costsTurn) {
     const o = bs.opponentFighter;
     if (!o.ko) {
       const oppMoveIdx = pmAIChooseMove(o, newFighter);
-      const events = pmExecuteMove(o, newFighter, o.moves[oppMoveIdx]);
+      // Context : o (adversaire) attaque → sa side = opponentSide, défenseur = playerSide
+      const ctx = (bs.playerSide && bs.opponentSide)
+        ? { attackerSide: bs.opponentSide, defenderSide: bs.playerSide }
+        : undefined;
+      const events = pmExecuteMove(o, newFighter, o.moves[oppMoveIdx], ctx);
       events.forEach(ev => bs.log.push(pmEventToText(ev)));
       // Fin de tour (brûlure + Reflux si KO)
       const endEvents1 = pmApplyEndOfTurnEffects(newFighter, o);
@@ -8033,8 +8215,11 @@ function pmDoBattleTurn(moveIdx) {
   // IA choisit son move
   const oppMoveIdx = pmAIChooseMove(o, p);
 
-  // Exécuter le tour
-  const events = pmRunTurn(p, o, moveIdx, oppMoveIdx);
+  // Exécuter le tour (passe les sides pour les pièges)
+  const context = (bs.playerSide && bs.opponentSide)
+    ? { attackerSide: bs.playerSide, defenderSide: bs.opponentSide }
+    : undefined;
+  const events = pmRunTurn(p, o, moveIdx, oppMoveIdx, context);
 
   // Traduire les événements en texte de log
   events.forEach(ev => {
@@ -8158,6 +8343,9 @@ function pmHandleBattleEnd() {
       bs.opponentInstance = nextOpp;
       bs.opponentFighter = pmCreateFighter(nextOpp, 1.0);
       bs.log.push(`<strong>Round ${bs.roundNum}</strong> : un ${bs.opponentFighter.name} (Niv ${nextOpp.level}) apparaît !`);
+      // Nouveau terrain → reset des pièges des deux côtés (nouveau round = repart à neuf)
+      if (bs.playerSide) bs.playerSide.traps = 0;
+      if (bs.opponentSide) bs.opponentSide.traps = 0;
       // Talents à l'entrée de l'adversaire (Intimidation contre TOI, Vitesse Plus pour lui)
       const oppSwitchInEvents = pmApplyTalentOnSwitchIn(bs.opponentFighter, p);
       oppSwitchInEvents.forEach(ev => bs.log.push(pmEventToText(ev)));
@@ -8174,6 +8362,11 @@ function pmHandleBattleEnd() {
         // Talents à l'entrée
         const switchInEvents = pmApplyTalentOnSwitchIn(nextFighter, bs.opponentFighter);
         switchInEvents.forEach(ev => bs.log.push(pmEventToText(ev)));
+        // Dégâts de piège côté joueur
+        if (bs.playerSide) {
+          const trapEv = pmApplyTrapDamage(nextFighter, bs.playerSide);
+          trapEv.forEach(ev => bs.log.push(pmEventToText(ev)));
+        }
         return;
       }
       // Plus personne → fin run
@@ -9272,6 +9465,8 @@ async function pvpInitChallenge(opponentCode) {
       p2Team: oppTeam,
       p1ActiveIdx: 0,
       p2ActiveIdx: 0,
+      p1Traps: 0,                                // Piège de Roc côté p1
+      p2Traps: 0,                                // Piège de Roc côté p2
       turnNumber: 1,
       turnDeadline: new Date(now + TURN_TIMEOUT_MS).toISOString(),
       currentPlayer: '',
@@ -9549,6 +9744,11 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
   let p1Active = pvpDeserializeFighter(teamP1[p1Idx]);
   let p2Active = pvpDeserializeFighter(teamP2[p2Idx]);
 
+  // Pièges de Roc : objets mutables (modifiés par set_trap/remove_trap dans pmExecuteMove)
+  // Sérialisés en fin de tour via battle.p1Traps/p2Traps.
+  const p1Side = { traps: battle.p1Traps || 0 };
+  const p2Side = { traps: battle.p2Traps || 0 };
+
   const newLogs = [];
   const logEvent = (ev) => {
     if (typeof pmEventToText === 'function') {
@@ -9576,6 +9776,9 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
         // Talents à l'entrée (Intimidation, Vitesse Plus)
         const inEv = pmApplyTalentOnSwitchIn(p1Active, p2Active);
         inEv.forEach(logEvent);
+        // Dégâts de piège côté p1
+        const trapEv = pmApplyTrapDamage(p1Active, p1Side);
+        trapEv.forEach(logEvent);
       } else {
         const outEv = pmApplyTalentOnSwitchOut(p2Active);
         outEv.forEach(logEvent);
@@ -9587,6 +9790,9 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
         newLogs.push(battle.p2.displayName + ' retire ' + oldName + ' et envoie ' + p2Active.name + ' !');
         const inEv = pmApplyTalentOnSwitchIn(p2Active, p1Active);
         inEv.forEach(logEvent);
+        // Dégâts de piège côté p2
+        const trapEv = pmApplyTrapDamage(p2Active, p2Side);
+        trapEv.forEach(logEvent);
       }
       return true;
     }
@@ -9604,7 +9810,10 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
         move = pmGetLutte();
       }
     }
-    const events = pmExecuteMove(attacker, defender, move);
+    const events = pmExecuteMove(attacker, defender, move, {
+      attackerSide: by === 'p1' ? p1Side : p2Side,
+      defenderSide: by === 'p1' ? p2Side : p1Side,
+    });
     events.forEach(logEvent);
     return false;
   };
@@ -9706,6 +9915,9 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
         const oppP2 = pvpDeserializeFighter(teamP2[p2Idx]);
         const ev = pmApplyTalentOnSwitchIn(inP1, oppP2);
         ev.forEach(logEvent);
+        // Dégâts de piège côté p1
+        const trapEv = pmApplyTrapDamage(inP1, p1Side);
+        trapEv.forEach(logEvent);
         // Re-serialize les modifications (stages buffés via Vitesse Plus, etc.)
         teamP1[p1Idx] = pvpSerializeFighter(inP1);
         teamP2[p2Idx] = pvpSerializeFighter(oppP2); // Intimidation a pu modifier l'adversaire
@@ -9723,6 +9935,9 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
         const oppP1 = pvpDeserializeFighter(teamP1[p1Idx]);
         const ev = pmApplyTalentOnSwitchIn(inP2, oppP1);
         ev.forEach(logEvent);
+        // Dégâts de piège côté p2
+        const trapEv = pmApplyTrapDamage(inP2, p2Side);
+        trapEv.forEach(logEvent);
         teamP2[p2Idx] = pvpSerializeFighter(inP2);
         teamP1[p1Idx] = pvpSerializeFighter(oppP1); // Intimidation a pu modifier l'adversaire
       }
@@ -9735,6 +9950,8 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
     p2Team: teamP2,
     p1ActiveIdx: p1Idx,
     p2ActiveIdx: p2Idx,
+    p1Traps: p1Side.traps,                     // Persistance des pièges
+    p2Traps: p2Side.traps,
     log: (battle.log || []).concat(newLogs),
     lastUpdate: new Date().toISOString(),
     status: status,
@@ -10430,6 +10647,8 @@ function pvpRenderBattleUI(battle) {
   const oppTeam = battle[oppKey + 'Team'] || [];
   const myActiveIdx  = battle[myKey + 'ActiveIdx']  || 0;
   const oppActiveIdx = battle[oppKey + 'ActiveIdx'] || 0;
+  const myTraps  = battle[myKey + 'Traps']  || 0;       // pièges côté joueur
+  const oppTraps = battle[oppKey + 'Traps'] || 0;       // pièges côté adversaire
   const myActive  = myTeam[myActiveIdx];
   const oppActive = oppTeam[oppActiveIdx];
   const isMyTurn = battle.currentPlayer === myKey;
@@ -10511,7 +10730,7 @@ function pvpRenderBattleUI(battle) {
     h += `</div>`;
     return h;
   };
-  const renderSide = (info, fighter, team, activeIdx, side, isMe) => {
+  const renderSide = (info, fighter, team, activeIdx, side, isMe, traps) => {
     if (!fighter) return `<div class="pm-battle-side"><div style="color:var(--muted);">Aucun PokePom actif</div></div>`;
     const hpPct = Math.max(0, Math.min(100, (fighter.hp / fighter.maxHp) * 100));
     // Badge "déjà capturé" sur l'adversaire uniquement (les miens, je les ai forcément déjà)
@@ -10527,6 +10746,7 @@ function pvpRenderBattleUI(battle) {
           <div class="pm-hp-bar"><div class="pm-hp-fill ${hpClass(fighter)}" style="width:${hpPct}%"></div></div>
           <div class="pm-battle-hp-text">${fighter.hp} / ${fighter.maxHp} HP</div>
           ${renderStatusBadges(fighter)}
+          ${pmRenderTrapBadge({ traps: traps })}
         </div>
         ${renderTeamBar(team, activeIdx, side, false)}
       </div>`;
@@ -10661,8 +10881,8 @@ function pvpRenderBattleUI(battle) {
     ${timerHtml}
     <div class="pm-battle-arena">
       <div class="pm-battle-field">
-        ${renderSide(myInfo, myActive, myTeam, myActiveIdx, 'me', true)}
-        ${renderSide(oppInfo, oppActive, oppTeam, oppActiveIdx, 'opp', false)}
+        ${renderSide(myInfo, myActive, myTeam, myActiveIdx, 'me', true, myTraps)}
+        ${renderSide(oppInfo, oppActive, oppTeam, oppActiveIdx, 'opp', false, oppTraps)}
       </div>
       ${logHtml}
       ${actionHtml}
