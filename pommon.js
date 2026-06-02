@@ -247,9 +247,12 @@ const PM_TALENTS = {
   regeForce:   { id:'regeForce',   name:'Régé-Force',   emoji:'🌫️', trigger:'switch_out',
                  desc:'Récupère 25% de ses HP max en quittant le combat.',
                  effect:'Quand il se retire, son énergie vitale se reconstitue rapidement : il récupère 25% de ses HP max.' },
+  reflux:      { id:'reflux',      name:'Reflux',       emoji:'🌊', trigger:'on_ko',
+                 desc:'En cas de KO, inflige 25% de ses HP max à l\'adversaire en face.',
+                 effect:'Sa dernière vague d\'énergie se répand contre celui qui l\'a abattu : à sa mort, l\'adversaire actif subit 25% des HP max d\'Onduline en dégâts directs.' },
   pression:    { id:'pression',    name:'Pression',     emoji:'🔄', trigger:'permanent',
-                 desc:'Force l\'adversaire à dépenser 2 PP par attaque au lieu de 1.',
-                 effect:'Son aura oppressante double l\'effort mental de l\'adversaire : chaque attaque ennemie consomme 2 PP.' },
+                 desc:'50% de chance que l\'adversaire dépense 2 PP au lieu de 1.',
+                 effect:'Son aura oppressante perturbe l\'adversaire : à chaque attaque ennemie, 1 chance sur 2 que la capacité consomme 2 PP au lieu de 1.' },
 
   // ── À L'ATTAQUE ──
   brulure:     { id:'brulure',     name:'Brûlure',      emoji:'🔥', trigger:'on_attack',
@@ -316,7 +319,7 @@ const PM_DEX = {
                 lore:'Crabe aux pinces capables de projeter des jets d\'eau à haute pression. Il arpente les récifs à la recherche de coquillages.' },
   abyssale:   { id:'abyssale',   name:'Abyssale',   type:'eau',        hp:70, atk:65, def:65, vit:60, talent:'sangFroid',
                 lore:'Méduse des grandes profondeurs. Ses filaments bioluminescents hypnotisent ses proies avant la décharge paralysante.' },
-  onduline:   { id:'onduline',   name:'Onduline',   type:'eau',        hp:60, atk:60, def:60, vit:60, talent:'regeForce',
+  onduline:   { id:'onduline',   name:'Onduline',   type:'eau',        hp:60, atk:60, def:60, vit:60, talent:'reflux',
                 lore:'Hippocampe des courants chauds. Il se déplace toujours à contre-courant, porté par des remous invisibles.' },
 
   // ⚡ ÉLECTRIQUE — glass cannon (identité : +ATK +VIT, -DEF)
@@ -4185,7 +4188,7 @@ function pmCalcDamage(attacker, defender, move) {
     atkValue = Math.floor(atkValue * 1.5);
   }
 
-  const baseDmg = (atkValue * move.power / defValue) / 3;
+  const baseDmg = (atkValue * move.power / defValue) / 2.5;
   let dmg = baseDmg * stab * typeMod;
 
   // ── TALENTS conditionnels (boost type d'attaque) ──
@@ -4223,23 +4226,26 @@ function pmExecuteMove(attacker, defender, move) {
   const roll = Math.random() * 100;
   if (roll > move.accuracy) {
     events.push({ type:'miss', attacker: attacker.name });
-    // Consomme PP même si raté (Force Pure côté attaquant OU Pression côté défenseur : -2 au lieu de -1)
+    // Consomme PP même si raté
+    // Force Pure côté attaquant : -2 PP (déterministe)
+    // Pression côté défenseur : 50% chance de -2 PP au lieu de -1
     if (move.id !== 'lutte') {
       const forcePure = attacker.talent === 'forcePure';
-      const pression = defender.talent === 'pression';
-      const ppCost = (forcePure || pression) ? 2 : 1;
+      const pressionProc = defender.talent === 'pression' && Math.random() < 0.5;
+      const ppCost = (forcePure || pressionProc) ? 2 : 1;
       move.currentPp = Math.max(0, move.currentPp - ppCost);
     }
     return events;
   }
 
-  // Consomme PP (Force Pure OU Pression : -2 au lieu de -1)
+  // Consomme PP
+  // Force Pure : toujours -2. Pression : 50% chance de -2 (sinon -1).
   if (move.id !== 'lutte') {
     const forcePure = attacker.talent === 'forcePure';
-    const pression = defender.talent === 'pression';
-    const ppCost = (forcePure || pression) ? 2 : 1;
-    // Logger Pression la première fois qu'elle se déclenche dans ce tour (info au joueur)
-    if (pression && !forcePure) {
+    const pressionProc = defender.talent === 'pression' && Math.random() < 0.5;
+    const ppCost = (forcePure || pressionProc) ? 2 : 1;
+    // Logger Pression seulement quand elle se déclenche réellement
+    if (pressionProc && !forcePure) {
       events.push({ type:'talent_proc', target: attacker.name, talent: 'pression',
         message: `<strong>Pression</strong> de ${defender.name} : ${attacker.name} dépense 2 PP !` });
     }
@@ -4271,6 +4277,9 @@ function pmExecuteMove(attacker, defender, move) {
         // Cran du défenseur si applicable (rare mais possible)
         const cranBack = pmApplyTalentOnKO(defender);
         cranBack.forEach(e => events.push(e));
+        // Reflux de l'attaquant qui meurt (cible : le défenseur qui l'a tué via Toison)
+        const refluxEv = pmApplyTalentOnDeath(attacker, defender);
+        refluxEv.forEach(e => events.push(e));
       }
     }
 
@@ -4350,6 +4359,9 @@ function pmExecuteMove(attacker, defender, move) {
       // Cran : +1 atk de l'attaquant après KO infligé
       const cranEvents = pmApplyTalentOnKO(attacker);
       cranEvents.forEach(e => events.push(e));
+      // Reflux du défenseur qui meurt (cible : l'attaquant)
+      const refluxEv = pmApplyTalentOnDeath(defender, attacker);
+      refluxEv.forEach(e => events.push(e));
     }
   } else if (move.category === 'heal') {
     const heal = Math.floor(attacker.maxHp * move.healPct);
@@ -4391,7 +4403,10 @@ function pmExecuteMove(attacker, defender, move) {
 }
 
 // Applique la brûlure en fin de tour
-function pmApplyEndOfTurnEffects(fighter) {
+// Le paramètre `opponent` est optionnel et permet de déclencher Reflux si le
+// fighter meurt de brûlure (Reflux nécessite de savoir qui est en face pour
+// infliger les dégâts de retour).
+function pmApplyEndOfTurnEffects(fighter, opponent) {
   const events = [];
   // Talent Mue : soigne la brûlure (et autres statuts à terme) en début/fin de tour
   // Note : exécuté AVANT le tick de brûlure pour ne pas prendre les dégâts du tour
@@ -4412,6 +4427,11 @@ function pmApplyEndOfTurnEffects(fighter) {
     if (fighter.hp === 0) {
       fighter.ko = true;
       events.push({ type:'ko', target: fighter.name });
+      // Reflux : si le fighter mort porte Reflux, inflige 25% maxHp à l'opposant
+      if (opponent) {
+        const refluxEv = pmApplyTalentOnDeath(fighter, opponent);
+        refluxEv.forEach(e => events.push(e));
+      }
     }
   }
   return events;
@@ -4497,6 +4517,27 @@ function pmApplyTalentOnKO(killerFighter) {
   return events;
 }
 
+// Appelé quand un PokePom MEURT, sur le fighter qui vient d'être KO.
+// Reflux : à la mort, inflige 25% des HP max au PokePom adverse actif.
+// Se déclenche pour TOUS les KO (attaque directe, brûlure, Toison Magique en retour).
+// Retourne les events à logguer + un possible KO en chaîne sur l'adversaire.
+function pmApplyTalentOnDeath(deadFighter, opponentFighter) {
+  const events = [];
+  if (!deadFighter || !opponentFighter || opponentFighter.ko) return events;
+  if (deadFighter.talent === 'reflux') {
+    const splash = Math.max(1, Math.floor(deadFighter.maxHp * 0.25));
+    opponentFighter.hp = Math.max(0, opponentFighter.hp - splash);
+    events.push({ type:'talent_proc', target: opponentFighter.name, talent: 'reflux',
+      message: `<strong>Reflux</strong> : ${deadFighter.name} libère une vague d'énergie ! ${opponentFighter.name} subit ${splash} PV !` });
+    // Si l'adversaire tombe à 0 → KO en chaîne
+    if (opponentFighter.hp === 0) {
+      opponentFighter.ko = true;
+      events.push({ type:'ko', target: opponentFighter.name });
+    }
+  }
+  return events;
+}
+
 // Cœur Festif : retourne le multiplicateur à appliquer aux gains Pomels selon la
 // composition de l'équipe (titulaire + banc). Si au moins un PokePom de l'équipe
 // porte Cœur Festif, on majore de 10%. Effet non cumulatif (un seul porteur = +10%
@@ -4552,9 +4593,9 @@ function pmRunTurn(attacker, defender, attackerMoveIdx, defenderMoveIdx) {
     const ev2 = pmExecuteMove(second, first, secondMove);
     allEvents.push(...ev2);
   }
-  // Fin de tour
-  allEvents.push(...pmApplyEndOfTurnEffects(attacker));
-  allEvents.push(...pmApplyEndOfTurnEffects(defender));
+  // Fin de tour (passe l'opposant pour Reflux)
+  allEvents.push(...pmApplyEndOfTurnEffects(attacker, defender));
+  allEvents.push(...pmApplyEndOfTurnEffects(defender, attacker));
 
   return allEvents;
 }
@@ -7960,10 +8001,10 @@ function pmDoSwitch(newIdx, costsTurn) {
       const oppMoveIdx = pmAIChooseMove(o, newFighter);
       const events = pmExecuteMove(o, newFighter, o.moves[oppMoveIdx]);
       events.forEach(ev => bs.log.push(pmEventToText(ev)));
-      // Fin de tour (brûlure)
-      const endEvents1 = pmApplyEndOfTurnEffects(newFighter);
+      // Fin de tour (brûlure + Reflux si KO)
+      const endEvents1 = pmApplyEndOfTurnEffects(newFighter, o);
       endEvents1.forEach(ev => bs.log.push(pmEventToText(ev)));
-      const endEvents2 = pmApplyEndOfTurnEffects(o);
+      const endEvents2 = pmApplyEndOfTurnEffects(o, newFighter);
       endEvents2.forEach(ev => bs.log.push(pmEventToText(ev)));
       bs.turn++;
       // Si le nouveau PokePom est KO direct → switch forcé
@@ -9616,10 +9657,10 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
   applyAction(firstAction, firstBy);
   applyAction(secondAction, secondBy);
 
-  // 3) End-of-turn effects (burn etc.) sur les deux actifs courants
-  const eot1 = pmApplyEndOfTurnEffects(p1Active);
+  // 3) End-of-turn effects (burn etc.) sur les deux actifs courants (passe l'opposant pour Reflux)
+  const eot1 = pmApplyEndOfTurnEffects(p1Active, p2Active);
   eot1.forEach(logEvent);
-  const eot2 = pmApplyEndOfTurnEffects(p2Active);
+  const eot2 = pmApplyEndOfTurnEffects(p2Active, p1Active);
   eot2.forEach(logEvent);
 
   // Re-serialize les actifs courants dans l'équipe
