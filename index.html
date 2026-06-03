@@ -6129,6 +6129,38 @@ function invalidateAccountsCache() {
   _allAccountsCacheTime = 0;
 }
 
+// ══════════════════════════════════════════════════════════════════
+// CACHE DE POLLING — utilisé UNIQUEMENT par checkNotifUpdates &
+// checkPushNotifications. Ne JAMAIS l'utiliser dans les fonctions de
+// rendu (renderBets, renderQuetes, chat…) sous peine de latence visible.
+// ══════════════════════════════════════════════════════════════════
+const _pollCache = {};
+const _POLL_TTL = 40000; // 40 secondes
+
+async function _pollGetAll(path) {
+  const now = Date.now();
+  const c = _pollCache[path];
+  if (c && (now - c.t) < _POLL_TTL) return c.v;
+  const v = await dbGetAll(path);
+  _pollCache[path] = { v, t: now };
+  return v;
+}
+
+async function _pollGet(path) {
+  const now = Date.now();
+  const c = _pollCache[path];
+  if (c && (now - c.t) < _POLL_TTL) return c.v;
+  const v = await dbGet(path);
+  _pollCache[path] = { v, t: now };
+  return v;
+}
+
+// Optionnel : forcer un rafraîchissement immédiat d'une clé du cache de polling
+function invalidatePollCache(path) {
+  if (path) delete _pollCache[path];
+  else Object.keys(_pollCache).forEach(k => delete _pollCache[k]);
+}
+
 async function deleteAccountFromDB(code) { await dbDelete('accounts/' + code); invalidateAccountsCache(); }
 
 // Transaction atomique pour ajouter du solde + historique sans écraser d'autres écritures en cours
@@ -6507,10 +6539,8 @@ function launchApp() {
   if (typeof checkG2048WeeklyReset === 'function') checkG2048WeeklyReset().catch(() => {});
   // Initialiser les pastilles de notification
   checkNotifUpdates();
-  setInterval(checkNotifUpdates, 60000);
-  // Push notifications
   checkPushNotifications();
-  setInterval(checkPushNotifications, 15000);
+  startPolling();
   // Sidebar joueurs droite
   const sidebar = document.getElementById('playerSidebar');
   if (window.innerWidth >= 1200) { sidebar.classList.remove('hidden'); _sidebarVisible = true; }
@@ -11425,7 +11455,7 @@ async function checkNotifUpdates() {
   try {
     // Hôtel des Ventes
     if (typeof getAllHotelListings === 'function') {
-      const hotelItems = await getAllHotelListings();
+      const hotelItems = await _pollGetAll('hotel');
       if (hotelItems && hotelItems.length) {
         const latest = hotelItems
           .filter(l => l.creatorCode !== state.code) // pas nos propres annonces
@@ -11435,7 +11465,7 @@ async function checkNotifUpdates() {
     }
     // Marché Noir — pastille si nouveau listing (pas le mien) OU demande d'achat sur mon listing
     if (typeof getAllMarcheNoirListings === 'function') {
-      const mnItems = await getAllMarcheNoirListings();
+      const mnItems = await _pollGetAll('marche_noir');
       let mnLatest = 0;
       for (const l of (mnItems || [])) {
         // Nouveau listing d'un autre joueur
@@ -11451,7 +11481,7 @@ async function checkNotifUpdates() {
     }
     // Missions — pastille si nouvelle mission (pas la mienne) OU ma mission a été acceptée
     if (typeof getAllMissions === 'function') {
-      const missions = await getAllMissions();
+      const missions = await _pollGetAll('missions');
       let missLatest = 0;
       for (const m of (missions || [])) {
         if (m.creatorCode !== state.code && (m.status === 'open' || m.status === 'completed')) {
@@ -11464,7 +11494,7 @@ async function checkNotifUpdates() {
       if (missLatest) setLatestContent('missions', new Date(missLatest).toISOString());
     }
     // Paris ouverts
-    const bets = await getAllBets();
+    const bets = await _pollGetAll('bets');
     if (bets && bets.length) {
       const latest = bets
         .filter(b => b.creator !== state.code && b.status === 'open')
@@ -11472,7 +11502,7 @@ async function checkNotifUpdates() {
       if (latest) setLatestContent('paris', new Date(latest).toISOString());
     }
     // Proverbe du jour — comparaison par date, pas par timestamp
-    const prov = await getProverbeData();
+    const prov = await _pollGet('proverbe');
     const today = getTodayKey();
     if (prov && prov.today && prov.today.date === today && prov.today.authorCode !== state.code) {
       // Il y a un proverbe aujourd'hui, posté par quelqu'un d'autre
@@ -11482,7 +11512,7 @@ async function checkNotifUpdates() {
       localStorage.removeItem('notif_latest_proverbe_date');
     }
     // Discussion générale — messages du jour par d'autres
-    const discData = await dbGet('discussion') || {};
+    const discData = await _pollGet('discussion') || {};
     const discMsgs = Object.values(discData)
       .filter(m => m.date === today && m.authorCode !== state.code);
     if (discMsgs.length) {
@@ -11491,7 +11521,7 @@ async function checkNotifUpdates() {
     }
 
     // PomPosts du jour par d'autres
-    const pompostData = await getPomPosts() || {};
+    const pompostData = await _pollGet('pomposts') || {};
     const pompostToday = Object.values(pompostData).filter(p => p.date === today && p.authorCode !== state.code);
     if (pompostToday.length) {
       const latest = pompostToday.reduce((max, p) => Math.max(max, new Date(p.createdAt).getTime()), 0);
@@ -11499,7 +11529,7 @@ async function checkNotifUpdates() {
     }
 
     // InstaPoms du jour par d'autres
-    const instapomDataNotif = await getInstaPoms() || {};
+    const instapomDataNotif = await _pollGet('instapoms') || {};
     const instapomToday = Object.values(instapomDataNotif).filter(p => p.date === today && p.authorCode !== state.code);
     if (instapomToday.length) {
       const latest = instapomToday.reduce((max, p) => Math.max(max, new Date(p.createdAt).getTime()), 0);
@@ -11507,7 +11537,7 @@ async function checkNotifUpdates() {
     }
 
     // PFC — défis reçus en attente
-    const pfcData = await getAllPFCChallenges() || {};
+    const pfcData = await _pollGetAll('pfc') || {};
     const now = Date.now();
     const pendingChallenges = Object.values(pfcData).filter(c =>
       c.challengedCode === state.code &&
@@ -12598,7 +12628,7 @@ async function checkPushNotifications() {
     const today = getTodayKey();
 
     // ── Quêtes reçues ──
-    const allQ = await getAllQuetes();
+    const allQ = await _pollGetAll('quetes');
     for (const q of allQ) {
       if (q.targetCode === state.code && q.status === 'pending' && !_prevNotifState.quetes.has(q.id)) {
         if (now - new Date(q.createdAt).getTime() < 120000) { // moins de 2 min
@@ -12609,7 +12639,7 @@ async function checkPushNotifications() {
     }
 
     // ── Missions : ma mission a été acceptée par quelqu'un ──
-    const allM = await getAllMissions();
+    const allM = await _pollGetAll('missions');
     for (const m of allM) {
       // Notifier TOUS les joueurs (sauf le créateur) d'une nouvelle mission fraîchement créée
       if (m.creatorCode !== state.code && m.status === 'open' && !_prevNotifState.missionsNew.has(m.id)) {
@@ -12638,7 +12668,7 @@ async function checkPushNotifications() {
 
     // ── Marché Noir : demandes et décisions ──
     if (typeof getAllMarcheNoirListings === 'function') {
-      const allMN = await getAllMarcheNoirListings();
+      const allMN = await _pollGetAll('marche_noir');
       for (const l of allMN) {
         // Notifier TOUS les joueurs (sauf le vendeur) d'un nouveau listing fraîchement créé
         if (l.sellerCode !== state.code && l.status === 'active' && !_prevNotifState.mnNew.has(l.id)) {
@@ -12673,7 +12703,7 @@ async function checkPushNotifications() {
     }
 
     // ── Paris fermés où j'avais misé ──
-    const allBets = await getAllBets();
+    const allBets = await _pollGetAll('bets');
     for (const b of allBets) {
       if (b.status === 'closed' && !_prevNotifState.bets.has(b.id)) {
         const myBet = (b.bettors || []).find(x => x.code === state.code);
@@ -12686,7 +12716,7 @@ async function checkPushNotifications() {
     }
 
     // ── Nouveau message chat ──
-    const discData = await dbGet('discussion') || {};
+    const discData = await _pollGet('discussion') || {};
     const discMsgs = Object.values(discData).filter(m => m.date === today && m.authorCode !== state.code);
     const latestChat = discMsgs.length ? Math.max(...discMsgs.map(m => new Date(m.createdAt).getTime())) : 0;
     if (latestChat > _prevNotifState.chat && latestChat > now - 120000) {
@@ -12696,7 +12726,7 @@ async function checkPushNotifications() {
     }
 
     // ── PFC : défi reçu ──
-    const pfcData = await getAllPFCChallenges() || {};
+    const pfcData = await _pollGetAll('pfc') || {};
     for (const c of Object.values(pfcData)) {
       if (c.challengedCode === state.code && c.status === 'pending' && now < c.expiresAt && !_prevNotifState.pfcChallenges.has(c.id)) {
         if (now - c.createdAt < 120000) {
@@ -12714,7 +12744,7 @@ async function checkPushNotifications() {
     }
 
     // ── Nouveau proverbe du jour ──
-    const provData = await getProverbeData();
+    const provData = await _pollGet('proverbe');
     if (provData && provData.today && provData.today.date === today && provData.today.authorCode !== state.code) {
       if (_prevNotifState.proverbeDate !== today) {
         if (_prevNotifState.proverbeDate !== '') {
@@ -12725,7 +12755,7 @@ async function checkPushNotifications() {
     }
 
     // ── Nouveaux PomPosts ──
-    const pompostData = await getPomPosts() || {};
+    const pompostData = await _pollGet('pomposts') || {};
     const pompostToday = Object.values(pompostData).filter(p => p.date === today && p.authorCode !== state.code);
     let newPompostCount = 0;
     for (const p of pompostToday) {
@@ -12740,7 +12770,7 @@ async function checkPushNotifications() {
     if (newPompostCount > 0 && _currentChatTab !== 'pompost') _updateTabBadge('pompost', newPompostCount);
 
     // ── Nouveaux InstaPom ──
-    const instapomData = await getInstaPoms() || {};
+    const instapomData = await _pollGet('instapoms') || {};
     const instapomToday = Object.values(instapomData).filter(p => p.date === today && p.authorCode !== state.code);
     let newInstapomCount = 0;
     for (const p of instapomToday) {
@@ -12974,6 +13004,34 @@ function initSidenav() {
     _lastWasMobile = isMobile;
   });
 }
+
+// ── Polling intelligent : se met en pause quand l'onglet est caché ──
+let _notifInterval = null;
+let _pushInterval  = null;
+
+function startPolling() {
+  stopPolling();
+  _notifInterval = setInterval(checkNotifUpdates,      60000); // pastilles : 60 s
+  _pushInterval  = setInterval(checkPushNotifications, 45000); // toasts    : 45 s (au lieu de 15 s)
+}
+
+function stopPolling() {
+  if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
+  if (_pushInterval)  { clearInterval(_pushInterval);  _pushInterval  = null; }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopPolling();
+  } else {
+    // De retour sur l'onglet : un check immédiat + on relance les timers
+    if (typeof state !== 'undefined' && state) {
+      checkNotifUpdates();
+      checkPushNotifications();
+    }
+    startPolling();
+  }
+});
 
 init();
 </script>

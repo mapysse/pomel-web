@@ -5234,10 +5234,9 @@ function pmInjectStyles() {
       background: rgba(255, 172, 75, 0.06);
     }
 
-    /* Bandeau STICKY d'équipe (page Gérer l'équipe) — toujours visible au scroll, dans la colonne centrale */
+    /* Bandeau d'équipe (sticky géré en JS car overflow-x du parent casse position:sticky) */
     .pm-team-bar {
-      position: sticky;
-      top: 0;
+      position: relative;
       z-index: 50;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -5245,7 +5244,22 @@ function pmInjectStyles() {
       padding: 8px 10px 10px;
       margin-bottom: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-      backdrop-filter: blur(8px);
+    }
+    .pm-team-bar.stuck {
+      position: fixed;
+      top: var(--topbar-h);
+      z-index: 100;
+      margin-bottom: 0;
+      border-radius: 0 0 var(--radius) var(--radius);
+      border-top: none;
+    }
+    /* Le placeholder maintient la hauteur dans le flow quand le bandeau est stuck */
+    .pm-team-bar-placeholder {
+      display: none;
+      margin-bottom: 14px;
+    }
+    .pm-team-bar-placeholder.active {
+      display: block;
     }
     .pm-team-bar-title {
       font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
@@ -5451,6 +5465,12 @@ function pmInjectUI() {
 async function pmGoTo(view) {
   // Stopper la map si on quitte la home
   if (typeof pmStopMap === 'function') pmStopMap();
+  // Nettoyer le handler sticky team si on quitte la page team
+  if (view !== 'team' && _pmTeamBarStickyHandler) {
+    window.removeEventListener('scroll', _pmTeamBarStickyHandler);
+    window.removeEventListener('resize', _pmTeamBarStickyHandler);
+    _pmTeamBarStickyHandler = null;
+  }
   // Cacher toutes les pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   // Activer page pokepom
@@ -7186,6 +7206,68 @@ function pmRenderInfo(page, player) {
 }
 
 // ── Écran « Gérer l'équipe » : stats + moves, focus fonctionnel ──
+// ───── Sticky bandeau d'équipe (JS-based, robuste contre overflow parent) ─────
+let _pmTeamBarStickyHandler = null;
+function pmInitTeamBarSticky() {
+  const bar = document.querySelector('.pm-team-bar');
+  if (!bar) return;
+  const parent = bar.parentElement;
+  if (!parent) return;
+
+  // Retire un handler précédent si la page est re-rendue
+  if (_pmTeamBarStickyHandler) {
+    window.removeEventListener('scroll', _pmTeamBarStickyHandler);
+    window.removeEventListener('resize', _pmTeamBarStickyHandler);
+    _pmTeamBarStickyHandler = null;
+  }
+
+  // Placeholder pour conserver la place du bandeau quand il est "stuck"
+  let placeholder = parent.querySelector(':scope > .pm-team-bar-placeholder');
+  if (!placeholder) {
+    placeholder = document.createElement('div');
+    placeholder.className = 'pm-team-bar-placeholder';
+    parent.insertBefore(placeholder, bar);
+  }
+
+  // Hauteur de la topbar (variable CSS)
+  const topbarH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 64;
+
+  function update() {
+    // Recalculer les bornes (en cas de resize ou de collapse nav)
+    const parentRect = parent.getBoundingClientRect();
+    const barNaturalTop = placeholder.classList.contains('active')
+      ? placeholder.getBoundingClientRect().top
+      : bar.getBoundingClientRect().top;
+
+    if (barNaturalTop <= topbarH) {
+      // Doit être stuck
+      if (!bar.classList.contains('stuck')) {
+        // Capture la hauteur AVANT de passer en fixed
+        const h = bar.offsetHeight;
+        placeholder.style.height = h + 'px';
+        placeholder.classList.add('active');
+        bar.classList.add('stuck');
+      }
+      // Repositionner précisément à chaque scroll (au cas où la largeur change)
+      bar.style.left = parentRect.left + 'px';
+      bar.style.width = parentRect.width + 'px';
+    } else {
+      // Doit être en flow normal
+      if (bar.classList.contains('stuck')) {
+        bar.classList.remove('stuck');
+        placeholder.classList.remove('active');
+        bar.style.left = '';
+        bar.style.width = '';
+      }
+    }
+  }
+
+  _pmTeamBarStickyHandler = update;
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+}
+
 function pmRenderTeamManager(page, player) {
   // Récupérer les instances de l'équipe dans l'ordre
   const teamInstances = player.team
@@ -7258,6 +7340,12 @@ function pmRenderTeamManager(page, player) {
       if (c) drawPokePom(c, inst.pokepomId);
     }, 10);
   });
+
+  // ───── Sticky JS pour le bandeau d'équipe ─────
+  // overflow-x: hidden sur #main-content casse position:sticky → on gère en JS.
+  setTimeout(() => {
+    pmInitTeamBarSticky();
+  }, 50);
 
   const grid = document.getElementById('pm-team-grid');
   player.collection.forEach(inst => {
