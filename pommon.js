@@ -4661,8 +4661,9 @@ function pmApplyEndOfTurnEffects(fighter, opponent) {
 
   // ─── OBJETS — effets de fin de tour ───
   if (!fighter.ko) {
-    // Restes : récupère 6% HP max
-    if (fighter.equippedItem === 'restes' && fighter.hp < fighter.maxHp) {
+    // Restes : récupère 6% HP max — DÉSACTIVÉ si le PokePom n'a plus de PP
+    // (en mode Lutte forcée, le porteur est épuisé et ne profite plus de ses Restes).
+    if (fighter.equippedItem === 'restes' && fighter.hp < fighter.maxHp && !pmHasNoPP(fighter)) {
       const heal = Math.max(1, Math.floor(fighter.maxHp * 0.06));
       fighter.hp = Math.min(fighter.maxHp, fighter.hp + heal);
       events.push({ type:'talent_proc', target: fighter.name, talent: 'restes',
@@ -5445,9 +5446,39 @@ function pmInjectStyles() {
     @media (max-width: 600px) {
       .pm-starter-grid { grid-template-columns:1fr; }
       .pm-team-slots { grid-template-columns:1fr; }
-      .pm-battle-field { grid-template-columns:1fr; }
-      .pm-moves-grid { grid-template-columns:1fr; }
       .pm-gym-grid { grid-template-columns:1fr; }
+      /* Combat compacté pour mobile : tout tient sur un écran sans scroll */
+      /* Les 2 PokePoms restent côte à côte (pas en 1 colonne) */
+      .pm-battle-field { grid-template-columns: 1fr 1fr !important; gap: 6px; }
+      /* Les 4 moves restent en grille 2x2 (pas en 1 colonne) */
+      .pm-moves-grid { grid-template-columns: 1fr 1fr !important; gap: 6px; }
+      /* Réduire les paddings et tailles pour gagner de la place verticale */
+      .pm-battle-arena { gap: 8px; }
+      .pm-battle-side { padding: 7px 5px; gap: 4px; border-radius: 8px; }
+      .pm-battle-side canvas.pm-sprite-lg,
+      .pm-battle-side canvas.pm-sprite { width: 48px !important; height: 48px !important; }
+      .pm-battle-name { font-size: .82rem; }
+      .pm-battle-level { font-size: .62rem; }
+      .pm-battle-hp-text { font-size: .65rem; margin-top: 2px; }
+      .pm-hp-bar { height: 5px; }
+      .pm-battle-talent { padding: 2px 6px; margin-top: 2px; }
+      .pm-battle-talent-emoji { font-size: .72rem; }
+      .pm-battle-talent-name { font-size: .58rem; }
+      .pm-trap-badge { padding: 2px 7px; font-size: .58rem; margin-top: 2px; }
+      .pm-battle-status { gap: 2px; margin-top: 2px; }
+      .pm-battle-status-badge { padding: 1px 4px; font-size: .56rem; }
+      /* Log compact */
+      .pm-battle-log { padding: 7px 9px; font-size: .72rem; min-height: 0; max-height: 80px; line-height: 1.35; }
+      .pm-log-line { margin-bottom: 2px; }
+      /* Moves compacts */
+      .pm-move-btn { padding: 7px 8px; }
+      .pm-move-name { font-size: .78rem; }
+      .pm-move-info { font-size: .6rem; margin-top: 0; }
+      .pm-move-desc { display: none; } /* Cache description pour gagner de la place */
+      /* Header de page compact */
+      .pm-header { gap: 6px; }
+      .pm-title { font-size: 1.05rem; }
+      .pm-sub { font-size: .68rem; }
     }
   `;
   document.head.appendChild(style);
