@@ -5234,67 +5234,105 @@ function pmInjectStyles() {
       background: rgba(255, 172, 75, 0.06);
     }
 
-    /* Bandeau sticky d'équipe (page Gérer l'équipe) */
+    /* Bandeau FIXE d'équipe (page Gérer l'équipe) — toujours visible au scroll */
     .pm-team-bar {
-      position: sticky;
+      position: fixed;
       top: 0;
-      z-index: 50;
+      left: 0;
+      right: 0;
+      z-index: 100;
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 10px 12px;
-      margin-bottom: 14px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      max-height: 50vh;
+      overflow-y: auto;
     }
     .pm-team-bar-title {
-      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
-      color: var(--muted); margin-bottom: 8px; text-align: center;
+      font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted); margin-bottom: 6px; text-align: center;
     }
     .pm-team-bar-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+      max-width: 720px; margin: 0 auto;
+    }
+    /* Espacement pour que le contenu commence sous le bandeau fixe */
+    .pm-team-page-content { padding-top: 252px; }
+    @media (max-width: 480px) {
+      .pm-team-page-content { padding-top: 268px; }
     }
     .pm-team-slot {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 8px 6px;
+      padding: 6px 4px;
       text-align: center;
-      transition: all .15s;
       min-width: 0;
     }
-    .pm-team-slot.filled { cursor: default; border-color: rgba(91, 141, 239, 0.5); }
+    .pm-team-slot.filled { border-color: rgba(91, 141, 239, 0.5); }
     .pm-team-slot.empty { opacity: .45; }
     .pm-team-slot-num {
-      font-size: .68rem; font-weight: 800; color: var(--primary);
-      margin-bottom: 2px;
+      font-size: .62rem; font-weight: 800; color: var(--primary);
+      margin-bottom: 1px;
     }
     .pm-team-slot canvas {
-      display: block; margin: 0 auto 4px;
-      width: 48px; height: 48px;
+      display: block; margin: 0 auto 2px;
+      width: 44px; height: 44px;
       image-rendering: pixelated;
     }
     .pm-team-slot-name {
-      font-size: .76rem; font-weight: 700;
+      font-size: .72rem; font-weight: 700;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .pm-team-slot-meta {
-      font-size: .66rem; color: var(--muted); margin-top: 1px;
+      font-size: .62rem; color: var(--muted); margin-top: 1px;
     }
     .pm-team-slot-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 2px 6px;
-      margin-top: 5px;
-      font-size: .64rem;
+      gap: 1px 4px;
+      margin-top: 4px;
+      font-size: .6rem;
       color: var(--text);
     }
     .pm-team-slot-stats span {
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .pm-team-slot-talent {
+      margin-top: 4px;
+      padding: 3px 4px;
+      background: rgba(166, 107, 255, 0.12);
+      border: 1px solid rgba(166, 107, 255, 0.3);
+      border-radius: 4px;
+      font-size: .6rem;
+      color: var(--accent, #A66BFF);
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pm-team-slot-talent.placeholder {
+      background: transparent; border-color: transparent;
+      color: var(--muted); font-weight: 400;
+    }
+    .pm-team-slot-item {
+      margin-top: 3px;
+      padding: 3px 4px;
+      background: rgba(255, 172, 75, 0.12);
+      border: 1px solid rgba(255, 172, 75, 0.3);
+      border-radius: 4px;
+      font-size: .6rem;
+      color: #FFAC4B;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pm-team-slot-item.placeholder {
+      background: transparent; border-color: transparent;
+      color: var(--muted); font-weight: 400; font-style: italic;
+    }
     .pm-team-slot-empty {
-      font-size: .68rem; color: var(--muted);
-      padding: 28px 4px;
+      font-size: .65rem; color: var(--muted);
+      padding: 32px 4px;
       font-style: italic;
     }
 
@@ -7174,9 +7212,9 @@ function pmRenderTeamManager(page, player) {
     const base = PM_DEX[inst.pokepomId];
     const stats = pmGetStats(inst);
     const equipped = inst.equippedItem && PM_ITEMS[inst.equippedItem];
-    const itemEmoji = equipped ? equipped.emoji : '';
-    return `<div class="pm-team-slot filled" onclick="pmGoTo('team')">
-      <div class="pm-team-slot-num">${idx + 1}${itemEmoji ? ' · ' + itemEmoji : ''}</div>
+    const talent = base.talent && PM_TALENTS[base.talent];
+    return `<div class="pm-team-slot filled">
+      <div class="pm-team-slot-num">#${idx + 1}</div>
       <canvas width="64" height="64" class="pm-sprite" id="pm-teambar-${inst.uid}"></canvas>
       <div class="pm-team-slot-name">${inst.nickname || base.name}</div>
       <div class="pm-team-slot-meta">Niv ${inst.level} · ${PM_TYPE_EMOJI[base.type]}</div>
@@ -7186,21 +7224,33 @@ function pmRenderTeamManager(page, player) {
         <span>🛡️ ${stats.def}</span>
         <span>⚡ ${stats.vit}</span>
       </div>
+      ${talent
+        ? `<div class="pm-team-slot-talent" title="${talent.effect.replace(/"/g,'&quot;')}">
+             <span>${talent.emoji}</span>
+             <span>${talent.name}</span>
+           </div>`
+        : '<div class="pm-team-slot-talent placeholder">—</div>'}
+      ${equipped
+        ? `<div class="pm-team-slot-item" title="${equipped.desc.replace(/"/g,'&quot;')}">
+             <span>${equipped.emoji}</span>
+             <span>${equipped.name}</span>
+           </div>`
+        : '<div class="pm-team-slot-item placeholder">Aucun objet</div>'}
     </div>`;
   }).join('');
 
   page.innerHTML = `
-    <div class="pm-wrap">
+    <div class="pm-team-bar">
+      <div class="pm-team-bar-title">Ton équipe sélectionnée</div>
+      <div class="pm-team-bar-grid">${teamBarHtml}</div>
+    </div>
+    <div class="pm-wrap pm-team-page-content">
       <div class="pm-header">
         <div>
           <div class="pm-title">🔄 Gérer l'équipe</div>
           <div class="pm-sub">Clique sur un PokePom pour l'ajouter/retirer de ton équipe (${player.team.length}/3)</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
-      </div>
-      <div class="pm-team-bar">
-        <div class="pm-team-bar-title">Ton équipe sélectionnée</div>
-        <div class="pm-team-bar-grid">${teamBarHtml}</div>
       </div>
       <div class="pm-card">
         <div class="pm-collection-grid" id="pm-team-grid"></div>
