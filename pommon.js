@@ -3884,6 +3884,23 @@ function pmNormalizePlayer(data) {
       }
     }
   });
+
+  // Fix migration : déduplication de l'équipe par espèce (1 seule par pokepomId max).
+  // Avant l'ajout du check dans pmToggleTeam, les joueurs pouvaient avoir 2-3 fois
+  // la même espèce dans leur équipe.
+  if (Array.isArray(data.team) && Array.isArray(data.collection)) {
+    const seenSpecies = new Set();
+    const dedupTeam = [];
+    for (const uid of data.team) {
+      const inst = data.collection.find(i => i && i.uid === uid);
+      if (!inst) continue;
+      if (seenSpecies.has(inst.pokepomId)) continue;
+      seenSpecies.add(inst.pokepomId);
+      dedupTeam.push(uid);
+    }
+    data.team = dedupTeam;
+  }
+
   return data;
 }
 
@@ -7520,6 +7537,21 @@ function pmToggleTeam(uid) {
     if (player.team.length >= 3) {
       if (typeof showToast === 'function') showToast('Équipe pleine (max 3) — retire un PokePom d\'abord.', '⚠️');
       return;
+    }
+    // Empêcher d'avoir deux fois la même espèce dans l'équipe
+    const targetInst = player.collection.find(i => i && i.uid === uid);
+    if (targetInst) {
+      const speciesAlreadyIn = player.team.some(tuid => {
+        const ti = player.collection.find(i => i && i.uid === tuid);
+        return ti && ti.pokepomId === targetInst.pokepomId;
+      });
+      if (speciesAlreadyIn) {
+        const speciesName = (PM_DEX[targetInst.pokepomId] && PM_DEX[targetInst.pokepomId].name) || 'cette espèce';
+        if (typeof showToast === 'function') {
+          showToast(`Tu as déjà un ${speciesName} dans ton équipe.`, '⚠️');
+        }
+        return;
+      }
     }
     player.team.push(uid);
   }
