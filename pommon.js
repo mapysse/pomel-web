@@ -5234,19 +5234,18 @@ function pmInjectStyles() {
       background: rgba(255, 172, 75, 0.06);
     }
 
-    /* Bandeau FIXE d'équipe (page Gérer l'équipe) — toujours visible au scroll */
+    /* Bandeau STICKY d'équipe (page Gérer l'équipe) — toujours visible au scroll, dans la colonne centrale */
     .pm-team-bar {
-      position: fixed;
+      position: sticky;
       top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
+      z-index: 50;
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 8px 12px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 10px 10px;
+      margin-bottom: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-      max-height: 50vh;
-      overflow-y: auto;
+      backdrop-filter: blur(8px);
     }
     .pm-team-bar-title {
       font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
@@ -5254,12 +5253,6 @@ function pmInjectStyles() {
     }
     .pm-team-bar-grid {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
-      max-width: 720px; margin: 0 auto;
-    }
-    /* Espacement pour que le contenu commence sous le bandeau fixe */
-    .pm-team-page-content { padding-top: 252px; }
-    @media (max-width: 480px) {
-      .pm-team-page-content { padding-top: 268px; }
     }
     .pm-team-slot {
       background: var(--surface2);
@@ -7240,17 +7233,17 @@ function pmRenderTeamManager(page, player) {
   }).join('');
 
   page.innerHTML = `
-    <div class="pm-team-bar">
-      <div class="pm-team-bar-title">Ton équipe sélectionnée</div>
-      <div class="pm-team-bar-grid">${teamBarHtml}</div>
-    </div>
-    <div class="pm-wrap pm-team-page-content">
+    <div class="pm-wrap">
       <div class="pm-header">
         <div>
           <div class="pm-title">🔄 Gérer l'équipe</div>
           <div class="pm-sub">Clique sur un PokePom pour l'ajouter/retirer de ton équipe (${player.team.length}/3)</div>
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
+      </div>
+      <div class="pm-team-bar">
+        <div class="pm-team-bar-title">Ton équipe sélectionnée</div>
+        <div class="pm-team-bar-grid">${teamBarHtml}</div>
       </div>
       <div class="pm-card">
         <div class="pm-collection-grid" id="pm-team-grid"></div>
