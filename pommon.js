@@ -9484,18 +9484,43 @@ function pvpIsBot(code) {
 function pvpBotBuildRandomTeam() {
   // Red est un adversaire de fin de PvP : il ne pioche QUE dans les évolutions
   // (formes finales) — pas de formes de base trop faibles ni de légendaires.
-  // Donne une équipe systématiquement coriace, avec des stats compétitives.
-  const pool = Object.keys(PM_DEX).filter(id => {
+  //
+  // Pool pondérée : on réduit la probabilité de tomber sur les types Plante
+  // (souvent perçus comme trop résistants avec Photosynthèse + tanks) et sur
+  // les "top tier" (Aciérox, Voilarchive, Pyrécarde, Forgehammer, Fulgurion).
+  // → poids 10 par défaut, 5 pour les Plantes, 4 pour les top tier, 2 si les deux.
+  const PVP_BOT_TOP_TIER = ['acierox', 'voilarchive', 'pyrecarde', 'forgehammer', 'fulgurion'];
+  function weightFor(id) {
     const dex = PM_DEX[id];
-    return dex && !dex.legendary && dex.isEvolution;
-  });
-  // Mélanger + prendre les N premiers (sans doublons)
-  const shuffled = pool.slice();
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    if (!dex) return 0;
+    const isPlant = dex.type === 'plante';
+    const isTopTier = PVP_BOT_TOP_TIER.includes(id);
+    if (isPlant && isTopTier) return 2;
+    if (isTopTier) return 4;
+    if (isPlant) return 5;
+    return 10;
   }
-  const picks = shuffled.slice(0, PVP_BOT_TEAM_SIZE);
+
+  // Construire la pool avec répétitions selon le poids
+  const weightedPool = [];
+  Object.keys(PM_DEX).forEach(id => {
+    const dex = PM_DEX[id];
+    if (!dex || dex.legendary || !dex.isEvolution) return;
+    const w = weightFor(id);
+    for (let i = 0; i < w; i++) weightedPool.push(id);
+  });
+
+  // Tirer N PokePoms uniques avec la pondération
+  const picks = [];
+  const used = new Set();
+  let safety = 100;
+  while (picks.length < PVP_BOT_TEAM_SIZE && safety-- > 0) {
+    const id = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+    if (!used.has(id)) {
+      used.add(id);
+      picks.push(id);
+    }
+  }
   return picks.map(id => ({
     pokepomId: id,
     nickname: PM_DEX[id].name,
@@ -9705,26 +9730,25 @@ function pvpBotChooseAction(battle, difficulty) {
           if (d > oppBestDmg) oppBestDmg = d;
         }
         if (oppBestDmg < myActive.hp) {
-          // L'adversaire ne nous tue pas ce tour, on heal (55% chance)
-          if (Math.random() < 0.55) return { type: 'move', moveIdx: healIdx, by: 'p2' };
+          // L'adversaire ne nous tue pas ce tour, on heal (40% chance, adouci 3e fois)
+          if (Math.random() < 0.40) return { type: 'move', moveIdx: healIdx, by: 'p2' };
         }
       }
     }
     // Évaluer le matchup actuel
     const matchupScore = pvpBotEvalMatchup(myActive, oppActive);
-    // Si très défavorable (l'adversaire nous tue en 1-2 tours et on en met 3+),
-    // chercher un meilleur switch (50% chance, adouci)
+    // Si très défavorable, chercher un meilleur switch (35% chance, adouci 3e fois)
     if (matchupScore <= -2) {
       const switchIdx = pvpBotPickBestSwitch(battle, matchupScore);
-      if (switchIdx !== null && Math.random() < 0.50) {
+      if (switchIdx !== null && Math.random() < 0.35) {
         return { type: 'switch', toIdx: switchIdx, by: 'p2' };
       }
     }
-    const idx = pvpBotChooseBestMove(myActive, oppActive, 0.25);  // 25% de bruit (adouci depuis 15%)
+    const idx = pvpBotChooseBestMove(myActive, oppActive, 0.35);  // 35% de bruit (adouci 3e fois)
     return { type: 'move', moveIdx: idx, by: 'p2' };
   }
 
-  // ── EXPERT : très bon mais battable (adouci une seconde fois) ──
+  // ── EXPERT : très bon mais battable (adouci une troisième fois) ──
   // Heal smart, switch sur matchup vraiment défavorable, dégâts précis
   if (myActive.hp < myActive.maxHp * 0.35) {
     const healIdx = myActive.moves.findIndex(m => m && m.category === 'heal' && m.currentPp > 0);
@@ -9735,8 +9759,8 @@ function pvpBotChooseAction(battle, difficulty) {
         const d = pmCalcDamage(oppActive, myActive, m);
         if (d > oppBestDmg) oppBestDmg = d;
       }
-      // Si l'adversaire ne nous tue pas ce tour, on heal (60% chance — adouci)
-      if (oppBestDmg < myActive.hp && Math.random() < 0.60) {
+      // Si l'adversaire ne nous tue pas ce tour, on heal (45% chance — adouci 3e fois)
+      if (oppBestDmg < myActive.hp && Math.random() < 0.45) {
         return { type: 'move', moveIdx: healIdx, by: 'p2' };
       }
     }
@@ -9745,12 +9769,12 @@ function pvpBotChooseAction(battle, difficulty) {
   // Switch uniquement sur matchup vraiment défavorable (≤ -2)
   if (matchupScore <= -2) {
     const switchIdx = pvpBotPickBestSwitch(battle, matchupScore);
-    // 50% chance de switch (adouci)
-    if (switchIdx !== null && Math.random() < 0.50) {
+    // 35% chance de switch (adouci 3e fois)
+    if (switchIdx !== null && Math.random() < 0.35) {
       return { type: 'switch', toIdx: switchIdx, by: 'p2' };
     }
   }
-  const idx = pvpBotChooseBestMove(myActive, oppActive, 0.30);  // 30% de bruit (adouci)
+  const idx = pvpBotChooseBestMove(myActive, oppActive, 0.40);  // 40% de bruit (adouci 3e fois)
   return { type: 'move', moveIdx: idx, by: 'p2' };
 }
 
@@ -10741,6 +10765,25 @@ async function pvpResolveTurn(battle, action1, by1, action2, by2) {
         teamP2[p2Idx] = pvpSerializeFighter(inP2);
         teamP1[p1Idx] = pvpSerializeFighter(oppP1); // Intimidation a pu modifier l'adversaire
       }
+    }
+  }
+
+  // ⚠ Re-détection de fin de combat APRÈS le auto-switch :
+  // si le piège de roc (ou un autre effet d'entrée) a tué le PokePom qui
+  // venait juste de rentrer, et que c'était le dernier de l'équipe,
+  // le combat doit se terminer ici.
+  if (status === 'active') {
+    const p1AllKoAfter = teamP1.every(f => f.ko || f.hp <= 0);
+    const p2AllKoAfter = teamP2.every(f => f.ko || f.hp <= 0);
+    if (p1AllKoAfter && p2AllKoAfter) {
+      status = 'completed'; winner = 'p2'; endReason = 'ko';
+      newLogs.push('Les deux équipes K.O. — victoire par tirage à ' + battle.p2.displayName + '.');
+    } else if (p1AllKoAfter) {
+      status = 'completed'; winner = 'p2'; endReason = 'ko';
+      newLogs.push('🏆 ' + battle.p2.displayName + ' remporte le combat !');
+    } else if (p2AllKoAfter) {
+      status = 'completed'; winner = 'p1'; endReason = 'ko';
+      newLogs.push('🏆 ' + battle.p1.displayName + ' remporte le combat !');
     }
   }
 
