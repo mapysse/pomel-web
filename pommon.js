@@ -9524,8 +9524,9 @@ function pvpBotBuildRandomTeam() {
   return picks.map(id => ({
     pokepomId: id,
     nickname: PM_DEX[id].name,
-    level: PVP_BOT_LEVEL,
-    customMoves: null  // utilisera les moves naturels du PokePom à ce niveau
+    level: PVP_BOT_LEVEL,    // niveau AFFICHÉ (30)
+    customMoves: null,        // utilisera les moves naturels du PokePom à ce niveau
+    _botRealLevel: 28,        // niveau RÉEL utilisé pour les stats (= niveau 28)
   }));
 }
 
@@ -10053,7 +10054,15 @@ function pvpBuildTeamFromSnapshot(snapshot) {
       customMoves: Array.isArray(s.customMoves) && s.customMoves.length === 4 ? s.customMoves : null,
       equippedItem: (s.equippedItem && PM_ITEMS[s.equippedItem]) ? s.equippedItem : null,
     };
-    const f = pmCreateFighter(tmpInst, 1.0);
+    // Si c'est un PokePom de Red avec un "vrai niveau" différent du niveau affiché,
+    // on réduit ses stats au ratio (real / displayed). Le level reste affiché tel quel.
+    let statMult = 1.0;
+    if (s._botRealLevel && s.level && s._botRealLevel < s.level) {
+      const displayedMult = 1 + (s.level - 1) * PM_LEVEL_BONUS;
+      const realMult = 1 + (s._botRealLevel - 1) * PM_LEVEL_BONUS;
+      statMult = realMult / displayedMult;
+    }
+    const f = pmCreateFighter(tmpInst, statMult);
     f.hp = f.maxHp;
     f.burnTurns = 0;
     f.stages = { atk: 0, def: 0, vit: 0 };
