@@ -291,6 +291,28 @@ const PM_TALENTS = {
    2. DONNÉES POMMONS (25 créatures)
    ═══════════════════════════════════════════════════════════════════════════ */
 
+// ═══════════════════════════════════════════════════════════════════════
+// PM_ITEMS — Objets équipables (1 par PokePom)
+// Achetables une seule fois en boutique, propriété du joueur (state.ownedItems).
+// Équipés sur une instance via instance.equippedItem = 'item_id'.
+// Un item ne peut être équipé qu'à 1 PokePom à la fois.
+// ═══════════════════════════════════════════════════════════════════════
+const PM_ITEMS = {
+  bracelet_combat:    { id:'bracelet_combat',    name:'Bracelet de Combat', emoji:'💪', price:5000,
+                        desc:'+15% dégâts en attaque. -15% HP max à la fin de chaque tour où le porteur a attaqué.' },
+  bottes_vives:       { id:'bottes_vives',       name:'Bottes Vives',       emoji:'🥾', price:5000,
+                        desc:'+1 niveau de Vitesse à l\'entrée sur le terrain.' },
+  restes:             { id:'restes',             name:'Restes',             emoji:'🍖', price:5000,
+                        desc:'Récupère 6% de ses HP max au début de chaque tour.' },
+  veste:              { id:'veste',              name:'Veste',              emoji:'🦺', price:5000,
+                        desc:'+5% Attaque et +5% Défense en combat.' },
+  coeur_brulant:      { id:'coeur_brulant',      name:'Cœur Brûlant',       emoji:'🔥', price:5000,
+                        desc:'+1 niveau d\'Attaque à chaque KO infligé (cumulable avec Cran).' },
+  cuirasse_epineuse:  { id:'cuirasse_epineuse',  name:'Cuirasse Épineuse',  emoji:'🛡️', price:5000,
+                        desc:'Renvoie 25% des dégâts subis à l\'attaquant.' },
+};
+const PM_ITEM_IDS = Object.keys(PM_ITEMS);
+
 const PM_DEX = {
   // 🌿 PLANTE — tanky, lent (identité : +HP +DEF, -VIT)
   pomalis:    { id:'pomalis',    name:'Pomalis',    type:'plante',     hp:75, atk:50, def:55, vit:40, talent:'phototropisme', starter:true,
@@ -475,7 +497,7 @@ const PM_DEX_IDS = Object.keys(PM_DEX);
 const PM_MOVES = {
   // Plante
   fouet_roncier:   { id:'fouet_roncier',   name:'Fouet Roncier',    type:'plante',     power:80, accuracy:85,  pp:6, category:'attack', desc:'Attaque Plante puissante.' },
-  photosynthese:   { id:'photosynthese',   name:'Photosynthèse',    type:'plante',     power:0,  accuracy:100, pp:6, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
+  photosynthese:   { id:'photosynthese',   name:'Photosynthèse',    type:'plante',     power:0,  accuracy:100, pp:3, category:'heal', healPct:0.35, desc:'Récupère 35% des PV max.' },
   lancer_seve:     { id:'lancer_seve',     name:'Jet d\'Écume',      type:'eau',        power:50, accuracy:95,  pp:10, category:'attack', desc:'Attaque Eau (couvre les Feu).' },
   pollen_lourd:    { id:'pollen_lourd',    name:'Pollen Lourd',     type:'plante',     power:0,  accuracy:90,  pp:6, category:'debuff', stat:'vit', stages:-1, desc:'Baisse la Vitesse adverse d\'un cran.' },
 
@@ -3826,6 +3848,42 @@ function pmNormalizePlayer(data) {
   data.totalCaptures    = data.totalCaptures    || 0;
   data.totalBattlesWon  = data.totalBattlesWon  || 0;
   data.lastActiveDate   = data.lastActiveDate   || new Date().toISOString().slice(0,10);
+  // Objets équipables (saison All Star) — migration silencieuse pour anciens players
+  if (data.ownedItems && !Array.isArray(data.ownedItems)) {
+    data.ownedItems = Object.values(data.ownedItems);
+  }
+  if (!Array.isArray(data.ownedItems)) data.ownedItems = [];
+  // Filtrer les items inconnus (sécurité)
+  data.ownedItems = data.ownedItems.filter(id => PM_ITEMS && PM_ITEMS[id]);
+  // Backfill : equippedItem sur chaque instance de la collection (null par défaut)
+  (data.collection || []).forEach(inst => {
+    if (inst && typeof inst.equippedItem === 'undefined') inst.equippedItem = null;
+    // Sécurité : si l'item équipé n'existe pas/plus dans PM_ITEMS, on retire
+    if (inst && inst.equippedItem && (!PM_ITEMS || !PM_ITEMS[inst.equippedItem])) {
+      inst.equippedItem = null;
+    }
+    // Fix migration : si l'instance a évolué dans le passé mais son nickname est resté
+    // celui d'une FORME PRÉCÉDENTE (bug avant fix), on le remet au nom courant.
+    // Heuristique : on cherche dans PM_EVOLUTIONS si le nickname correspond au nom
+    // d'une forme antérieure dans la chaîne d'évolution menant à pokepomId actuel.
+    if (inst && inst.pokepomId && inst.nickname && PM_DEX[inst.pokepomId]) {
+      const currentName = PM_DEX[inst.pokepomId].name;
+      if (inst.nickname !== currentName) {
+        // Reconstruire la chaîne en remontant les évolutions (max 3 étapes pour safety)
+        let isPreviousFormName = false;
+        for (const [baseId, evoId] of Object.entries(PM_EVOLUTIONS || {})) {
+          // Si l'instance est aujourd'hui evoId, et nickname est le nom de baseId → bug
+          if (evoId === inst.pokepomId && PM_DEX[baseId] && PM_DEX[baseId].name === inst.nickname) {
+            isPreviousFormName = true;
+            break;
+          }
+        }
+        if (isPreviousFormName) {
+          inst.nickname = currentName;
+        }
+      }
+    }
+  });
   return data;
 }
 
@@ -3940,7 +3998,8 @@ function pmInitPlayer(starterId) {
     lastActiveDate: today,
     leagueBestScore: 0,
     totalCaptures: 1,
-    totalBattlesWon: 0
+    totalBattlesWon: 0,
+    ownedItems: []  // Liste des ids d'objets équipables possédés (PM_ITEMS)
   };
   pmSavePlayer(player);
   return player;
@@ -3954,6 +4013,7 @@ function pmCreatePokePomInstance(pokepomId, level = 1, xp = 0) {
     nickname: base.name,
     level: level,
     xp: xp,
+    equippedItem: null,  // Objet équipable (PM_ITEMS) — null si rien
     capturedAt: new Date().toISOString()
   };
 }
@@ -4009,8 +4069,17 @@ function pmCheckAndApplyEvolution(instance) {
   }
 
   const oldId = instance.pokepomId;
+  const oldBase = PM_DEX[oldId];
+  const newBase = PM_DEX[evoId];
   instance.pokepomId = evoId;
   delete instance.pendingEvolution;
+
+  // ⚠ FIX : mettre à jour le nickname si c'était le nom par défaut de l'ancienne forme.
+  // Sans ça, un Pomalis évolué en Sakuraze garde "Pomalis" comme nom en combat.
+  // Si l'utilisateur a un surnom personnalisé (différent du nom par défaut), on garde.
+  if (oldBase && newBase && instance.nickname === oldBase.name) {
+    instance.nickname = newBase.name;
+  }
 
   // PomeDex : marquer la NOUVELLE forme comme vue (la base reste vue puisqu'elle
   // a été ajoutée à dexSeen au moment de la capture initiale, et qu'on ne retire
@@ -4169,6 +4238,7 @@ function pmCreateFighter(instance, statMultiplier = 1.0) {
     type: base.type,
     level: instance.level,
     talent: base.talent || null,  // ID du talent (passif d'espèce) — utilisé par le moteur
+    equippedItem: (instance.equippedItem && PM_ITEMS[instance.equippedItem]) ? instance.equippedItem : null,
     maxHp: stats.hp,
     hp: stats.hp,
     atk: Math.floor(stats.atk * statMultiplier),
@@ -4180,6 +4250,7 @@ function pmCreateFighter(instance, statMultiplier = 1.0) {
     stages: { atk: 0, def: 0, vit: 0 },
     moves: moves.map(m => ({ ...m, currentPp: m.pp })),
     burnTurns: 0,
+    attackedThisTurn: false,  // utile pour Bracelet de Combat (recul fin de tour si attaque)
     ko: false
   };
 }
@@ -4216,6 +4287,11 @@ function pmCalcDamage(attacker, defender, move) {
   if (defender.talent === 'carapace' && defender.hp < defender.maxHp * 0.5) {
     defValue = Math.floor(defValue * 1.25);
   }
+  // ── OBJETS qui modifient la défense ──
+  // Veste : +5% DEF
+  if (defender.equippedItem === 'veste') {
+    defValue = Math.floor(defValue * 1.05);
+  }
 
   // ── TALENTS qui modifient l'attaque ──
   let atkValue = attacker.atk;
@@ -4226,6 +4302,15 @@ function pmCalcDamage(attacker, defender, move) {
   // Force Pure : +50% attaque
   if (attacker.talent === 'forcePure') {
     atkValue = Math.floor(atkValue * 1.5);
+  }
+  // ── OBJETS qui modifient l'attaque ──
+  // Bracelet de Combat : +15% ATK
+  if (attacker.equippedItem === 'bracelet_combat') {
+    atkValue = Math.floor(atkValue * 1.15);
+  }
+  // Veste : +5% ATK
+  if (attacker.equippedItem === 'veste') {
+    atkValue = Math.floor(atkValue * 1.05);
   }
 
   const baseDmg = (atkValue * move.power / defValue) / 2.5;
@@ -4300,6 +4385,8 @@ function pmExecuteMove(attacker, defender, move, context) {
 
   // Exécution selon catégorie
   if (move.category === 'attack') {
+    // Marquer que l'attaquant a fait une attaque ce tour (utilisé par Bracelet de Combat)
+    attacker.attackedThisTurn = true;
     let dmg = pmCalcDamage(attacker, defender, move);
     // Talent Multiscale : divise par 2 les dégâts à HP plein
     if (defender.talent === 'multiscale' && defender.hp === defender.maxHp && dmg > 0) {
@@ -4324,6 +4411,23 @@ function pmExecuteMove(attacker, defender, move, context) {
         const cranBack = pmApplyTalentOnKO(defender);
         cranBack.forEach(e => events.push(e));
         // Reflux de l'attaquant qui meurt (cible : le défenseur qui l'a tué via Toison)
+        const refluxEv = pmApplyTalentOnDeath(attacker, defender);
+        refluxEv.forEach(e => events.push(e));
+      }
+    }
+
+    // Cuirasse Épineuse (objet) : renvoie 25% des dégâts à l'attaquant
+    // Se cumule avec Toison Magique si les deux sont actifs.
+    if (defender.equippedItem === 'cuirasse_epineuse' && dmg > 0 && !attacker.ko) {
+      const reflected = Math.max(1, Math.floor(dmg * 0.25));
+      attacker.hp = Math.max(0, attacker.hp - reflected);
+      events.push({ type:'talent_proc', target: attacker.name, talent: 'cuirasse_epineuse',
+        message: `🛡️ <strong>Cuirasse Épineuse</strong> : ${attacker.name} se blesse sur les épines (${reflected} PV) !` });
+      if (attacker.hp === 0) {
+        attacker.ko = true;
+        events.push({ type:'ko', target: attacker.name });
+        const cranBack = pmApplyTalentOnKO(defender);
+        cranBack.forEach(e => events.push(e));
         const refluxEv = pmApplyTalentOnDeath(attacker, defender);
         refluxEv.forEach(e => events.push(e));
       }
@@ -4457,6 +4561,8 @@ function pmExecuteMove(attacker, defender, move, context) {
     }
   } else if (move.category === 'remove_trap') {
     // Souffle Purificateur : attaque + retire les pièges de SON camp
+    // Marquer que l'attaquant a fait une attaque ce tour (utilisé par Bracelet de Combat)
+    attacker.attackedThisTurn = true;
     // Partie 1 : retire les pièges de son côté (attackerSide)
     if (context && context.attackerSide && (context.attackerSide.traps || 0) > 0) {
       context.attackerSide.traps = 0;
@@ -4472,7 +4578,22 @@ function pmExecuteMove(attacker, defender, move, context) {
     }
     defender.hp = Math.max(0, defender.hp - dmg);
     events.push({ type:'damage', target: defender.name, amount: dmg });
-    if (defender.hp === 0) {
+    // Cuirasse Épineuse (objet) : renvoie 25% des dégâts à l'attaquant
+    if (defender.equippedItem === 'cuirasse_epineuse' && dmg > 0 && !attacker.ko) {
+      const reflected = Math.max(1, Math.floor(dmg * 0.25));
+      attacker.hp = Math.max(0, attacker.hp - reflected);
+      events.push({ type:'talent_proc', target: attacker.name, talent: 'cuirasse_epineuse',
+        message: `🛡️ <strong>Cuirasse Épineuse</strong> : ${attacker.name} se blesse sur les épines (${reflected} PV) !` });
+      if (attacker.hp === 0) {
+        attacker.ko = true;
+        events.push({ type:'ko', target: attacker.name });
+        const cranBack = pmApplyTalentOnKO(defender);
+        cranBack.forEach(e => events.push(e));
+        const refluxEv = pmApplyTalentOnDeath(attacker, defender);
+        refluxEv.forEach(e => events.push(e));
+      }
+    }
+    if (defender.hp === 0 && !defender.ko) {
       defender.ko = true;
       events.push({ type:'ko', target: defender.name });
       const cranEvents = pmApplyTalentOnKO(attacker);
@@ -4515,8 +4636,41 @@ function pmApplyEndOfTurnEffects(fighter, opponent) {
         const refluxEv = pmApplyTalentOnDeath(fighter, opponent);
         refluxEv.forEach(e => events.push(e));
       }
+      // Si KO sur burn, on s'arrête là (pas de Restes/Bracelet ensuite)
+      fighter.attackedThisTurn = false;
+      return events;
     }
   }
+
+  // ─── OBJETS — effets de fin de tour ───
+  if (!fighter.ko) {
+    // Restes : récupère 6% HP max
+    if (fighter.equippedItem === 'restes' && fighter.hp < fighter.maxHp) {
+      const heal = Math.max(1, Math.floor(fighter.maxHp * 0.06));
+      fighter.hp = Math.min(fighter.maxHp, fighter.hp + heal);
+      events.push({ type:'talent_proc', target: fighter.name, talent: 'restes',
+        message: `🍖 <strong>Restes</strong> : ${fighter.name} récupère ${heal} PV.` });
+    }
+    // Bracelet de Combat : -15% HP max si le porteur a attaqué ce tour
+    if (fighter.equippedItem === 'bracelet_combat' && fighter.attackedThisTurn) {
+      const cost = Math.max(1, Math.floor(fighter.maxHp * 0.15));
+      fighter.hp = Math.max(0, fighter.hp - cost);
+      events.push({ type:'talent_proc', target: fighter.name, talent: 'bracelet_combat',
+        message: `💪 <strong>Bracelet de Combat</strong> : ${fighter.name} subit ${cost} PV de fatigue.` });
+      if (fighter.hp === 0) {
+        fighter.ko = true;
+        events.push({ type:'ko', target: fighter.name });
+        if (opponent) {
+          const refluxEv = pmApplyTalentOnDeath(fighter, opponent);
+          refluxEv.forEach(e => events.push(e));
+        }
+      }
+    }
+  }
+
+  // Reset du flag attackedThisTurn pour le tour suivant
+  fighter.attackedThisTurn = false;
+
   return events;
 }
 
@@ -4528,7 +4682,16 @@ function pmApplyEndOfTurnEffects(fighter, opponent) {
 function pmResetFighterStateOnExit(fighter) {
   if (!fighter) return;
   fighter.stages = { atk: 0, def: 0, vit: 0 };
+  // ⚠ BUG FIX : on doit re-appliquer pmApplyStages pour resync fighter.atk/def/vit
+  // sur les baseAtk/baseDef/baseVit. Sans ça, les stats restaient figées sur les
+  // valeurs des stages précédents (ex: Brasileon intimidé, atk=133 ; reset stages
+  // sans re-apply → atk restait à 133 au lieu de revenir à 200).
+  if (typeof pmApplyStages === 'function' && typeof fighter.baseAtk === 'number') {
+    pmApplyStages(fighter);
+  }
   fighter.burnTurns = 0;
+  fighter.attackedThisTurn = false;  // sinon le Bracelet de Combat blesse au retour
+  fighter.charging = null;            // sécurité (ancien chargeTurn, plus utilisé mais au cas où)
   // hp et ko sont préservés intentionnellement — si le PokePom revient au combat
   // plus tard, il garde ses HP actuels.
 }
@@ -4568,6 +4731,15 @@ function pmApplyTalentOnSwitchIn(enteringFighter, opponentFighter) {
       message: `<strong>Vitesse Plus</strong> : la vitesse de ${enteringFighter.name} augmente !` });
   }
 
+  // Objet Bottes Vives : +1 vitesse à l'entrée (cumulable avec Vitesse Plus)
+  if (enteringFighter.equippedItem === 'bottes_vives' && enteringFighter.stages.vit < 3) {
+    enteringFighter.stages.vit++;
+    if (enteringFighter.stages.vit > 3) enteringFighter.stages.vit = 3;
+    pmApplyStages(enteringFighter);
+    events.push({ type:'talent_proc', target: enteringFighter.name, talent: 'bottes_vives',
+      message: `🥾 <strong>Bottes Vives</strong> : ${enteringFighter.name} prend de la vitesse !` });
+  }
+
   // Intimidation : baisse l'attaque de l'adversaire de -1
   if (enteringFighter.talent === 'intimidation' && opponentFighter && !opponentFighter.ko) {
     // Sang-Froid de l'adversaire bloque la baisse de stat
@@ -4586,16 +4758,25 @@ function pmApplyTalentOnSwitchIn(enteringFighter, opponentFighter) {
 }
 
 // Appelé après un KO infligé, sur l'attaquant qui vient de mettre KO
-// Cran : +1 atk à chaque KO infligé
+// Cran : +1 atk à chaque KO infligé. Cœur Brûlant (objet) : pareil, cumulable.
 function pmApplyTalentOnKO(killerFighter) {
   const events = [];
   if (!killerFighter || killerFighter.ko) return events;
+  // Talent Cran
   if (killerFighter.talent === 'cran' && killerFighter.stages.atk < 3) {
     killerFighter.stages.atk++;
     if (killerFighter.stages.atk > 3) killerFighter.stages.atk = 3;
     pmApplyStages(killerFighter);
     events.push({ type:'talent_proc', target: killerFighter.name, talent: 'cran',
       message: `<strong>Cran</strong> : l'attaque de ${killerFighter.name} augmente après le K.O. !` });
+  }
+  // Objet Cœur Brûlant (cumulable avec Cran)
+  if (killerFighter.equippedItem === 'coeur_brulant' && killerFighter.stages.atk < 3) {
+    killerFighter.stages.atk++;
+    if (killerFighter.stages.atk > 3) killerFighter.stages.atk = 3;
+    pmApplyStages(killerFighter);
+    events.push({ type:'talent_proc', target: killerFighter.name, talent: 'coeur_brulant',
+      message: `🔥 <strong>Cœur Brûlant</strong> : l'attaque de ${killerFighter.name} s'intensifie après le K.O. !` });
   }
   return events;
 }
@@ -5022,6 +5203,101 @@ function pmInjectStyles() {
     .pm-coll-talent-name { font-size: .78rem; font-weight: 800; color: var(--accent, #A66BFF); }
     .pm-coll-talent-desc { font-size: .68rem; color: var(--muted); width: 100%; line-height: 1.35; }
 
+    /* Objet équipé sur une carte PokePom */
+    .pm-coll-item {
+      width: 100%; margin-top: 6px;
+      background: linear-gradient(135deg, rgba(255,172,75,0.18), rgba(255,110,110,0.12));
+      border: 1px solid rgba(255,172,75,0.4);
+      border-radius: 8px;
+      padding: 7px 10px;
+      display: flex; align-items: center; gap: 8px;
+      transition: all .15s;
+    }
+    .pm-coll-item:hover { background: linear-gradient(135deg, rgba(255,172,75,0.25), rgba(255,110,110,0.18)); border-color: rgba(255,172,75,0.6); }
+    .pm-coll-item-emoji { font-size: 1.1rem; line-height: 1; }
+    .pm-coll-item-name { font-size: .76rem; font-weight: 700; color: #FFAC4B; }
+    .pm-coll-equip-btn {
+      width: 100%; margin-top: 6px;
+      background: transparent;
+      border: 1px dashed rgba(180, 180, 180, 0.35);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: .72rem;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .pm-coll-equip-btn:hover {
+      border-color: #FFAC4B;
+      color: #FFAC4B;
+      background: rgba(255, 172, 75, 0.06);
+    }
+
+    /* Bandeau sticky d'équipe (page Gérer l'équipe) */
+    .pm-team-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .pm-team-bar-title {
+      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted); margin-bottom: 8px; text-align: center;
+    }
+    .pm-team-bar-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    }
+    .pm-team-slot {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 6px;
+      text-align: center;
+      transition: all .15s;
+      min-width: 0;
+    }
+    .pm-team-slot.filled { cursor: default; border-color: rgba(91, 141, 239, 0.5); }
+    .pm-team-slot.empty { opacity: .45; }
+    .pm-team-slot-num {
+      font-size: .68rem; font-weight: 800; color: var(--primary);
+      margin-bottom: 2px;
+    }
+    .pm-team-slot canvas {
+      display: block; margin: 0 auto 4px;
+      width: 48px; height: 48px;
+      image-rendering: pixelated;
+    }
+    .pm-team-slot-name {
+      font-size: .76rem; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pm-team-slot-meta {
+      font-size: .66rem; color: var(--muted); margin-top: 1px;
+    }
+    .pm-team-slot-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px 6px;
+      margin-top: 5px;
+      font-size: .64rem;
+      color: var(--text);
+    }
+    .pm-team-slot-stats span {
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pm-team-slot-empty {
+      font-size: .68rem; color: var(--muted);
+      padding: 28px 4px;
+      font-style: italic;
+    }
+
     .pm-battle-arena { display:flex; flex-direction:column; gap:16px; }
     .pm-battle-field { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     .pm-battle-side { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; display:flex; flex-direction:column; align-items:center; gap:8px; }
@@ -5217,6 +5493,7 @@ function pmRenderPage() {
     case 'league': pmRenderLeague(page, player); break;
     case 'battle': pmRenderBattle(page, player); break;
     case 'dojo': pmRenderDojo(page, player); break;
+    case 'itemShop': pmRenderItemShop(page, player); break;
     case 'pvp': pmRenderPvpHub(page, player); break;
     case 'pvpFriendly': pmRenderPvpFriendlyHub(page, player); break;
     case 'pvpList': pmRenderPvpList(page, player); break;
@@ -5740,6 +6017,17 @@ function pmBuildMapR2() {
     if (grid[cy + 2][cx + dc] === 0) grid[cy + 2][cx + dc] = 7;
   }
 
+  // Boutique d'objets (Saison All Star) — bâtiment 3×3 à droite du Dojo
+  const shopCx = cx + 5;
+  for (let dr = 0; dr <= 2; dr++) for (let dc = 0; dc <= 2; dc++) {
+    if (shopCx + dc < W - 1) grid[cy - 1 + dr][shopCx - 1 + dc] = 2;
+  }
+  grid[cy + 1][shopCx] = 15; // porte Boutique
+  // Dégager autour
+  for (let dc = -2; dc <= 2; dc++) {
+    if (shopCx + dc < W - 1 && grid[cy + 2][shopCx + dc] === 0) grid[cy + 2][shopCx + dc] = 7;
+  }
+
   // Centre PokePom au sud du Dojo
   const centerR = cy + 5;
   for (let dr = 0; dr <= 2; dr++) for (let dc = 0; dc <= 2; dc++) {
@@ -6056,6 +6344,24 @@ function pmRenderMap() {
         ctx.textAlign = 'center';
         ctx.fillText('道', px + 8, py + 12);
         ctx.textAlign = 'left';
+      } else if (cell === 15) {
+        // Porte de la Boutique d'objets
+        ctx.fillStyle = GBA.path;
+        ctx.fillRect(px, py, T, T);
+        // Toit bleu/vert (différent du Dojo rouge)
+        ctx.fillStyle = '#2a7a8a';
+        ctx.fillRect(px + 2, py, T - 4, T - 2);
+        ctx.fillStyle = '#4a9aaa';
+        ctx.fillRect(px + 1, py + 2, T - 2, 2);
+        // Porte
+        ctx.fillStyle = '#5a3018';
+        ctx.fillRect(px + 5, py + 5, 6, 8);
+        // Symbole 🎒 (sac, pour boutique d'objets) — rendu en lettre
+        ctx.fillStyle = '#f8e060';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎒', px + 8, py + 13);
+        ctx.textAlign = 'left';
       } else if (cell === 13) {
         // Panneau de lore (en bois, sur fond herbe)
         // Fond : herbe (continue de la zone si visible)
@@ -6196,6 +6502,7 @@ function pmMapTryMove(dr, dc) {
   if (cell === 4) { pmStopMap(); pmGoTo('league'); return; }
   if (cell === 5) { pmStopMap(); _pmShowCentreMenu(); return; }
   if (cell === 12) { pmStopMap(); pmGoTo('dojo'); return; }
+  if (cell === 15) { pmStopMap(); pmGoTo('itemShop'); return; }
   if (cell === 10) { pmStopMap(); pmTryEnterR2(); return; }
   if (cell === 11) { pmStopMap(); pmReturnToR1(); return; }
   if (cell === 14) {
@@ -6849,6 +7156,39 @@ function pmRenderInfo(page, player) {
 
 // ── Écran « Gérer l'équipe » : stats + moves, focus fonctionnel ──
 function pmRenderTeamManager(page, player) {
+  // Récupérer les instances de l'équipe dans l'ordre
+  const teamInstances = player.team
+    .map(uid => player.collection.find(i => i && i.uid === uid))
+    .filter(Boolean);
+
+  // Construire le bandeau sticky d'équipe
+  const slots = [0, 1, 2];
+  const teamBarHtml = slots.map(idx => {
+    const inst = teamInstances[idx];
+    if (!inst) {
+      return `<div class="pm-team-slot empty">
+        <div class="pm-team-slot-num">${idx + 1}</div>
+        <div class="pm-team-slot-empty">Emplacement libre</div>
+      </div>`;
+    }
+    const base = PM_DEX[inst.pokepomId];
+    const stats = pmGetStats(inst);
+    const equipped = inst.equippedItem && PM_ITEMS[inst.equippedItem];
+    const itemEmoji = equipped ? equipped.emoji : '';
+    return `<div class="pm-team-slot filled" onclick="pmGoTo('team')">
+      <div class="pm-team-slot-num">${idx + 1}${itemEmoji ? ' · ' + itemEmoji : ''}</div>
+      <canvas width="64" height="64" class="pm-sprite" id="pm-teambar-${inst.uid}"></canvas>
+      <div class="pm-team-slot-name">${inst.nickname || base.name}</div>
+      <div class="pm-team-slot-meta">Niv ${inst.level} · ${PM_TYPE_EMOJI[base.type]}</div>
+      <div class="pm-team-slot-stats">
+        <span>❤️ ${stats.hp}</span>
+        <span>⚔️ ${stats.atk}</span>
+        <span>🛡️ ${stats.def}</span>
+        <span>⚡ ${stats.vit}</span>
+      </div>
+    </div>`;
+  }).join('');
+
   page.innerHTML = `
     <div class="pm-wrap">
       <div class="pm-header">
@@ -6858,11 +7198,23 @@ function pmRenderTeamManager(page, player) {
         </div>
         <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
       </div>
+      <div class="pm-team-bar">
+        <div class="pm-team-bar-title">Ton équipe sélectionnée</div>
+        <div class="pm-team-bar-grid">${teamBarHtml}</div>
+      </div>
       <div class="pm-card">
         <div class="pm-collection-grid" id="pm-team-grid"></div>
       </div>
     </div>
   `;
+
+  // Dessiner les sprites dans le bandeau sticky
+  teamInstances.forEach(inst => {
+    setTimeout(() => {
+      const c = document.getElementById('pm-teambar-' + inst.uid);
+      if (c) drawPokePom(c, inst.pokepomId);
+    }, 10);
+  });
 
   const grid = document.getElementById('pm-team-grid');
   player.collection.forEach(inst => {
@@ -6892,6 +7244,14 @@ function pmRenderTeamManager(page, player) {
            <span class="pm-coll-talent-desc">${talent.desc}</span>
          </div>`
       : '';
+    // Objet équipé (saison All Star)
+    const equipped = inst.equippedItem && PM_ITEMS[inst.equippedItem];
+    const itemHtml = equipped
+      ? `<div class="pm-coll-item" title="${equipped.desc.replace(/"/g, '&quot;')}" onclick="event.stopPropagation(); pmOpenItemModal('${inst.uid}')" style="cursor:pointer;">
+           <span class="pm-coll-item-emoji">${equipped.emoji}</span>
+           <span class="pm-coll-item-name">${equipped.name}</span>
+         </div>`
+      : `<button onclick="event.stopPropagation(); pmOpenItemModal('${inst.uid}')" class="pm-coll-equip-btn">+ Équiper un objet</button>`;
     card.innerHTML = `
       <canvas width="64" height="64" class="pm-sprite pm-sprite-md" id="pm-team-${inst.uid}"></canvas>
       <div class="pm-collection-name">${base.name}${inTeam ? ' ✓' : ''}${base.legendary ? ' ✦' : ''}</div>
@@ -6905,6 +7265,7 @@ function pmRenderTeamManager(page, player) {
         <div class="pm-coll-stat"><span class="pm-coll-stat-k">VIT</span><span class="pm-coll-stat-v">${stats.vit}</span></div>
       </div>
       ${talentHtml}
+      ${itemHtml}
       <div class="pm-coll-moves">
         ${movesHtml}
       </div>
@@ -7865,6 +8226,290 @@ function pmShowDojoSuccess(inst, oldMove, newMove) {
   // Re-render le screen Dojo
   pmGoTo('dojo');
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BOUTIQUE D'OBJETS ÉQUIPABLES (saison All Star)
+// ═══════════════════════════════════════════════════════════════════════════
+// Catalogue PM_ITEMS définie en haut du fichier.
+// state.balance pour les Pomels, player.ownedItems pour les objets possédés.
+
+// Helper : trouve le PokePom qui porte l'objet itemId, ou null
+function pmFindWearer(player, itemId) {
+  if (!player || !player.collection) return null;
+  return player.collection.find(inst => inst && inst.equippedItem === itemId) || null;
+}
+
+// Helper : équipe l'objet itemId sur l'instance (uid). Si déjà porté ailleurs,
+// le retire de l'autre PokePom (transfert). Retourne {ok, reason?}.
+function pmEquipItem(player, instanceUid, itemId) {
+  if (!player || !player.collection) return { ok: false, reason: 'profil_invalide' };
+  if (!PM_ITEMS[itemId]) return { ok: false, reason: 'objet_inconnu' };
+  if (!player.ownedItems || !player.ownedItems.includes(itemId)) {
+    return { ok: false, reason: 'non_possede' };
+  }
+  const target = player.collection.find(i => i && i.uid === instanceUid);
+  if (!target) return { ok: false, reason: 'pokepom_introuvable' };
+  // Si un autre PokePom porte déjà cet objet, on le déséquipe
+  const currentWearer = pmFindWearer(player, itemId);
+  if (currentWearer && currentWearer.uid !== instanceUid) {
+    currentWearer.equippedItem = null;
+  }
+  // Si la cible porte déjà un autre objet, on l'enlève (1 objet max par PokePom)
+  if (target.equippedItem && target.equippedItem !== itemId) {
+    // Le précédent reste possédé, juste retiré
+  }
+  target.equippedItem = itemId;
+  pmSavePlayer(player);
+  return { ok: true };
+}
+
+// Helper : déséquipe l'objet d'un PokePom donné. Retourne {ok}.
+function pmUnequipItem(player, instanceUid) {
+  if (!player || !player.collection) return { ok: false };
+  const target = player.collection.find(i => i && i.uid === instanceUid);
+  if (!target) return { ok: false };
+  target.equippedItem = null;
+  pmSavePlayer(player);
+  return { ok: true };
+}
+
+// Helper : achète un objet (débit Pomels + ajout à ownedItems). Retourne {ok, reason?}.
+function pmBuyItem(player, itemId) {
+  if (!PM_ITEMS[itemId]) return { ok: false, reason: 'objet_inconnu' };
+  if (player.ownedItems && player.ownedItems.includes(itemId)) {
+    return { ok: false, reason: 'deja_possede' };
+  }
+  const price = PM_ITEMS[itemId].price;
+  if (!state || (state.balance || 0) < price) {
+    return { ok: false, reason: 'fonds_insuffisants' };
+  }
+  // Débit via addBalanceTransaction (système global) si dispo
+  if (typeof addBalanceTransaction === 'function') {
+    return addBalanceTransaction(state.code, -price, {
+      type: 'pokepom_item_shop',
+      desc: 'Achat ' + PM_ITEMS[itemId].name,
+      amount: -price,
+      date: new Date().toISOString()
+    }).then(updated => {
+      if (updated && typeof migrateAccount === 'function') {
+        state = migrateAccount(updated);
+      }
+      if (!Array.isArray(player.ownedItems)) player.ownedItems = [];
+      player.ownedItems.push(itemId);
+      pmSavePlayer(player);
+      if (typeof refreshUI === 'function') refreshUI();
+      return { ok: true };
+    }).catch(() => ({ ok: false, reason: 'erreur_transaction' }));
+  } else {
+    // Fallback sans wallet
+    if (state) state.balance = Math.max(0, (state.balance || 0) - price);
+    if (!Array.isArray(player.ownedItems)) player.ownedItems = [];
+    player.ownedItems.push(itemId);
+    pmSavePlayer(player);
+    return { ok: true };
+  }
+}
+
+function pmRenderItemShop(page, player) {
+  if (!Array.isArray(player.ownedItems)) player.ownedItems = [];
+  const balance = (state && state.balance) || 0;
+
+  let itemsHtml = '';
+  for (const id of PM_ITEM_IDS) {
+    const item = PM_ITEMS[id];
+    const owned = player.ownedItems.includes(id);
+    const wearer = owned ? pmFindWearer(player, id) : null;
+    const canBuy = !owned && balance >= item.price;
+
+    let actionBtn;
+    if (owned) {
+      if (wearer) {
+        actionBtn = `<div style="font-size:.78rem; color:#5fe89a; font-weight:bold;">✓ Équipé sur ${wearer.nickname || PM_DEX[wearer.pokepomId].name}</div>`;
+      } else {
+        actionBtn = `<div style="font-size:.78rem; color:#88dd88; font-weight:bold;">✓ Possédé (non équipé)</div>`;
+      }
+    } else if (canBuy) {
+      actionBtn = `<button onclick="pmShopBuyClick('${id}')" style="padding:8px 14px; background:linear-gradient(135deg,#FFAC4B,#FF6E6E); color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold;">Acheter (${item.price} 🪙)</button>`;
+    } else {
+      actionBtn = `<button disabled style="padding:8px 14px; background:#555; color:#aaa; border:none; border-radius:6px; cursor:not-allowed; font-family:inherit; font-weight:bold;">${item.price} 🪙 (manque ${item.price - balance})</button>`;
+    }
+
+    itemsHtml += `
+      <div style="display:flex; gap:12px; padding:14px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; align-items:flex-start;">
+        <div style="font-size:2.4rem; flex-shrink:0;">${item.emoji}</div>
+        <div style="flex:1;">
+          <div style="font-weight:bold; font-size:1.05rem; margin-bottom:4px;">${item.name}</div>
+          <div style="font-size:.82rem; color:var(--muted); line-height:1.45; margin-bottom:8px;">${item.desc}</div>
+          ${actionBtn}
+        </div>
+      </div>
+    `;
+  }
+
+  page.innerHTML = `
+    <div class="pm-wrap">
+      <div class="pm-header">
+        <div>
+          <div class="pm-title">🎒 Boutique d'Objets</div>
+          <div class="pm-sub">Équipement pour tes PokePoms · 1 objet par PokePom · transférable</div>
+        </div>
+        <button class="btn-outline" onclick="pmGoTo('home')">← Retour</button>
+      </div>
+
+      <div class="pm-card" style="padding:14px; margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:.74rem; color:var(--muted); text-transform:uppercase;">Solde</div>
+            <div style="font-size:1.3rem; font-weight:bold; color:#FFAC4B;">${balance.toLocaleString('fr-FR')} 🪙</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:.74rem; color:var(--muted); text-transform:uppercase;">Objets possédés</div>
+            <div style="font-size:1.3rem; font-weight:bold;">${player.ownedItems.length} / ${PM_ITEM_IDS.length}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${itemsHtml}
+      </div>
+
+      <div style="margin-top:16px; padding:12px; background:rgba(80,150,200,0.08); border:1px solid rgba(80,150,200,0.3); border-radius:8px; font-size:.82rem; line-height:1.5;">
+        <div style="font-weight:bold; margin-bottom:6px;">ℹ️ Comment équiper un objet ?</div>
+        Va dans <strong>Collection</strong>, clique sur un PokePom, puis sur le bouton <strong>"Équiper un objet"</strong> dans sa fiche. Tu peux retirer ou transférer un objet à tout moment.
+      </div>
+    </div>
+  `;
+}
+
+// Handler global appelé depuis la boutique
+async function pmShopBuyClick(itemId) {
+  const player = pmGetPlayer();
+  if (!player) return;
+  const result = await pmBuyItem(player, itemId);
+  if (result && result.ok) {
+    pmGoTo('itemShop');
+  } else {
+    const reason = result && result.reason;
+    if (reason === 'fonds_insuffisants') alert('Tu n\'as pas assez de Pomels !');
+    else if (reason === 'deja_possede') alert('Tu possèdes déjà cet objet.');
+    else alert('Erreur lors de l\'achat.');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Modal d'équipement : choisir un objet à équiper sur une instance
+// ─────────────────────────────────────────────────────────────────────
+function pmOpenItemModal(instanceUid) {
+  const player = pmGetPlayer();
+  if (!player) return;
+  const inst = player.collection.find(i => i && i.uid === instanceUid);
+  if (!inst) return;
+  if (!Array.isArray(player.ownedItems)) player.ownedItems = [];
+  const base = PM_DEX[inst.pokepomId];
+  const targetName = inst.nickname || base.name;
+
+  // Construire la liste des objets possédés
+  const owned = player.ownedItems;
+  let listHtml = '';
+  if (owned.length === 0) {
+    listHtml = `
+      <div style="text-align:center; padding:30px 16px; color:var(--muted);">
+        <div style="font-size:2.5rem; margin-bottom:8px;">🛒</div>
+        <div style="font-weight:bold; margin-bottom:6px;">Aucun objet possédé</div>
+        <div style="font-size:.85rem; line-height:1.5;">
+          Va dans la <strong>Boutique d'Objets</strong> sur la carte R2 (à côté du Dojo) pour en acheter !
+        </div>
+      </div>`;
+  } else {
+    for (const id of owned) {
+      const item = PM_ITEMS[id];
+      if (!item) continue;
+      const wearer = pmFindWearer(player, id);
+      const onThis = wearer && wearer.uid === instanceUid;
+      const onOther = wearer && wearer.uid !== instanceUid;
+      const onOtherName = onOther ? (wearer.nickname || PM_DEX[wearer.pokepomId].name) : '';
+
+      let btn;
+      if (onThis) {
+        btn = `<button onclick="pmItemModalUnequip('${instanceUid}')" style="padding:7px 12px; background:#a83838; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:.78rem;">Retirer</button>`;
+      } else if (onOther) {
+        btn = `<button onclick="pmItemModalTransfer('${instanceUid}', '${id}', '${onOtherName.replace(/'/g, '\\\'').replace(/&/g, '&amp;')}')" style="padding:7px 12px; background:#7a5a30; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:.78rem;">Transférer</button>`;
+      } else {
+        btn = `<button onclick="pmItemModalEquip('${instanceUid}', '${id}')" style="padding:7px 12px; background:#3a8a4a; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:.78rem;">Équiper</button>`;
+      }
+
+      const statusBadge = onThis
+        ? '<span style="font-size:.7rem; color:#5fe89a; font-weight:bold;">✓ Équipé ici</span>'
+        : onOther
+        ? `<span style="font-size:.7rem; color:#c69a6a;">Porté par ${onOtherName}</span>`
+        : '<span style="font-size:.7rem; color:var(--muted);">Disponible</span>';
+
+      listHtml += `
+        <div style="display:flex; gap:10px; padding:12px; background:var(--surface2); border:1px solid ${onThis ? '#5fe89a' : 'var(--border)'}; border-radius:8px; align-items:flex-start;">
+          <div style="font-size:1.8rem; flex-shrink:0;">${item.emoji}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:bold; font-size:.92rem;">${item.name}</div>
+            <div style="font-size:.74rem; color:var(--muted); line-height:1.4; margin:3px 0;">${item.desc}</div>
+            ${statusBadge}
+          </div>
+          <div style="flex-shrink:0; align-self:center;">${btn}</div>
+        </div>`;
+    }
+  }
+
+  // Construire le modal
+  const overlay = document.createElement('div');
+  overlay.id = 'pm-item-modal';
+  overlay.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7); z-index: 10000;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  `;
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div style="background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 20px; max-width: 480px; width: 100%; max-height: 85vh; overflow-y: auto;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+        <div>
+          <div style="font-size:1.1rem; font-weight:bold;">Équiper un objet</div>
+          <div style="font-size:.82rem; color:var(--muted); margin-top:2px;">sur ${targetName}</div>
+        </div>
+        <button onclick="document.getElementById('pm-item-modal').remove()" style="background:none; border:1px solid var(--border); color:var(--text); border-radius:6px; padding:4px 10px; cursor:pointer; font-family:inherit;">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${listHtml}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function pmItemModalEquip(instanceUid, itemId) {
+  const player = pmGetPlayer();
+  const result = pmEquipItem(player, instanceUid, itemId);
+  if (result.ok) {
+    const modal = document.getElementById('pm-item-modal');
+    if (modal) modal.remove();
+    pmGoTo('team'); // refresh
+  } else {
+    alert('Impossible d\'équiper : ' + result.reason);
+  }
+}
+
+function pmItemModalUnequip(instanceUid) {
+  const player = pmGetPlayer();
+  const result = pmUnequipItem(player, instanceUid);
+  if (result.ok) {
+    const modal = document.getElementById('pm-item-modal');
+    if (modal) modal.remove();
+    pmGoTo('team');
+  }
+}
+
+function pmItemModalTransfer(instanceUid, itemId, fromName) {
+  if (!confirm('Transférer cet objet depuis ' + fromName + ' ?')) return;
+  pmItemModalEquip(instanceUid, itemId);
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PvP — Implémentation déplacée à la fin du fichier (réécriture propre)
@@ -9110,7 +9755,8 @@ function pvpBuildTeamSnapshot(player) {
       pokepomId: inst.pokepomId,
       nickname: inst.nickname || PM_DEX[inst.pokepomId].name,
       level: inst.level,
-      customMoves: Array.isArray(inst.customMoves) ? inst.customMoves.slice() : []
+      customMoves: Array.isArray(inst.customMoves) ? inst.customMoves.slice() : [],
+      equippedItem: (inst.equippedItem && PM_ITEMS[inst.equippedItem]) ? inst.equippedItem : null,
     }));
 }
 
@@ -9142,6 +9788,8 @@ function pvpSerializeFighter(fighter) {
       vit: (fighter.stages && fighter.stages.vit) || 0
     },
     burnTurns: fighter.burnTurns || 0,
+    attackedThisTurn: !!fighter.attackedThisTurn,
+    equippedItem: fighter.equippedItem || null,
     ko: !!fighter.ko,
     moveIds: fighter.moves.map(m => m.id),
     // PP courants par move (parallèle à moveIds). Au max au début, décrémentés
@@ -9161,6 +9809,7 @@ function pvpDeserializeFighter(data) {
     type: data.type,
     level: data.level,
     talent: (base && base.talent) || null,
+    equippedItem: (data.equippedItem && PM_ITEMS[data.equippedItem]) ? data.equippedItem : null,
     hp: data.hp,
     maxHp: data.maxHp,
     atk: data.atk,
@@ -9175,6 +9824,7 @@ function pvpDeserializeFighter(data) {
       vit: (data.stages && data.stages.vit) || 0
     },
     burnTurns: data.burnTurns || 0,
+    attackedThisTurn: !!data.attackedThisTurn,
     ko: !!data.ko,
     // Clone profond de chaque move pour ne pas muter PM_MOVES global.
     // Les PP courants sont restaurés depuis data.movePps si présent (préserve
@@ -9213,7 +9863,8 @@ function pvpBuildTeamFromSnapshot(snapshot) {
       nickname: s.nickname || (PM_DEX[s.pokepomId] && PM_DEX[s.pokepomId].name) || '?',
       level: s.level || 1,
       xp: 0,
-      customMoves: Array.isArray(s.customMoves) && s.customMoves.length === 4 ? s.customMoves : null
+      customMoves: Array.isArray(s.customMoves) && s.customMoves.length === 4 ? s.customMoves : null,
+      equippedItem: (s.equippedItem && PM_ITEMS[s.equippedItem]) ? s.equippedItem : null,
     };
     const f = pmCreateFighter(tmpInst, 1.0);
     f.hp = f.maxHp;
