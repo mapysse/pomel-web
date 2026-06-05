@@ -11107,6 +11107,35 @@ document.addEventListener('keydown', e => {
 const MAX_BALANCE = 10_000_000;
 const MAX_SINGLE_GAIN = 500_000;
 
+// saveGroupWeekCounters — met à jour les compteurs hebdo de groupe de façon atomique.
+// Ces compteurs ne peuvent PAS baisser sur une même semaine (append-only).
+// Complètement indépendant de saveAccount pour éviter tout écrasement concurrent.
+async function saveGroupWeekCounters(code, pomels, pomelsKey, seeds, seedsKey) {
+  if (!code) return;
+  try {
+    await db.ref('accounts/' + code).transaction(current => {
+      if (!current) return current;
+      // Pomels hebdo — jamais en dessous de la valeur Firebase sur la même semaine
+      if (current.weekPomelsKey === pomelsKey) {
+        current.weekPomelsEarned = Math.max(current.weekPomelsEarned || 0, pomels || 0);
+      } else if (pomelsKey > (current.weekPomelsKey || '')) {
+        current.weekPomelsKey    = pomelsKey;
+        current.weekPomelsEarned = pomels || 0;
+      }
+      // Seeds hebdo — idem
+      if (current.weekSeedsKey === seedsKey) {
+        current.weekSeedsEarned = Math.max(current.weekSeedsEarned || 0, seeds || 0);
+      } else if (seedsKey > (current.weekSeedsKey || '')) {
+        current.weekSeedsKey    = seedsKey;
+        current.weekSeedsEarned = seeds || 0;
+      }
+      return current;
+    });
+  } catch(e) {
+    console.warn('[pomel] saveGroupWeekCounters fallback', code, e.message);
+  }
+}
+
 // saveAccount — écrit le compte complet dans Firebase
 // Utilise une transaction pour éviter d'écraser un solde modifié concurrentiellement
 async function saveAccount(acc) {
@@ -11143,6 +11172,19 @@ async function saveAccount(acc) {
       merged.totalEarned  = Math.max(acc.totalEarned || 0, current.totalEarned || 0);
       merged.totalSpent   = Math.max(acc.totalSpent || 0, current.totalSpent || 0);
       merged.totalSpins   = Math.max(acc.totalSpins || 0, current.totalSpins || 0);
+      // Compteurs hebdo groupe — append-only : on garde le max sur la même semaine
+      if (acc.weekPomelsKey === current.weekPomelsKey) {
+        merged.weekPomelsEarned = Math.max(acc.weekPomelsEarned || 0, current.weekPomelsEarned || 0);
+      } else if ((current.weekPomelsKey || '') > (acc.weekPomelsKey || '')) {
+        merged.weekPomelsKey    = current.weekPomelsKey;
+        merged.weekPomelsEarned = current.weekPomelsEarned || 0;
+      }
+      if (acc.weekSeedsKey === current.weekSeedsKey) {
+        merged.weekSeedsEarned = Math.max(acc.weekSeedsEarned || 0, current.weekSeedsEarned || 0);
+      } else if ((current.weekSeedsKey || '') > (acc.weekSeedsKey || '')) {
+        merged.weekSeedsKey    = current.weekSeedsKey;
+        merged.weekSeedsEarned = current.weekSeedsEarned || 0;
+      }
       // Fusionner l'historique : garder les entrées les plus récentes des deux
       const myHistory = acc.history || [];
       const remoteHistory = current.history || [];
