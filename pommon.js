@@ -10903,8 +10903,8 @@ async function pvpApplyBattleEnd(battle) {
   // On compense en bonus de gain pour récompenser la difficulté réelle.
   const isP1Bot = pvpIsBot(battle.p1.code);
   const isP2Bot = pvpIsBot(battle.p2.code);
-  const RED_BONUS_THRESHOLD = 1400;  // Champion+
-  const RED_BONUS = 12;
+  const RED_BONUS_THRESHOLD = 1200;
+  const RED_BONUS = 10;
   if (battle.vsBot) {
     // Le joueur humain est celui qui n'est pas le bot
     if (isP2Bot && p1Won && battle.p1.eloAtStart >= RED_BONUS_THRESHOLD) {
