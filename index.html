@@ -5035,7 +5035,7 @@
       <!-- VUE GROUPES -->
       <div id="classementViewGroupes" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-          <div class="lb-note" style="flex:1;">🏅 Classement hebdomadaire des groupes — le score est calculé sur les Pomels + graines récoltées cette semaine par les membres.</div>
+          <div class="lb-note" style="flex:1;">🏅 Classement hebdomadaire des groupes — score basé sur les rangs de chaque membre dans les classements hebdo des jeux (Snake, Dino, Flappy, Tetris, 2048, PokePom Ligue, Jardin).</div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
             <button id="groupShopTopBtn" onclick="openGroupShopFromTop()" style="background:rgba(232,184,74,0.15);border:1px solid rgba(232,184,74,0.4);border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;color:var(--yellow);cursor:pointer;transition:all .2s;white-space:nowrap;" onmouseover="this.style.background='rgba(232,184,74,0.25)'" onmouseout="this.style.background='rgba(232,184,74,0.15)'">🛍️ Boutique</button>
             <button onclick="openGroupInfoModal()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">ℹ️ Règles</button>
@@ -5817,9 +5817,12 @@
             <span class="info-trigger-arrow">▼</span>
           </button>
           <div class="info-body">
-            <p>Le score d'un groupe est calculé chaque semaine :</p>
+            <p>Le score d'un groupe est calculé chaque semaine à partir des <strong>classements hebdomadaires des jeux</strong> :</p>
             <ul>
-              <li><strong>Pomels gagnés</strong> cette semaine par tous les membres</li>
+              <li>🐍 Snake · 🦕 Dino · 🐦 Flappy Pomel · 🧱 Tetris · 🔢 2048 · 🏆 PokePom Ligue · 🌸 Jardin</li>
+              <li>Chaque membre rapporte des points selon son rang dans chaque classement :<br>
+                <span style="font-size:.8rem;color:var(--text-soft);">🥇 1er → 100 pts &nbsp;·&nbsp; 🥈 2e → 85 &nbsp;·&nbsp; 🥉 3e → 70 &nbsp;·&nbsp; 4e → 55 &nbsp;·&nbsp; 5e → 45 &nbsp;·&nbsp; 6e–10e → 30 &nbsp;·&nbsp; 11e+ → 10</span>
+              </li>
               <li>+ <strong>Points PFC</strong> gagnés en Pierre Feuille Ciseaux</li>
             </ul>
             <p style="margin-top:10px;">Chaque lundi à 9h :</p>
@@ -6533,10 +6536,12 @@ function launchApp() {
   // Vérifier si les récompenses du jardin sont à distribuer (lundi après 12h)
   // S'exécute en arrière-plan sans bloquer le chargement
   if (typeof checkJardinReset === 'function') checkJardinReset().catch(() => {});
-  checkGroupWeeklyReward().catch(() => {});
-  // Vérifier les récompenses hebdomadaires des jeux (snake et 2048)
-  if (typeof checkSnakeWeeklyReset === 'function') checkSnakeWeeklyReset().catch(() => {});
-  if (typeof checkG2048WeeklyReset === 'function') checkG2048WeeklyReset().catch(() => {});
+  // Groupes d'abord : lire les weekly_lb des jeux AVANT que les resets jeux les effacent.
+  // Les resets jeux (snake, 2048...) ne se lancent qu'une fois le calcul de groupe terminé.
+  checkGroupWeeklyReward().catch(() => {}).finally(() => {
+    if (typeof checkSnakeWeeklyReset === 'function') checkSnakeWeeklyReset().catch(() => {});
+    if (typeof checkG2048WeeklyReset === 'function') checkG2048WeeklyReset().catch(() => {});
+  });
   // Initialiser les pastilles de notification
   checkNotifUpdates();
   checkPushNotifications();
@@ -7426,25 +7431,90 @@ function getGroupMonthKey() {
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 }
 
-// Calcule le score hebdo d'un groupe = Pomels gagnés cette semaine + graines récoltées cette semaine (via compteurs persistants) + bonus PFC
-// weekKeyOverride permet de forcer la lecture d'une semaine spécifique (utile pour la distribution du lundi)
-async function computeGroupWeekScore(group, allAccounts, allClicker, weekKeyOverride) {
+// ── SCORE HEBDO DE GROUPE ────────────────────────────────────────────────────
+// Basé sur les classements hebdomadaires de chaque jeu.
+// Pour chaque jeu, on lit le {game}_weekly_lb/{weekKey} et on attribue des points
+// selon le rang du membre dans le classement global.
+// Le jardin utilise weekSeedsEarned (compteur account) : classement relatif entre membres.
+// + bonus PFC intact (pfcWeekBonus sur le groupe).
+//
+// Barème par rang dans un LB :
+//   1er → 100 pts · 2e → 85 · 3e → 70 · 4e → 55 · 5e → 45
+//   6e–10e → 30 · 11e+ → 10 · absent → 0
+//
+// weekKeyOverride : forcer une semaine précise (distribution du lundi matin)
+
+const GAME_LB_PATHS = [
+  { key: 'snake',         label: '🐍 Snake' },
+  { key: 'dino',          label: '🦕 Dino' },
+  { key: 'flappy',        label: '🐦 Flappy' },
+  { key: 'tetris',        label: '🧱 Tetris' },
+  { key: 'g2048',         label: '🔢 2048' },
+  { key: 'pommon_league', label: '🏆 PokePom Ligue' },
+];
+
+function _gameRankPoints(rank) {
+  if (rank === 1) return 100;
+  if (rank === 2) return 85;
+  if (rank === 3) return 70;
+  if (rank === 4) return 55;
+  if (rank === 5) return 45;
+  if (rank <= 10) return 30;
+  return 10;
+}
+
+// Lit un weekly_lb pour une semaine donnée et retourne un Map code→rang (1-based)
+async function _getWeeklyRanks(gameKey, weekKey) {
+  try {
+    const snap = await dbGet(gameKey + '_weekly_lb/' + weekKey);
+    if (!snap) return new Map();
+    // Entrées : { [code]: { code, name, score } }
+    const entries = Object.values(snap).sort((a, b) => (b.score || 0) - (a.score || 0));
+    const rankMap = new Map();
+    entries.forEach((e, i) => { if (e.code) rankMap.set(e.code, i + 1); });
+    return rankMap;
+  } catch(e) {
+    return new Map();
+  }
+}
+
+async function computeGroupWeekScore(group, allAccounts, _unused, weekKeyOverride) {
   const weekKey = weekKeyOverride || getGroupWeekKey();
-  let pomels = 0, seeds = 0;
-  for (const code of (group.members || [])) {
-    const acc = allAccounts.find(a => a.code === code);
-    if (acc) {
-      // Utiliser les compteurs persistants hebdomadaires
-      if (acc.weekPomelsKey === weekKey) {
-        pomels += (acc.weekPomelsEarned || 0);
-      }
-      if (acc.weekSeedsKey === weekKey) {
-        seeds += (acc.weekSeedsEarned || 0);
-      }
+  const members = group.members || [];
+  if (!members.length) return 0;
+
+  // 1. Charger tous les weekly_lb en parallèle
+  const rankMaps = await Promise.all(
+    GAME_LB_PATHS.map(g => _getWeeklyRanks(g.key, weekKey))
+  );
+
+  // 2. Pour chaque jeu, sommer les points de rang de tous les membres du groupe
+  let gameScore = 0;
+  for (let gi = 0; gi < GAME_LB_PATHS.length; gi++) {
+    const rankMap = rankMaps[gi];
+    for (const code of members) {
+      const rank = rankMap.get(code);
+      if (rank !== undefined) gameScore += _gameRankPoints(rank);
     }
   }
+
+  // 3. Jardin : classement relatif basé sur weekSeedsEarned des accounts
+  //    On récupère les graines de chaque membre pour cette semaine,
+  //    on les trie et on attribue des points de rang intra-groupe (max 100 pts par membre)
+  const memberSeeds = [];
+  for (const code of members) {
+    let acc = allAccounts.find(a => a.code === code);
+    if (!acc) { try { acc = await getAccount(code); } catch(e) {} }
+    const seeds = (acc && acc.weekSeedsKey === weekKey) ? (acc.weekSeedsEarned || 0) : 0;
+    if (seeds > 0) memberSeeds.push({ code, seeds });
+  }
+  memberSeeds.sort((a, b) => b.seeds - a.seeds);
+  memberSeeds.forEach((m, i) => { gameScore += _gameRankPoints(i + 1); });
+
+  // 4. Bonus PFC hebdo (inchangé)
   const pfcBonus = group.pfcWeekBonus || 0;
-  return Math.round(pomels + seeds / 10 + pfcBonus);
+
+  return Math.round(gameScore + pfcBonus);
 }
 
 async function renderGroupsOnPage() {
@@ -7793,11 +7863,13 @@ async function checkGroupWeeklyReward() {
 
   const distributed = await dbGet('group_weekly_distributed/' + prevKey);
   if (distributed) return;
-  // Anti-race : marquer immédiatement puis re-vérifier
-  await dbSet('group_weekly_distributed/' + prevKey, true);
-  await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+  // Anti-race : écrire un token unique, attendre un délai aléatoire,
+  // puis vérifier que c'est bien notre token qui est en base (le dernier écrivain gagne)
+  const myToken = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  await dbSet('group_weekly_distributed/' + prevKey, myToken);
+  await new Promise(r => setTimeout(r, 300 + Math.random() * 500));
   const recheck = await dbGet('group_weekly_distributed/' + prevKey);
-  if (recheck !== true) return; // un autre client a pu écraser
+  if (recheck !== myToken) return; // un autre client a écrit après nous → il s'en charge
 
   const groups = await getAllGroups();
   if (!groups.length) return;
