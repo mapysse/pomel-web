@@ -5817,20 +5817,33 @@
             <span class="info-trigger-arrow">▼</span>
           </button>
           <div class="info-body">
-            <p>Le score d'un groupe est calculé chaque semaine à partir des <strong>classements hebdomadaires des jeux</strong> :</p>
+            <p>Le score hebdomadaire d'un groupe est la <strong>somme des points de rang</strong> de chaque membre sur 7 classements hebdomadaires :</p>
             <ul>
-              <li>🐍 Snake · 🦕 Dino · 🐦 Flappy Pomel · 🧱 Tetris · 🔢 2048 · 🏆 PokePom Ligue · 🌸 Jardin</li>
-              <li>Chaque membre rapporte des points selon son rang dans chaque classement :<br>
-                <span style="font-size:.8rem;color:var(--text-soft);">🥇 1er → 100 pts &nbsp;·&nbsp; 🥈 2e → 85 &nbsp;·&nbsp; 🥉 3e → 70 &nbsp;·&nbsp; 4e → 55 &nbsp;·&nbsp; 5e → 45 &nbsp;·&nbsp; 6e–10e → 30 &nbsp;·&nbsp; 11e+ → 10</span>
+              <li style="margin-bottom:6px;">
+                🐍 Snake &nbsp;·&nbsp; 🦕 Dino &nbsp;·&nbsp; 🐦 Flappy Pomel &nbsp;·&nbsp; 🧱 Tetris &nbsp;·&nbsp; 🔢 2048 &nbsp;·&nbsp; 🏆 PokePom Ligue &nbsp;·&nbsp; 🌸 Jardin
               </li>
-              <li>+ <strong>Points PFC</strong> gagnés en Pierre Feuille Ciseaux</li>
+              <li style="margin-bottom:4px;">Points attribués selon le rang de chaque membre dans chaque classement :</li>
             </ul>
-            <p style="margin-top:10px;">Chaque lundi à 9h :</p>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px 8px;margin:8px 0 12px;font-size:.78rem;">
+              <span style="color:var(--yellow);font-weight:700;">🥇 1er</span><span>100 pts</span>
+              <span style="color:var(--text-soft);font-weight:700;">🥈 2e</span><span>85 pts</span>
+              <span style="color:var(--primary);font-weight:700;">🥉 3e</span><span>70 pts</span>
+              <span style="color:var(--text-soft);">4e</span><span>55 pts</span>
+              <span style="color:var(--text-soft);">5e</span><span>45 pts</span>
+              <span style="color:var(--text-soft);">6e–10e</span><span>30 pts</span>
+              <span style="color:var(--text-soft);">11e+</span><span>10 pts</span>
+              <span style="color:var(--muted);">Absent</span><span style="color:var(--muted);">0 pt</span>
+            </div>
             <ul>
-              <li>🥇 1er : <strong>+2 000 🪙 / membre</strong> · <strong>1 000 💠 fixes + 500 💠 × membres</strong></li>
-              <li>🥈 2e : <strong>+2 000 🪙 / membre</strong> · <strong>750 💠 fixes + 500 💠 × membres</strong></li>
-              <li>🥉 3e : <strong>+2 000 🪙 / membre</strong> · <strong>500 💠 fixes + 500 💠 × membres</strong></li>
-              <li style="color:var(--red)">💥 4e et 5e : groupe dissous, membres expulsés</li>
+              <li>+ <strong>Points PFC</strong> accumulés via Pierre Feuille Ciseaux</li>
+              <li>Les scores sont calculés sur la <strong>semaine précédente</strong>, chaque lundi à 9h</li>
+            </ul>
+            <p style="margin-top:10px;">Résultats chaque lundi à 9h :</p>
+            <ul>
+              <li>🥇 1er : <strong>+2 000 🪙 / membre</strong> &nbsp;·&nbsp; <strong>1 000 💠 fixes + 500 💠 × membres</strong></li>
+              <li>🥈 2e : <strong>+2 000 🪙 / membre</strong> &nbsp;·&nbsp; <strong>750 💠 fixes + 500 💠 × membres</strong></li>
+              <li>🥉 3e : <strong>+2 000 🪙 / membre</strong> &nbsp;·&nbsp; <strong>500 💠 fixes + 500 💠 × membres</strong></li>
+              <li style="color:var(--red);">💥 4e et 5e : groupe <strong>dissous</strong>, membres expulsés</li>
               <li>Tous les groupes sont remis à zéro chaque mois</li>
             </ul>
           </div>
@@ -6792,6 +6805,7 @@ function _onPageLoad(id) {
       if (vgr) vgr.style.display = '';
       if (tabs) tabs.style.display = 'none';
       if (title) title.textContent = '🏅 Classement des groupes';
+      _groupCache = null;
       renderGroupsOnPage();
     }
   }
@@ -7463,27 +7477,39 @@ function _gameRankPoints(rank) {
   return 10;
 }
 
+// Cache des LBs hebdo des jeux — TTL 30s pour ne pas relire Firebase à chaque render
+const _gameLbCache = new Map(); // clé : "gameKey/weekKey" → { maps, ts }
+const _GAME_LB_TTL = 30000; // 30 secondes
+
 // Lit un weekly_lb pour une semaine donnée et retourne un Map code→rang (1-based)
+// Utilise le cache si les données ont moins de 30s
 async function _getWeeklyRanks(gameKey, weekKey) {
+  const cacheKey = gameKey + '/' + weekKey;
+  const cached = _gameLbCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < _GAME_LB_TTL) return cached.map;
   try {
     const snap = await dbGet(gameKey + '_weekly_lb/' + weekKey);
-    if (!snap) return new Map();
+    if (!snap) { _gameLbCache.set(cacheKey, { map: new Map(), ts: Date.now() }); return new Map(); }
     // Entrées : { [code]: { code, name, score } }
     const entries = Object.values(snap).sort((a, b) => (b.score || 0) - (a.score || 0));
     const rankMap = new Map();
     entries.forEach((e, i) => { if (e.code) rankMap.set(e.code, i + 1); });
+    _gameLbCache.set(cacheKey, { map: rankMap, ts: Date.now() });
     return rankMap;
   } catch(e) {
     return new Map();
   }
 }
 
+// Vide le cache des LBs (à appeler si on veut forcer une relecture — ex: distribution lundi)
+function _invalidateGameLbCache() { _gameLbCache.clear(); }
+
 async function computeGroupWeekScore(group, allAccounts, _unused, weekKeyOverride) {
   const weekKey = weekKeyOverride || getGroupWeekKey();
   const members = group.members || [];
   if (!members.length) return 0;
 
-  // 1. Charger tous les weekly_lb en parallèle
+  // 1. Charger tous les weekly_lb en parallèle (depuis le cache si possible)
   const rankMaps = await Promise.all(
     GAME_LB_PATHS.map(g => _getWeeklyRanks(g.key, weekKey))
   );
@@ -7517,10 +7543,20 @@ async function computeGroupWeekScore(group, allAccounts, _unused, weekKeyOverrid
   return Math.round(gameScore + pfcBonus);
 }
 
+// Cache accounts pour renderGroupsOnPage — TTL 60s (évite getAllAccounts() au moindre poll)
+let _groupPageAccountsCache = null;
+let _groupPageAccountsCacheTs = 0;
+const _GROUP_ACCOUNTS_TTL = 60000;
+
 async function renderGroupsOnPage() {
+  // Accounts : relire seulement si le cache est périmé
+  if (!_groupPageAccountsCache || Date.now() - _groupPageAccountsCacheTs > _GROUP_ACCOUNTS_TTL) {
+    _groupPageAccountsCache = await getAllAccounts();
+    _groupPageAccountsCacheTs = Date.now();
+  }
   const [groups, allAccounts] = await Promise.all([
     getAllGroups(),
-    getAllAccounts(),
+    Promise.resolve(_groupPageAccountsCache),
   ]);
   const allClicker = {}; // plus utilisé — les graines passent maintenant par l'historique
 
@@ -7870,6 +7906,10 @@ async function checkGroupWeeklyReward() {
   await new Promise(r => setTimeout(r, 300 + Math.random() * 500));
   const recheck = await dbGet('group_weekly_distributed/' + prevKey);
   if (recheck !== myToken) return; // un autre client a écrit après nous → il s'en charge
+
+  // Vider les caches locaux pour forcer une relecture fraîche des LBs et comptes
+  _invalidateGameLbCache();
+  _groupPageAccountsCache = null;
 
   const groups = await getAllGroups();
   if (!groups.length) return;
@@ -13022,6 +13062,7 @@ function navToClassement(view) {
     if (viewGroupes) viewGroupes.style.display = '';
     if (lbTabs) lbTabs.style.display = 'none';
     if (title) title.textContent = '🏅 Classement des groupes';
+    _groupCache = null; // forcer la relecture à chaque ouverture de la vue
     renderGroupsOnPage();
   }
   window.scrollTo(0, 0);
@@ -13120,18 +13161,27 @@ function initSidenav() {
 }
 
 // ── Polling intelligent : se met en pause quand l'onglet est caché ──
-let _notifInterval = null;
-let _pushInterval  = null;
+let _notifInterval  = null;
+let _pushInterval   = null;
+let _groupLbInterval = null;
 
 function startPolling() {
   stopPolling();
-  _notifInterval = setInterval(checkNotifUpdates,      60000); // pastilles : 60 s
-  _pushInterval  = setInterval(checkPushNotifications, 45000); // toasts    : 45 s (au lieu de 15 s)
+  _notifInterval   = setInterval(checkNotifUpdates,      60000); // pastilles : 60 s
+  _pushInterval    = setInterval(checkPushNotifications, 45000); // toasts    : 45 s
+  // Classement des groupes : refresh toutes les 30 s si la vue groupes est active
+  _groupLbInterval = setInterval(() => {
+    if (_currentPage === 'classement' && _classementView === 'groupes') {
+      _groupCache = null; // forcer la relecture Firebase
+      renderGroupsOnPage();
+    }
+  }, 30000);
 }
 
 function stopPolling() {
-  if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
-  if (_pushInterval)  { clearInterval(_pushInterval);  _pushInterval  = null; }
+  if (_notifInterval)   { clearInterval(_notifInterval);   _notifInterval   = null; }
+  if (_pushInterval)    { clearInterval(_pushInterval);    _pushInterval    = null; }
+  if (_groupLbInterval) { clearInterval(_groupLbInterval); _groupLbInterval = null; }
 }
 
 document.addEventListener('visibilitychange', () => {
