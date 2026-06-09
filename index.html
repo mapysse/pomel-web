@@ -7479,21 +7479,34 @@ function _gameRankPoints(rank) {
   return 10;
 }
 
-// Cache des LBs hebdo des jeux — TTL 30s pour ne pas relire Firebase à chaque render
-const _gameLbCache = new Map(); // clé : "gameKey/weekKey" → { maps, ts }
-const _GAME_LB_TTL = 30000; // 30 secondes
+// Cache des LBs hebdo — TTL 30s
+const _gameLbCache = new Map();
+const _GAME_LB_TTL = 30000;
+function _invalidateGameLbCache() { _gameLbCache.clear(); }
 
-// Lit un weekly_lb pour une semaine donnée et retourne un Map code→rang (1-based)
-// Utilise le cache si les données ont moins de 30s
-async function _getWeeklyRanks(gameKey, weekKey) {
+// Structure réelle Firebase (vérifiée dans les .js des jeux) :
+//   snake_weekly_lb/{code}  = { code, name, score, weekKey }  → filtre par weekKey
+//   dino_weekly_lb/{code}   = { code, name, score }           → pas de weekKey, LB entier = semaine courante
+//   flappy_weekly_lb/{code} = idem dino
+//   tetris_weekly_lb/{code} = idem dino
+//   g2048_weekly_lb/{code}  = idem dino
+//   jardin                  = { weekKey, flowers: [{playerCode, playerName, ...}] }
+
+// Lit un weekly_lb et retourne un Map code→rang (1-based)
+// hasWeekKey=true : snake (filtre sur weekKey), false : dino/flappy/tetris/g2048 (tout le LB = semaine courante)
+async function _getWeeklyRanks(gameKey, weekKey, hasWeekKey) {
   const cacheKey = gameKey + '/' + weekKey;
   const cached = _gameLbCache.get(cacheKey);
   if (cached && Date.now() - cached.ts < _GAME_LB_TTL) return cached.map;
   try {
-    const snap = await dbGet(gameKey + '_weekly_lb/' + weekKey);
+    const snap = await dbGet(gameKey + '_weekly_lb');
     if (!snap) { _gameLbCache.set(cacheKey, { map: new Map(), ts: Date.now() }); return new Map(); }
-    // Entrées : { [code]: { code, name, score } }
-    const entries = Object.values(snap).sort((a, b) => (b.score || 0) - (a.score || 0));
+    let entries = Object.values(snap);
+    if (hasWeekKey) {
+      // snake : ne garder que les entrées de la semaine courante
+      entries = entries.filter(e => !e.weekKey || e.weekKey === weekKey);
+    }
+    entries.sort((a, b) => (b.score || 0) - (a.score || 0));
     const rankMap = new Map();
     entries.forEach((e, i) => { if (e.code) rankMap.set(e.code, i + 1); });
     _gameLbCache.set(cacheKey, { map: rankMap, ts: Date.now() });
@@ -7503,43 +7516,54 @@ async function _getWeeklyRanks(gameKey, weekKey) {
   }
 }
 
-// Vide le cache des LBs (à appeler si on veut forcer une relecture — ex: distribution lundi)
-function _invalidateGameLbCache() { _gameLbCache.clear(); }
-
 async function computeGroupWeekScore(group, allAccounts, _unused, weekKeyOverride) {
   const weekKey = weekKeyOverride || getGroupWeekKey();
   const members = group.members || [];
   if (!members.length) return 0;
 
-  // 1. Charger tous les weekly_lb en parallèle (depuis le cache si possible)
-  const rankMaps = await Promise.all(
-    GAME_LB_PATHS.map(g => _getWeeklyRanks(g.key, weekKey))
-  );
+  // 1. Charger tous les weekly_lb en parallèle
+  const [snakeMap, dinoMap, flappyMap, tetrisMap, g2048Map] = await Promise.all([
+    _getWeeklyRanks('snake',  weekKey, true),   // a un weekKey dans chaque entrée
+    _getWeeklyRanks('dino',   weekKey, false),  // LB plat, réinitialisé chaque semaine
+    _getWeeklyRanks('flappy', weekKey, false),
+    _getWeeklyRanks('tetris', weekKey, false),
+    _getWeeklyRanks('g2048',  weekKey, false),
+  ]);
+  const allMaps = [snakeMap, dinoMap, flappyMap, tetrisMap, g2048Map];
 
-  // 2. Pour chaque jeu, sommer les points de rang de tous les membres du groupe
+  // 2. Sommer les points de rang de chaque membre pour chaque jeu
   let gameScore = 0;
-  for (let gi = 0; gi < GAME_LB_PATHS.length; gi++) {
-    const rankMap = rankMaps[gi];
+  for (const rankMap of allMaps) {
     for (const code of members) {
       const rank = rankMap.get(code);
       if (rank !== undefined) gameScore += _gameRankPoints(rank);
     }
   }
 
-  // 3. Jardin : classement relatif basé sur weekSeedsEarned des accounts
-  //    On récupère les graines de chaque membre pour cette semaine,
-  //    on les trie et on attribue des points de rang intra-groupe (max 100 pts par membre)
-  const memberSeeds = [];
+  // 3. PokePom Ligue — même structure que les autres (pas de weekKey)
+  const ligueMap = await _getWeeklyRanks('pommon_league', weekKey, true);  // a un weekKey dans chaque entrée, comme snake
   for (const code of members) {
-    let acc = allAccounts.find(a => a.code === code);
-    if (!acc) { try { acc = await getAccount(code); } catch(e) {} }
-    const seeds = (acc && acc.weekSeedsKey === weekKey) ? (acc.weekSeedsEarned || 0) : 0;
-    if (seeds > 0) memberSeeds.push({ code, seeds });
+    const rank = ligueMap.get(code);
+    if (rank !== undefined) gameScore += _gameRankPoints(rank);
   }
-  memberSeeds.sort((a, b) => b.seeds - a.seeds);
-  memberSeeds.forEach((m, i) => { gameScore += _gameRankPoints(i + 1); });
 
-  // 4. Bonus PFC hebdo (inchangé)
+  // 4. Jardin : jardin/{flowers} — compter les fleurs plantées par chaque membre cette semaine
+  try {
+    const jardinData = await dbGet('jardin');
+    if (jardinData && jardinData.weekKey === weekKey && jardinData.flowers) {
+      const counts = {};
+      jardinData.flowers.forEach(f => {
+        if (f.playerCode) counts[f.playerCode] = (counts[f.playerCode] || 0) + 1;
+      });
+      const memberCounts = members
+        .map(code => ({ code, count: counts[code] || 0 }))
+        .filter(m => m.count > 0)
+        .sort((a, b) => b.count - a.count);
+      memberCounts.forEach((m, i) => { gameScore += _gameRankPoints(i + 1); });
+    }
+  } catch(e) {}
+
+  // 5. Bonus PFC hebdo (inchangé)
   const pfcBonus = group.pfcWeekBonus || 0;
 
   return Math.round(gameScore + pfcBonus);
@@ -13186,12 +13210,13 @@ function startGroupLbListeners() {
   stopGroupLbListeners();
   const weekKey = getGroupWeekKey();
   const paths = [
-    'snake_weekly_lb/'         + weekKey,
-    'dino_weekly_lb/'          + weekKey,
-    'flappy_weekly_lb/'        + weekKey,
-    'tetris_weekly_lb/'        + weekKey,
-    'g2048_weekly_lb/'         + weekKey,
-    'pommon_league_weekly_lb/' + weekKey,
+    'snake_weekly_lb',
+    'dino_weekly_lb',
+    'flappy_weekly_lb',
+    'tetris_weekly_lb',
+    'g2048_weekly_lb',
+    'pommon_league_weekly_lb',
+    'jardin',
     'groups',
   ];
   paths.forEach(path => {
