@@ -6559,6 +6559,8 @@ function launchApp() {
   checkNotifUpdates();
   checkPushNotifications();
   startPolling();
+  startGroupLbListeners();
+  startGroupLbListeners();
   // Sidebar joueurs droite
   const sidebar = document.getElementById('playerSidebar');
   if (window.innerWidth >= 1200) { sidebar.classList.remove('hidden'); _sidebarVisible = true; }
@@ -13160,40 +13162,67 @@ function initSidenav() {
   });
 }
 
-// ── Polling intelligent : se met en pause quand l'onglet est caché ──
-let _notifInterval  = null;
-let _pushInterval   = null;
-let _groupLbInterval = null;
+// ── Polling notifications ────────────────────────────────────────────────────
+let _notifInterval = null;
+let _pushInterval  = null;
 
 function startPolling() {
   stopPolling();
-  _notifInterval   = setInterval(checkNotifUpdates,      60000); // pastilles : 60 s
-  _pushInterval    = setInterval(checkPushNotifications, 45000); // toasts    : 45 s
-  // Classement des groupes : refresh toutes les 30 s si la vue groupes est active
-  _groupLbInterval = setInterval(() => {
-    if (_currentPage === 'classement' && _classementView === 'groupes') {
-      _groupCache = null; // forcer la relecture Firebase
-      renderGroupsOnPage();
-    }
-  }, 30000);
+  _notifInterval = setInterval(checkNotifUpdates,      60000);
+  _pushInterval  = setInterval(checkPushNotifications, 45000);
 }
 
 function stopPolling() {
-  if (_notifInterval)   { clearInterval(_notifInterval);   _notifInterval   = null; }
-  if (_pushInterval)    { clearInterval(_pushInterval);    _pushInterval    = null; }
-  if (_groupLbInterval) { clearInterval(_groupLbInterval); _groupLbInterval = null; }
+  if (_notifInterval) { clearInterval(_notifInterval); _notifInterval = null; }
+  if (_pushInterval)  { clearInterval(_pushInterval);  _pushInterval  = null; }
+}
+
+// ── Listeners temps réel sur les LBs hebdo des jeux ──────────────────────────
+// Dès qu'un score change dans Firebase (Snake, Dino, etc.), renderGroupsOnPage()
+// se déclenche automatiquement — pas de polling, mise à jour instantanée.
+const _groupLbListeners = [];
+
+function startGroupLbListeners() {
+  stopGroupLbListeners();
+  const weekKey = getGroupWeekKey();
+  const paths = [
+    'snake_weekly_lb/'         + weekKey,
+    'dino_weekly_lb/'          + weekKey,
+    'flappy_weekly_lb/'        + weekKey,
+    'tetris_weekly_lb/'        + weekKey,
+    'g2048_weekly_lb/'         + weekKey,
+    'pommon_league_weekly_lb/' + weekKey,
+    'groups',
+  ];
+  paths.forEach(path => {
+    const ref = db.ref(path);
+    const handler = ref.on('value', () => {
+      _invalidateGameLbCache();
+      _groupCache = null;
+      if (_currentPage === 'classement' && _classementView === 'groupes') {
+        renderGroupsOnPage();
+      }
+    });
+    _groupLbListeners.push({ ref, handler });
+  });
+}
+
+function stopGroupLbListeners() {
+  _groupLbListeners.forEach(({ ref, handler }) => ref.off('value', handler));
+  _groupLbListeners.length = 0;
 }
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     stopPolling();
+    stopGroupLbListeners();
   } else {
-    // De retour sur l'onglet : un check immédiat + on relance les timers
     if (typeof state !== 'undefined' && state) {
       checkNotifUpdates();
       checkPushNotifications();
     }
     startPolling();
+    startGroupLbListeners();
   }
 });
 
